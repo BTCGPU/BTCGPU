@@ -4,7 +4,7 @@ Building bitcoind for fun and profit
 Run the script like this
 
 ```
-./build.sh .. 4
+./build.sh ../.. 4
 ```
 
 for building in the directory above, with 4 cores
