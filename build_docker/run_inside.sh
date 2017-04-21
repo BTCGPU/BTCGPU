@@ -19,7 +19,7 @@ MAKEOPTS=(-j$1)
 
 WRAP_DIR=$HOME/wrapped
 HOSTS="x86_64-linux-gnu"
-CONFIGFLAGS="--enable-glibc-back-compat --enable-reduce-exports --disable-bench --disable-gui-tests --disable-wallet --with-gui=no --disable-tests --disable-bench"
+CONFIGFLAGS="--enable-glibc-back-compat --enable-reduce-exports --disable-bench --disable-gui-tests --with-gui=no --disable-tests --disable-bench"
 HOST_CFLAGS="-O2 -g"
 HOST_CXXFLAGS="-O2 -g"
 HOST_LDFLAGS=-static-libstdc++
@@ -75,7 +75,7 @@ for i in $HOSTS; do
 	if [ -d "$EXTRA_INCLUDES" ]; then
 		export HOST_ID_SALT="$EXTRA_INCLUDES"
 	fi
-	make ${MAKEOPTS} -C ${BASEPREFIX} NO_QT=1 NO_WALLET=1 HOST="${i}" boost_download_path='https://www.dropbox.com/s/vgn8gn04xyja128/boost_1_63_0.tar.bz2?dl=1'
+	make ${MAKEOPTS} -C ${BASEPREFIX} NO_QT=1 HOST="${i}" boost_download_path='https://www.dropbox.com/s/vgn8gn04xyja128/boost_1_63_0.tar.bz2?dl=1'
 	unset HOST_ID_SALT
 done
 
