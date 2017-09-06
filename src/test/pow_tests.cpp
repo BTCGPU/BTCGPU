@@ -83,4 +83,50 @@ BOOST_AUTO_TEST_CASE(GetBlockProofEquivalentTime_test)
     }
 }
 
+/* Tests the target change at the beginning of the hard fork.  */
+BOOST_AUTO_TEST_CASE(BitcoinGPUPreminingBegin_test)
+{
+    const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
+    CBlockIndex block1, block2;
+    CBlockHeader header;
+    // Check the block before the hard fork has a regular target.
+    block1.nHeight = 487425;
+    block1.nTime = 1501593084;
+    block1.nBits = 402736949;
+    BOOST_CHECK_EQUAL(GetNextWorkRequired(&block1, &header, chainParams->GetConsensus()), 0x18014735);
+    // Check the block after the hard fork has the max target.
+    block2.nHeight = 487426;
+    block2.nTime = 1501593374;
+    block2.nBits = 402736949;
+    BOOST_CHECK_EQUAL(GetNextWorkRequired(&block2, &header, chainParams->GetConsensus()), 0x1d00ffff);
+}
+
+/* Tests the block after premining window returns back to regular target. */
+BOOST_AUTO_TEST_CASE(BitcoinGPUPreminingEnd_test)
+{
+    const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
+    const auto& params = chainParams->GetConsensus();
+    int nHeightPreminingEnd = 487427 + params.BTGPremineWindow;
+    int nHeightLast = nHeightPreminingEnd + params.DifficultyAdjustmentInterval();
+    int nHeightFirst = nHeightPreminingEnd - params.DifficultyAdjustmentInterval();
+    // Build a chain of blocks surrounding the first block after premining period.
+    CBlockHeader header;
+    std::vector<CBlockIndex> blocks(nHeightLast - nHeightFirst + 1);
+    for (size_t i = 0; i < blocks.size(); i++) {
+        blocks[i].pprev = (i == 0) ? nullptr : &blocks[i-1];
+        blocks[i].nHeight = nHeightFirst + i;
+        blocks[i].nTime = 1500000000 + i;
+        // Let the end of the premining period be a boundary:
+        // - The target before it is set as target limit; 
+        // - The target after it is calculated regularly.
+        blocks[i].nBits = (blocks[i].nHeight < nHeightPreminingEnd)
+            ? 0x1d00ffff
+            : GetNextWorkRequired(&blocks[i-1], &header, params);
+    }
+    // Since there must be at least one retargeting after the permining period,
+    // the last block must have different target with target limit (0x1d00ffff).
+    const auto& blockLast= blocks[blocks.size() - 1];
+    BOOST_CHECK(GetNextWorkRequired(&blockLast, &header, params) != 0x1d00ffff);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

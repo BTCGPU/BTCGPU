@@ -15,9 +15,15 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     assert(pindexLast != nullptr);
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
-    // Only change once per difficulty adjustment interval
-    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
+    int nHeightNext = pindexLast->nHeight + 1;
+    if (nHeightNext >= params.BTGHeight  && nHeightNext < params.BTGHeight + params.BTGPremineWindow)
     {
+        // Lowest difficulty for Bitcoin GPU premining period.
+        return nProofOfWorkLimit;
+    }
+    else if (nHeightNext % params.DifficultyAdjustmentInterval() != 0)
+    {
+        // Difficulty adjustment interval is not finished. Keep the last value.
         if (params.fPowAllowMinDifficultyBlocks)
         {
             // Special difficulty rule for testnet:
