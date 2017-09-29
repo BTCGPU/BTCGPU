@@ -8,11 +8,27 @@
 #include "hash.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"
+#include "chainparams.h"
+#include "consensus/params.h"
 #include "crypto/common.h"
+
+uint256 CBlockHeader::GetHash(const Consensus::Params& params) const
+{
+    int version;
+    if (nHeight >= (uint32_t)params.BTGHeight) {
+        version = PROTOCOL_VERSION;
+    } else {
+        version = PROTOCOL_VERSION | SERIALIZE_BLOCK_LEGACY;
+    }
+    CHashWriter writer(SER_GETHASH, version);
+    ::Serialize(writer, *this);
+    return writer.GetHash();
+}
 
 uint256 CBlockHeader::GetHash() const
 {
-    return SerializeHash(*this);
+    const Consensus::Params& consensusParams = Params().GetConsensus();
+    return GetHash(consensusParams);
 }
 
 std::string CBlock::ToString() const

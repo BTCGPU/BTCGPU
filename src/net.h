@@ -15,6 +15,7 @@
 #include "limitedmap.h"
 #include "netaddress.h"
 #include "policy/feerate.h"
+#include "primitives/block.h"
 #include "protocol.h"
 #include "random.h"
 #include "streams.h"
@@ -564,6 +565,9 @@ public:
 
     void SetVersion(int nVersionIn)
     {
+        // Serialize blocks in legacy way.
+        if (nVersionIn < BTG_HARD_FORK_VERSION)
+            nVersionIn |= SERIALIZE_BLOCK_LEGACY;
         hdrbuf.SetVersion(nVersionIn);
         vRecv.SetVersion(nVersionIn);
     }
