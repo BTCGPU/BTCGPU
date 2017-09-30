@@ -6,10 +6,7 @@
 #ifndef BITCOIN_EQUIHASH_H
 #define BITCOIN_EQUIHASH_H
 
-#if defined(__APPLE__)
 #include "compat/endian.h"
-#endif // defined(__APPLE__)
-
 #include "crypto/sha256.h"
 #include "utilstrencodings.h"
 
