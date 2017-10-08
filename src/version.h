@@ -44,4 +44,6 @@ static const int INVALID_CB_NO_BAN_VERSION = 70015;
 
 static const int BTG_HARD_FORK_VERSION = 70016;
 
+static const bool DISABLE_CMPCTBLOCK = true;
+
 #endif // BITCOIN_VERSION_H
