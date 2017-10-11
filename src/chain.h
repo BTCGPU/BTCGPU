@@ -209,9 +209,10 @@ public:
     //! block header
     int nVersion;
     uint256 hashMerkleRoot;
+    uint32_t nReserved[3];
     unsigned int nTime;
     unsigned int nBits;
-    unsigned int nNonce;
+    uint256 nNonce;
     std::vector<unsigned char> nSolution;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
@@ -238,9 +239,12 @@ public:
 
         nVersion       = 0;
         hashMerkleRoot = uint256();
+        nReserved[0]   = 0;
+        nReserved[1]   = 0;
+        nReserved[2]   = 0;
         nTime          = 0;
         nBits          = 0;
-        nNonce         = 0;
+        nNonce         = uint256();
         nSolution.clear();
     }
 
@@ -255,10 +259,14 @@ public:
 
         nVersion       = block.nVersion;
         hashMerkleRoot = block.hashMerkleRoot;
+        // TODO(h4x3rotab): Copy nHeight or not?
+        nHeight        = block.nHeight;
+        nReserved[0]   = block.nReserved[0];
+        nReserved[1]   = block.nReserved[1];
+        nReserved[2]   = block.nReserved[2];
         nTime          = block.nTime;
         nBits          = block.nBits;
         nNonce         = block.nNonce;
-        // TODO(h4x3rotab): Copy nHeight or not?
         nSolution      = block.nSolution;
     }
 
@@ -287,10 +295,13 @@ public:
         if (pprev)
             block.hashPrevBlock = pprev->GetBlockHash();
         block.hashMerkleRoot = hashMerkleRoot;
+        block.nHeight        = nHeight;
+        block.nReserved[0]   = nReserved[0];
+        block.nReserved[1]   = nReserved[1];
+        block.nReserved[2]   = nReserved[2];
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
-        block.nHeight        = nHeight;
         block.nSolution      = nSolution;
         return block;
     }
