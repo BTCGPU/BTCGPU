@@ -11,6 +11,7 @@
 #include "serialize.h"
 #include "uint256.h"
 #include "version.h"
+#include <string.h>
 
 namespace Consensus {
     struct Params;
@@ -34,7 +35,7 @@ public:
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
     uint32_t nHeight;
-    uint32_t nReserved[3];
+    uint32_t nReserved[7];
     uint32_t nTime;
     uint32_t nBits;
     uint256 nNonce;
@@ -56,9 +57,9 @@ public:
         READWRITE(hashMerkleRoot);
         if (new_format) {
             READWRITE(nHeight);
-            READWRITE(nReserved[0]);
-            READWRITE(nReserved[1]);
-            READWRITE(nReserved[2]);
+            for(size_t i = 0; i < (sizeof(nReserved) / sizeof(nReserved[0])); i++) {
+                READWRITE(nReserved[i]);
+            }
         }
         READWRITE(nTime);
         READWRITE(nBits);
@@ -78,9 +79,7 @@ public:
         hashPrevBlock.SetNull();
         hashMerkleRoot.SetNull();
         nHeight = 0;
-        nReserved[0] = 0;
-        nReserved[1] = 0;
-        nReserved[2] = 0;
+        memset(nReserved, 0, sizeof(nReserved));
         nTime = 0;
         nBits = 0;
         nNonce.SetNull();

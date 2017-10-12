@@ -13,6 +13,7 @@
 #include "uint256.h"
 
 #include <vector>
+#include <string.h>
 
 /**
  * Maximum amount of time that a block timestamp is allowed to exceed the
@@ -209,7 +210,7 @@ public:
     //! block header
     int nVersion;
     uint256 hashMerkleRoot;
-    uint32_t nReserved[3];
+    uint32_t nReserved[7];
     unsigned int nTime;
     unsigned int nBits;
     uint256 nNonce;
@@ -239,9 +240,7 @@ public:
 
         nVersion       = 0;
         hashMerkleRoot = uint256();
-        nReserved[0]   = 0;
-        nReserved[1]   = 0;
-        nReserved[2]   = 0;
+        memset(nReserved, 0, sizeof(nReserved));
         nTime          = 0;
         nBits          = 0;
         nNonce         = uint256();
@@ -261,9 +260,7 @@ public:
         hashMerkleRoot = block.hashMerkleRoot;
         // TODO(h4x3rotab): Copy nHeight or not?
         nHeight        = block.nHeight;
-        nReserved[0]   = block.nReserved[0];
-        nReserved[1]   = block.nReserved[1];
-        nReserved[2]   = block.nReserved[2];
+        memcpy(nReserved, block.nReserved, sizeof(nReserved));
         nTime          = block.nTime;
         nBits          = block.nBits;
         nNonce         = block.nNonce;
@@ -296,9 +293,7 @@ public:
             block.hashPrevBlock = pprev->GetBlockHash();
         block.hashMerkleRoot = hashMerkleRoot;
         block.nHeight        = nHeight;
-        block.nReserved[0]   = nReserved[0];
-        block.nReserved[1]   = nReserved[1];
-        block.nReserved[2]   = nReserved[2];
+        memcpy(block.nReserved, nReserved, sizeof(block.nReserved));
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
