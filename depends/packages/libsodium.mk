@@ -10,6 +10,7 @@ $(package)_file_name=$(package)-$($(package)_version).tar.gz
 $(package)_sha256_hash=9c13accb1a9e59ab3affde0e60ef9a2149ed4d6e8f99c93c7a5b97499ee323fd
 $(package)_dependencies=
 $(package)_config_opts=
+$(package)_config_opts_linux=--with-pic
 
 define $(package)_preprocess_cmds
   cd $($(package)_build_subdir); ./autogen.sh
