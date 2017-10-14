@@ -14,7 +14,7 @@ AC_CONFIG_HEADERS([src/config/bitcoin-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 
-BITCOIN_DAEMON_NAME=bgold
+BITCOIN_DAEMON_NAME=bgoldd
 BITCOIN_GUI_NAME=bgold-qt
 BITCOIN_CLI_NAME=bgold-cli
 BITCOIN_TX_NAME=bgold-tx
