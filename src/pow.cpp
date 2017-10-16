@@ -79,7 +79,7 @@ unsigned int BitcoinGetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
     int nHeightNext = pindexLast->nHeight + 1;
     int diffAdjustmentInterval = 2016; // every 2016 blocks for Bitcoin
     
-    if (nHeightNext % diffAdjustmentInterval != 0)
+    if (nHeightNext % params.DifficultyAdjustmentInterval() != 0)
     {
         // Difficulty adjustment interval is not finished. Keep the last value.
         if (params.fPowAllowMinDifficultyBlocks)
@@ -119,17 +119,17 @@ unsigned int BitcoinCalculateNextWorkRequired(const CBlockIndex* pindexLast, int
     
     // Limit adjustment step
     int64_t nActualTimespan = pindexLast->GetBlockTime() - nFirstBlockTime;
-    if (nActualTimespan < params.nPowTargetTimespan/4)
-        nActualTimespan = params.nPowTargetTimespan/4;
-    if (nActualTimespan > params.nPowTargetTimespan*4)
-        nActualTimespan = params.nPowTargetTimespan*4;
+    if (nActualTimespan < params.nPowTargetTimespanLegacy/4)
+        nActualTimespan = params.nPowTargetTimespanLegacy/4;
+    if (nActualTimespan > params.nPowTargetTimespanLegacy*4)
+        nActualTimespan = params.nPowTargetTimespanLegacy*4;
     
     // Retarget
     const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
     arith_uint256 bnNew;
     bnNew.SetCompact(pindexLast->nBits);
     bnNew *= nActualTimespan;
-    bnNew /= params.nPowTargetTimespan;
+    bnNew /= params.nPowTargetTimespanLegacy;
     
     if (bnNew > bnPowLimit)
         bnNew = bnPowLimit;
