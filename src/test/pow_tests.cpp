@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(get_next_work)
     int64_t nThisTime = 1262152739;  // Block #32255 of Bitcoin
     arith_uint256 bnAvg;
     bnAvg.SetCompact(0x1d00ffff);
-    BOOST_CHECK_EQUAL(0x1d011998,
+    BOOST_CHECK_EQUAL(0x1d00d709,
                       CalculateNextWorkRequired(bnAvg, nThisTime, nLastRetargetTime, params));
 }
 
@@ -36,8 +36,8 @@ BOOST_AUTO_TEST_CASE(get_next_work_pow_limit)
     int64_t nLastRetargetTime = 1231006505; // Block #0 of Bitcoin
     int64_t nThisTime = 1233061996;  // Block #2015 of Bitcoin
     arith_uint256 bnAvg;
-    bnAvg.SetCompact(0x1f07ffff);
-    BOOST_CHECK_EQUAL(0x1f07ffff,
+    bnAvg.SetCompact(0x1d00ffff);
+    BOOST_CHECK_EQUAL(0x1d00ffff,
                       CalculateNextWorkRequired(bnAvg, nThisTime, nLastRetargetTime, params));
 }
 
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(get_next_work_upper_limit_actual)
     int64_t nThisTime = 1269211443;  // Block #46367 of Bitcoin
     arith_uint256 bnAvg;
     bnAvg.SetCompact(0x1c387f6f);
-    BOOST_CHECK_EQUAL(0x1c4a93bb,
+    BOOST_CHECK_EQUAL(0x1c326d52,
                       CalculateNextWorkRequired(bnAvg, nThisTime, nLastRetargetTime, params));
 }
 

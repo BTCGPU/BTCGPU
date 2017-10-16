@@ -27,8 +27,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return nProofOfWorkLimit;
     }
     
-    
-
     const CBlockIndex* pindexFirst = pindexLast;
     arith_uint256 bnTot {0};
     for (int i = 0; pindexFirst && i < params.nPowAveragingWindow; i++) {
