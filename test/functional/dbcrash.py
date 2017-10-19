@@ -103,7 +103,7 @@ class ChainstateWriteCrashTest(BitcoinTestFramework):
         Returns true if the block was submitted successfully; false otherwise."""
 
         try:
-            self.nodes[node_index].submitblock(block)
+            self.nodes[node_index].submitblock(block, '', True)
             return True
         except http.client.BadStatusLine as e:
             # Prior to 3.5 BadStatusLine('') was raised for a remote disconnect error.

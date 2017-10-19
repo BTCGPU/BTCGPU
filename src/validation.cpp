@@ -1000,6 +1000,10 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
         return error("%s: Deserialize or I/O error - %s at %s", __func__, e.what(), pos.ToString());
     }
 
+    // Check Equihash solution
+    if (block.nHeight >= (uint32_t)consensusParams.BTGHeight && !CheckEquihashSolution(&block, Params())) {
+        return error("ReadBlockFromDisk: Errors in block header at %s (bad Equihash solution)", pos.ToString());
+    }
     // Check the header
     if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
         return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
@@ -2765,6 +2769,13 @@ static bool FindUndoPos(CValidationState &state, int nFile, CDiskBlockPos &pos, 
 
 static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
 {
+    // Check Equihash solution is valid
+    if (fCheckPOW && block.nHeight >= (uint32_t)consensusParams.BTGHeight && !CheckEquihashSolution(&block, Params())) {
+        LogPrintf("CheckBlockHeader(): Equihash solution invalid at height %d\n", block.nHeight);
+        return state.DoS(100, error("CheckBlockHeader(): Equihash solution invalid"),
+                         REJECT_INVALID, "invalid-solution");
+    }
+
     // Check proof of work matches claimed amount
     if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
@@ -2805,7 +2816,11 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
     // checks that use witness data may be performed here.
 
     // Size limits
-    if (block.vtx.empty() || block.vtx.size() * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT || ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT)
+    int serialization_flags = SERIALIZE_TRANSACTION_NO_WITNESS;
+    if (block.nHeight < (uint32_t)consensusParams.BTGHeight) {
+        serialization_flags |= SERIALIZE_BLOCK_LEGACY;
+    }
+    if (block.vtx.empty() || block.vtx.size() * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT || ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | serialization_flags) * WITNESS_SCALE_FACTOR > MAX_BLOCK_WEIGHT)
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
 
     // First transaction must be coinbase, the rest must not be
@@ -2920,6 +2935,10 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
             return state.DoS(100, error("%s: forked chain older than last checkpoint (height %d)", __func__, nHeight), REJECT_CHECKPOINT, "bad-fork-prior-to-checkpoint");
     }
 
+    // Check block height for blocks after BTG fork.
+    if (nHeight >= consensusParams.BTGHeight && block.nHeight != (uint32_t)nHeight)
+        return state.Invalid(false, REJECT_INVALID, "bad-height", "incorrect block height");
+
     // Check timestamp against prev
     if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())
         return state.Invalid(false, REJECT_INVALID, "time-too-old", "block's timestamp is too early");
@@ -3013,7 +3032,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     // large by filling up the coinbase witness, which doesn't change
     // the block hash, so we couldn't mark the block as permanently
     // failed).
-    if (GetBlockWeight(block) > MAX_BLOCK_WEIGHT) {
+    if (GetBlockWeight(block, consensusParams) > MAX_BLOCK_WEIGHT) {
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-weight", false, strprintf("%s : weight limit failed", __func__));
     }
 

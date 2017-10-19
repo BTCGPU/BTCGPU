@@ -410,13 +410,13 @@ class SegWitTest(BitcoinTestFramework):
 
         # We can't send over the p2p network, because this is too big to relay
         # TODO: repeat this test with a block that can be relayed
-        self.nodes[0].submitblock(bytes_to_hex_str(block.serialize(True)))
+        self.nodes[0].submitblock(bytes_to_hex_str(block.serialize(True)), '', True)
 
         assert(self.nodes[0].getbestblockhash() != block.hash)
 
         block.vtx[0].wit.vtxinwit[0].scriptWitness.stack.pop()
         assert(get_virtual_size(block) < MAX_BLOCK_BASE_SIZE)
-        self.nodes[0].submitblock(bytes_to_hex_str(block.serialize(True)))
+        self.nodes[0].submitblock(bytes_to_hex_str(block.serialize(True)), '', True)
 
         assert(self.nodes[0].getbestblockhash() == block.hash)
 
@@ -525,14 +525,14 @@ class SegWitTest(BitcoinTestFramework):
         add_witness_commitment(block, nonce=1)
         block.vtx[0].wit = CTxWitness() # drop the nonce
         block.solve()
-        self.nodes[0].submitblock(bytes_to_hex_str(block.serialize(True)))
+        self.nodes[0].submitblock(bytes_to_hex_str(block.serialize(True)), '', True)
         assert(self.nodes[0].getbestblockhash() != block.hash)
 
         # Now redo commitment with the standard nonce, but let bitcoind fill it in.
         add_witness_commitment(block, nonce=0)
         block.vtx[0].wit = CTxWitness()
         block.solve()
-        self.nodes[0].submitblock(bytes_to_hex_str(block.serialize(True)))
+        self.nodes[0].submitblock(bytes_to_hex_str(block.serialize(True)), '', True)
         assert_equal(self.nodes[0].getbestblockhash(), block.hash)
 
         # This time, add a tx with non-empty witness, but don't supply
@@ -547,7 +547,7 @@ class SegWitTest(BitcoinTestFramework):
         block_2.vtx[0].vout.pop()
         block_2.vtx[0].wit = CTxWitness()
 
-        self.nodes[0].submitblock(bytes_to_hex_str(block_2.serialize(True)))
+        self.nodes[0].submitblock(bytes_to_hex_str(block_2.serialize(True)), '', True)
         # Tip should not advance!
         assert(self.nodes[0].getbestblockhash() != block_2.hash)
 
@@ -984,7 +984,7 @@ class SegWitTest(BitcoinTestFramework):
             all_heights = all_heights[0:10]
             for height in all_heights:
                 block_hash = self.nodes[0].getblockhash(height)
-                rpc_block = self.nodes[0].getblock(block_hash, False)
+                rpc_block = self.nodes[0].getblock(block_hash, False, True)
                 block_hash = int(block_hash, 16)
                 block = self.test_node.request_block(block_hash, 2)
                 wit_block = self.test_node.request_block(block_hash, 2|MSG_WITNESS_FLAG)
@@ -1001,7 +1001,7 @@ class SegWitTest(BitcoinTestFramework):
             assert(len(block.vtx[0].wit.vtxinwit[0].scriptWitness.stack) == 1)
             self.test_node.test_witness_block(block, accepted=True)
             # Now try to retrieve it...
-            rpc_block = self.nodes[0].getblock(block.hash, False)
+            rpc_block = self.nodes[0].getblock(block.hash, False, True)
             non_wit_block = self.test_node.request_block(block.sha256, 2)
             wit_block = self.test_node.request_block(block.sha256, 2|MSG_WITNESS_FLAG)
             assert_equal(wit_block.serialize(True), hex_str_to_bytes(rpc_block))

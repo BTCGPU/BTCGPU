@@ -11,6 +11,7 @@
 #include "checkpoints.h"
 #include "coins.h"
 #include "consensus/validation.h"
+#include "consensus/params.h"
 #include "validation.h"
 #include "core_io.h"
 #include "policy/feerate.h"
@@ -90,7 +91,9 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     result.push_back(Pair("merkleroot", blockindex->hashMerkleRoot.GetHex()));
     result.push_back(Pair("time", (int64_t)blockindex->nTime));
     result.push_back(Pair("mediantime", (int64_t)blockindex->GetMedianTimePast()));
-    result.push_back(Pair("nonce", (uint64_t)blockindex->nNonce));
+    result.push_back(Pair("nonceUint32", (uint64_t)((uint32_t)blockindex->nNonce.GetUint64(0))));
+    result.push_back(Pair("nonce", blockindex->nNonce.GetHex()));
+    result.push_back(Pair("solution", HexStr(blockindex->nSolution)));
     result.push_back(Pair("bits", strprintf("%08x", blockindex->nBits)));
     result.push_back(Pair("difficulty", GetDifficulty(blockindex)));
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
@@ -112,9 +115,14 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     if (chainActive.Contains(blockindex))
         confirmations = chainActive.Height() - blockindex->nHeight + 1;
     result.push_back(Pair("confirmations", confirmations));
-    result.push_back(Pair("strippedsize", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS)));
-    result.push_back(Pair("size", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION)));
-    result.push_back(Pair("weight", (int)::GetBlockWeight(block)));
+    const Consensus::Params& consensusParams = Params().GetConsensus();
+    int ser_flags = (blockindex->nHeight < consensusParams.BTGHeight) ? SERIALIZE_BLOCK_LEGACY : 0;
+    result.push_back(
+        Pair("strippedsize",
+             (int)::GetSerializeSize(block, SER_NETWORK,
+                                     PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS | ser_flags)));
+    result.push_back(Pair("size", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | ser_flags)));
+    result.push_back(Pair("weight", (int)::GetBlockWeight(block, consensusParams)));
     result.push_back(Pair("height", blockindex->nHeight));
     result.push_back(Pair("version", block.nVersion));
     result.push_back(Pair("versionHex", strprintf("%08x", block.nVersion)));
@@ -134,7 +142,8 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.push_back(Pair("tx", txs));
     result.push_back(Pair("time", block.GetBlockTime()));
     result.push_back(Pair("mediantime", (int64_t)blockindex->GetMedianTimePast()));
-    result.push_back(Pair("nonce", (uint64_t)block.nNonce));
+    result.push_back(Pair("nonceUint32", (uint64_t)((uint32_t)block.nNonce.GetUint64(0))));
+    result.push_back(Pair("nonce", block.nNonce.GetHex()));
     result.push_back(Pair("bits", strprintf("%08x", block.nBits)));
     result.push_back(Pair("difficulty", GetDifficulty(blockindex)));
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
@@ -630,12 +639,13 @@ UniValue getblockheader(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
-            "getblockheader \"hash\" ( verbose )\n"
+            "getblockheader \"hash\" ( verbose legacy )\n"
             "\nIf verbose is false, returns a string that is serialized, hex-encoded data for blockheader 'hash'.\n"
             "If verbose is true, returns an Object with information about blockheader <hash>.\n"
             "\nArguments:\n"
             "1. \"hash\"          (string, required) The block hash\n"
-            "2. verbose           (boolean, optional, default=true) true for a json object, false for the hex encoded data\n"
+            "2. \"verbose\"       (boolean, optional, default=true) true for a json object, false for the hex encoded data\n"
+            "3. \"legacy\"        (boolean, optional, default=false) indicates if the block should be in legacy format\n"
             "\nResult (for verbose = true):\n"
             "{\n"
             "  \"hash\" : \"hash\",     (string) the block hash (same as provided)\n"
@@ -669,6 +679,11 @@ UniValue getblockheader(const JSONRPCRequest& request)
     if (!request.params[1].isNull())
         fVerbose = request.params[1].get_bool();
 
+    bool legacy_format = false;
+    if (request.params.size() == 3 && request.params[2].get_bool() == true) {
+        legacy_format = true;
+    }
+
     if (mapBlockIndex.count(hash) == 0)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
 
@@ -676,7 +691,8 @@ UniValue getblockheader(const JSONRPCRequest& request)
 
     if (!fVerbose)
     {
-        CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
+        int ser_flags = legacy_format ? SERIALIZE_BLOCK_LEGACY : 0;
+        CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION | ser_flags);
         ssBlock << pblockindex->GetBlockHeader();
         std::string strHex = HexStr(ssBlock.begin(), ssBlock.end());
         return strHex;
@@ -687,15 +703,16 @@ UniValue getblockheader(const JSONRPCRequest& request)
 
 UniValue getblock(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
         throw std::runtime_error(
-            "getblock \"blockhash\" ( verbosity ) \n"
+            "getblock \"blockhash\" ( verbosity legacy) \n"
             "\nIf verbosity is 0, returns a string that is serialized, hex-encoded data for block 'hash'.\n"
             "If verbosity is 1, returns an Object with information about block <hash>.\n"
             "If verbosity is 2, returns an Object with information about block <hash> and information about each transaction. \n"
             "\nArguments:\n"
             "1. \"blockhash\"          (string, required) The block hash\n"
-            "2. verbosity              (numeric, optional, default=1) 0 for hex encoded data, 1 for a json object, and 2 for json object with transaction data\n"
+            "2. \"verbosity\"          (numeric, optional, default=1) 0 for hex encoded data, 1 for a json object, and 2 for json object with transaction data\n"
+            "3. \"legacy\"             (boolean, optional, default=false) indicates if the block should be in legacy format\n"
             "\nResult (for verbosity = 0):\n"
             "\"data\"             (string) A string that is serialized, hex-encoded data for block 'hash'.\n"
             "\nResult (for verbosity = 1):\n"
@@ -747,6 +764,10 @@ UniValue getblock(const JSONRPCRequest& request)
         else
             verbosity = request.params[1].get_bool() ? 1 : 0;
     }
+    bool legacy_format = false;
+    if (request.params.size() == 3 && request.params[2].get_bool() == true) {
+        legacy_format = true;
+    }
 
     if (mapBlockIndex.count(hash) == 0)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
@@ -767,7 +788,8 @@ UniValue getblock(const JSONRPCRequest& request)
 
     if (verbosity <= 0)
     {
-        CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION | RPCSerializationFlags());
+        int ser_flags = legacy_format ? SERIALIZE_BLOCK_LEGACY : 0;
+        CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION | ser_flags | RPCSerializationFlags());
         ssBlock << block;
         std::string strHex = HexStr(ssBlock.begin(), ssBlock.end());
         return strHex;
