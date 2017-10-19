@@ -15,6 +15,7 @@
 #include "init.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #include <boost/thread.hpp>
 
@@ -281,12 +282,15 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
                 pindexNew->nUndoPos       = diskindex.nUndoPos;
                 pindexNew->nVersion       = diskindex.nVersion;
                 pindexNew->hashMerkleRoot = diskindex.hashMerkleRoot;
+                memcpy(pindexNew->nReserved, diskindex.nReserved, sizeof(pindexNew->nReserved));
                 pindexNew->nTime          = diskindex.nTime;
                 pindexNew->nBits          = diskindex.nBits;
                 pindexNew->nNonce         = diskindex.nNonce;
+                pindexNew->nSolution      = diskindex.nSolution;
                 pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
 
+                // TODO(h4x3rotab): Check Equihash solution? Not sure why Zcash doesn't do it here.
                 if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, consensusParams))
                     return error("%s: CheckProofOfWork failed: %s", __func__, pindexNew->ToString());
 

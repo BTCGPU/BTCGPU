@@ -13,6 +13,7 @@
 #include "uint256.h"
 
 #include <vector>
+#include <string.h>
 
 /**
  * Maximum amount of time that a block timestamp is allowed to exceed the
@@ -209,9 +210,11 @@ public:
     //! block header
     int nVersion;
     uint256 hashMerkleRoot;
+    uint32_t nReserved[7];
     unsigned int nTime;
     unsigned int nBits;
-    unsigned int nNonce;
+    uint256 nNonce;
+    std::vector<unsigned char> nSolution;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     int32_t nSequenceId;
@@ -237,9 +240,11 @@ public:
 
         nVersion       = 0;
         hashMerkleRoot = uint256();
+        memset(nReserved, 0, sizeof(nReserved));
         nTime          = 0;
         nBits          = 0;
-        nNonce         = 0;
+        nNonce         = uint256();
+        nSolution.clear();
     }
 
     CBlockIndex()
@@ -253,9 +258,13 @@ public:
 
         nVersion       = block.nVersion;
         hashMerkleRoot = block.hashMerkleRoot;
+        // TODO(h4x3rotab): Copy nHeight or not?
+        nHeight        = block.nHeight;
+        memcpy(nReserved, block.nReserved, sizeof(nReserved));
         nTime          = block.nTime;
         nBits          = block.nBits;
         nNonce         = block.nNonce;
+        nSolution      = block.nSolution;
     }
 
     CDiskBlockPos GetBlockPos() const {
@@ -283,9 +292,12 @@ public:
         if (pprev)
             block.hashPrevBlock = pprev->GetBlockHash();
         block.hashMerkleRoot = hashMerkleRoot;
+        block.nHeight        = nHeight;
+        memcpy(block.nReserved, nReserved, sizeof(block.nReserved));
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
+        block.nSolution      = nSolution;
         return block;
     }
 
@@ -402,9 +414,13 @@ public:
         READWRITE(this->nVersion);
         READWRITE(hashPrev);
         READWRITE(hashMerkleRoot);
+        for(size_t i = 0; i < (sizeof(nReserved) / sizeof(nReserved[0])); i++) {
+            READWRITE(nReserved[i]);
+        }
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+        READWRITE(nSolution);
     }
 
     uint256 GetBlockHash() const
@@ -413,9 +429,12 @@ public:
         block.nVersion        = nVersion;
         block.hashPrevBlock   = hashPrev;
         block.hashMerkleRoot  = hashMerkleRoot;
+        block.nHeight         = nHeight;
+        memcpy(block.nReserved, nReserved, sizeof(block.nReserved));
         block.nTime           = nTime;
         block.nBits           = nBits;
         block.nNonce          = nNonce;
+        block.nSolution       = nSolution;
         return block.GetHash();
     }
 

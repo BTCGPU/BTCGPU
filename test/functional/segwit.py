@@ -205,8 +205,8 @@ class SegWitTest(BitcoinTestFramework):
         assert_equal(len(segwit_tx_list), 5)
 
         self.log.info("Verify block and transaction serialization rpcs return differing serializations depending on rpc serialization flag")
-        assert(self.nodes[2].getblock(block[0], False) !=  self.nodes[0].getblock(block[0], False))
-        assert(self.nodes[1].getblock(block[0], False) ==  self.nodes[2].getblock(block[0], False))
+        assert(self.nodes[2].getblock(block[0], False, True) !=  self.nodes[0].getblock(block[0], False, True))
+        assert(self.nodes[1].getblock(block[0], False, True) ==  self.nodes[2].getblock(block[0], False, True))
         for i in range(len(segwit_tx_list)):
             tx = FromHex(CTransaction(), self.nodes[2].gettransaction(segwit_tx_list[i])["hex"])
             assert(self.nodes[2].getrawtransaction(segwit_tx_list[i]) != self.nodes[0].getrawtransaction(segwit_tx_list[i]))

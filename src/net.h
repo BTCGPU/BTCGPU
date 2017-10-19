@@ -15,6 +15,7 @@
 #include "limitedmap.h"
 #include "netaddress.h"
 #include "policy/feerate.h"
+#include "primitives/block.h"
 #include "protocol.h"
 #include "random.h"
 #include "streams.h"
@@ -829,6 +830,8 @@ public:
     std::string GetAddrName() const;
     //! Sets the addrName only if it was not previously set
     void MaybeSetAddrName(const std::string& addrNameIn);
+
+    bool IsLegacyBlockHeader(int version) { return version < BTG_HARD_FORK_VERSION; };
 };
 
 

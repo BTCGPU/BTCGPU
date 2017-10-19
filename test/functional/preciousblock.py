@@ -17,15 +17,15 @@ def unidirectional_node_sync_via_rpc(node_src, node_dest):
     blockhash = node_src.getbestblockhash()
     while True:
         try:
-            assert(len(node_dest.getblock(blockhash, False)) > 0)
+            assert(len(node_dest.getblock(blockhash, False, True)) > 0)
             break
         except:
             blocks_to_copy.append(blockhash)
             blockhash = node_src.getblockheader(blockhash, True)['previousblockhash']
     blocks_to_copy.reverse()
     for blockhash in blocks_to_copy:
-        blockdata = node_src.getblock(blockhash, False)
-        assert(node_dest.submitblock(blockdata) in (None, 'inconclusive'))
+        blockdata = node_src.getblock(blockhash, False, True)
+        assert(node_dest.submitblock(blockdata, '', True) in (None, 'inconclusive'))
 
 def node_sync_via_rpc(nodes):
     for node_src in nodes:
