@@ -16,117 +16,81 @@ BOOST_FIXTURE_TEST_SUITE(pow_tests, BasicTestingSetup)
 /* Test calculation of next difficulty target with no constraints applying */
 BOOST_AUTO_TEST_CASE(get_next_work)
 {
-    const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
-    int64_t nLastRetargetTime = 1261130161; // Block #30240
-    CBlockIndex pindexLast;
-    pindexLast.nHeight = 32255;
-    pindexLast.nTime = 1262152739;  // Block #32255
-    pindexLast.nBits = 0x1d00ffff;
-    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime, chainParams->GetConsensus()), 0x1d00d86a);
+    SelectParams(CBaseChainParams::MAIN);
+    const Consensus::Params& params = Params().GetConsensus();
+    
+    int64_t nLastRetargetTime = 1262149169; // NOTE: Not an actual block time
+    int64_t nThisTime = 1262152739;  // Block #32255 of Bitcoin
+    arith_uint256 bnAvg;
+    bnAvg.SetCompact(0x1d00ffff);
+    BOOST_CHECK_EQUAL(0x1d00d709,
+                      CalculateNextWorkRequired(bnAvg, nThisTime, nLastRetargetTime, params));
 }
 
 /* Test the constraint on the upper bound for next work */
 BOOST_AUTO_TEST_CASE(get_next_work_pow_limit)
 {
-    const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
-    int64_t nLastRetargetTime = 1231006505; // Block #0
-    CBlockIndex pindexLast;
-    pindexLast.nHeight = 2015;
-    pindexLast.nTime = 1233061996;  // Block #2015
-    pindexLast.nBits = 0x1d00ffff;
-    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime, chainParams->GetConsensus()), 0x1d00ffff);
+    SelectParams(CBaseChainParams::MAIN);
+    const Consensus::Params& params = Params().GetConsensus();
+    
+    int64_t nLastRetargetTime = 1231006505; // Block #0 of Bitcoin
+    int64_t nThisTime = 1233061996;  // Block #2015 of Bitcoin
+    arith_uint256 bnAvg;
+    bnAvg.SetCompact(0x1d00ffff);
+    BOOST_CHECK_EQUAL(0x1d00ffff,
+                      CalculateNextWorkRequired(bnAvg, nThisTime, nLastRetargetTime, params));
 }
 
 /* Test the constraint on the lower bound for actual time taken */
 BOOST_AUTO_TEST_CASE(get_next_work_lower_limit_actual)
 {
-    const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
-    int64_t nLastRetargetTime = 1279008237; // Block #66528
-    CBlockIndex pindexLast;
-    pindexLast.nHeight = 68543;
-    pindexLast.nTime = 1279297671;  // Block #68543
-    pindexLast.nBits = 0x1c05a3f4;
-    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime, chainParams->GetConsensus()), 0x1c0168fd);
+    SelectParams(CBaseChainParams::MAIN);
+    const Consensus::Params& params = Params().GetConsensus();
+    
+    int64_t nLastRetargetTime = 1279296753; // NOTE: Not an actual block time
+    int64_t nThisTime = 1279297671;  // Block #68543 of Bitcoin
+    arith_uint256 bnAvg;
+    bnAvg.SetCompact(0x1c05a3f4);
+    BOOST_CHECK_EQUAL(0x1c04bceb,
+                      CalculateNextWorkRequired(bnAvg, nThisTime, nLastRetargetTime, params));
 }
 
 /* Test the constraint on the upper bound for actual time taken */
 BOOST_AUTO_TEST_CASE(get_next_work_upper_limit_actual)
 {
-    const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
-    int64_t nLastRetargetTime = 1263163443; // NOTE: Not an actual block time
-    CBlockIndex pindexLast;
-    pindexLast.nHeight = 46367;
-    pindexLast.nTime = 1269211443;  // Block #46367
-    pindexLast.nBits = 0x1c387f6f;
-    BOOST_CHECK_EQUAL(CalculateNextWorkRequired(&pindexLast, nLastRetargetTime, chainParams->GetConsensus()), 0x1d00e1fd);
+    SelectParams(CBaseChainParams::MAIN);
+    const Consensus::Params& params = Params().GetConsensus();
+    
+    int64_t nLastRetargetTime = 1269205629; // NOTE: Not an actual block time
+    int64_t nThisTime = 1269211443;  // Block #46367 of Bitcoin
+    arith_uint256 bnAvg;
+    bnAvg.SetCompact(0x1c387f6f);
+    BOOST_CHECK_EQUAL(0x1c326d52,
+                      CalculateNextWorkRequired(bnAvg, nThisTime, nLastRetargetTime, params));
 }
 
 BOOST_AUTO_TEST_CASE(GetBlockProofEquivalentTime_test)
 {
-    const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
+    SelectParams(CBaseChainParams::MAIN);
+    const Consensus::Params& params = Params().GetConsensus();
+    
     std::vector<CBlockIndex> blocks(10000);
     for (int i = 0; i < 10000; i++) {
-        blocks[i].pprev = i ? &blocks[i - 1] : nullptr;
+        blocks[i].pprev = i ? &blocks[i - 1] : NULL;
         blocks[i].nHeight = i;
-        blocks[i].nTime = 1269211443 + i * chainParams->GetConsensus().nPowTargetSpacing;
+        blocks[i].nTime = 1269211443 + i * params.nPowTargetSpacing;
         blocks[i].nBits = 0x207fffff; /* target 0x7fffff000... */
         blocks[i].nChainWork = i ? blocks[i - 1].nChainWork + GetBlockProof(blocks[i - 1]) : arith_uint256(0);
     }
-
+    
     for (int j = 0; j < 1000; j++) {
-        CBlockIndex *p1 = &blocks[InsecureRandRange(10000)];
-        CBlockIndex *p2 = &blocks[InsecureRandRange(10000)];
-        CBlockIndex *p3 = &blocks[InsecureRandRange(10000)];
-
-        int64_t tdiff = GetBlockProofEquivalentTime(*p1, *p2, *p3, chainParams->GetConsensus());
+        CBlockIndex *p1 = &blocks[GetRand(10000)];
+        CBlockIndex *p2 = &blocks[GetRand(10000)];
+        CBlockIndex *p3 = &blocks[GetRand(10000)];
+        
+        int64_t tdiff = GetBlockProofEquivalentTime(*p1, *p2, *p3, params);
         BOOST_CHECK_EQUAL(tdiff, p1->GetBlockTime() - p2->GetBlockTime());
     }
-}
-
-/* Tests the target change at the beginning of the hard fork.  */
-BOOST_AUTO_TEST_CASE(BitcoinGPUPreminingBegin_test)
-{
-    const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
-    CBlockIndex block1, block2;
-    CBlockHeader header;
-    // Check the block before the hard fork has a regular target.
-    block1.nHeight = 487425;
-    block1.nTime = 1501593084;
-    block1.nBits = 402736949;
-    BOOST_CHECK_EQUAL(GetNextWorkRequired(&block1, &header, chainParams->GetConsensus()), 0x18014735);
-    // Check the block after the hard fork has the max target.
-    block2.nHeight = 487426;
-    block2.nTime = 1501593374;
-    block2.nBits = 402736949;
-    BOOST_CHECK_EQUAL(GetNextWorkRequired(&block2, &header, chainParams->GetConsensus()), 0x1d00ffff);
-}
-
-/* Tests the block after premining window returns back to regular target. */
-BOOST_AUTO_TEST_CASE(BitcoinGPUPreminingEnd_test)
-{
-    const auto chainParams = CreateChainParams(CBaseChainParams::MAIN);
-    const auto& params = chainParams->GetConsensus();
-    int nHeightPreminingEnd = 487427 + params.BTGPremineWindow;
-    int nHeightLast = nHeightPreminingEnd + params.DifficultyAdjustmentInterval();
-    int nHeightFirst = nHeightPreminingEnd - params.DifficultyAdjustmentInterval();
-    // Build a chain of blocks surrounding the first block after premining period.
-    CBlockHeader header;
-    std::vector<CBlockIndex> blocks(nHeightLast - nHeightFirst + 1);
-    for (size_t i = 0; i < blocks.size(); i++) {
-        blocks[i].pprev = (i == 0) ? nullptr : &blocks[i-1];
-        blocks[i].nHeight = nHeightFirst + i;
-        blocks[i].nTime = 1500000000 + i;
-        // Let the end of the premining period be a boundary:
-        // - The target before it is set as target limit; 
-        // - The target after it is calculated regularly.
-        blocks[i].nBits = (blocks[i].nHeight < nHeightPreminingEnd)
-            ? 0x1d00ffff
-            : GetNextWorkRequired(&blocks[i-1], &header, params);
-    }
-    // Since there must be at least one retargeting after the permining period,
-    // the last block must have different target with target limit (0x1d00ffff).
-    const auto& blockLast= blocks[blocks.size() - 1];
-    BOOST_CHECK(GetNextWorkRequired(&blockLast, &header, params) != 0x1d00ffff);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
