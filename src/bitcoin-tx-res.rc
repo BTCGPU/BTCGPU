@@ -17,7 +17,7 @@ BEGIN
         BLOCK "040904E4" // U.S. English - multilingual (hex)
         BEGIN
             VALUE "CompanyName",        "Bitcoin Gold"
-            VALUE "FileDescription",    "bgold-tx (CLI Bitcoin transaction editor utility)"
+            VALUE "FileDescription",    "bgold-tx (CLI Bitcoin Gold transaction editor utility)"
             VALUE "FileVersion",        VER_FILEVERSION_STR
             VALUE "InternalName",       "bgold-tx"
             VALUE "LegalCopyright",     COPYRIGHT_STR
