@@ -17,13 +17,13 @@ BEGIN
         BLOCK "040904E4" // U.S. English - multilingual (hex)
         BEGIN
             VALUE "CompanyName",        "Bitcoin Gold"
-            VALUE "FileDescription",    "bgold (Bitcoin Gold node with a JSON-RPC server)"
+            VALUE "FileDescription",    "bgoldd (Bitcoin Gold node with a JSON-RPC server)"
             VALUE "FileVersion",        VER_FILEVERSION_STR
-            VALUE "InternalName",       "bgold"
+            VALUE "InternalName",       "bgoldd"
             VALUE "LegalCopyright",     COPYRIGHT_STR
             VALUE "LegalTrademarks1",   "Distributed under the MIT software license, see the accompanying file COPYING or http://www.opensource.org/licenses/mit-license.php."
-            VALUE "OriginalFilename",   "bgold.exe"
-            VALUE "ProductName",        "bgold"
+            VALUE "OriginalFilename",   "bgoldd.exe"
+            VALUE "ProductName",        "bgoldd"
             VALUE "ProductVersion",     VER_PRODUCTVERSION_STR
         END
     END
