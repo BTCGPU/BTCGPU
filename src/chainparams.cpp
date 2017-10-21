@@ -287,6 +287,7 @@ public:
         vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("btg.dnsseed.minertopia.org", true);
 
+
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
