@@ -58,7 +58,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler);
 
 /** The help message mode determines what help message to show */
 enum HelpMessageMode {
-    HMM_BITGOLDD,
+    HMM_BGOLDD,
     HMM_BITCOIN_QT
 };
 
