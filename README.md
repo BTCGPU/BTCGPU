@@ -13,5 +13,5 @@ Bitcoin Gold is a work in progress. If you don’t understand what you are doing
 ## Links
 
 * Website: http://btcgpu.org
-* Slack: [invitation](https://join.slack.com/t/bitcoin-gold/shared_invite/enQtMjU2MDY5MDQyNjkzLTQyMzZhMTBkMDM4MmRhNTI3NzM4YjlmMzMyNDIwZmFkYjc3ZmFiOTQ4NTJjNDNlNGM0NDI4YTI3MzZmZTRmMzg)
+* Slack: [invitation](https://join.slack.com/t/bitcoin-gold/shared_invite/enQtMjU5NjgyMTQ4ODA3LWI2Y2YyNzdlOTRiZjRiMDYyMTc5ZjNkYWI3MjQ4NWFlNDAzNGJjMzgzYTNlOTNlMzZjNjI0YjA0ZmE5YjEwNDA)
 * TODO-list: https://trello.com/b/P1rLw1G9/bitcoin-gold-todos
