@@ -70,7 +70,7 @@ if BUILD_BITCOIND
 endif
 
 if BUILD_BITCOIN_UTILS
-  bin_PROGRAMS += bgold-cli bitcoin-tx
+  bin_PROGRAMS += bgold-cli bgold-tx
 endif
 
 .PHONY: FORCE check-symbols check-security
