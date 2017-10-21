@@ -268,6 +268,7 @@ public:
         pchMessageStart[2] = 0x6d;
         pchMessageStart[3] = 0x44;
         nDefaultPort = 18338;
+
         nPruneAfterHeight = 1000;
         const size_t N = 200, K = 9;  // Same as mainchain.
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
