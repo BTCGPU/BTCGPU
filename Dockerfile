@@ -8,11 +8,10 @@ FROM debian:sid as builder
 RUN apt-get update && apt-get install -y gnupg && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys D46F45428842CE5E
 RUN echo "deb http://ppa.launchpad.net/bitcoin/bitcoin/ubuntu xenial main" > /etc/apt/sources.list.d/bitcoin-ubuntu-bitcoin-xenial.list
 
-RUN apt-get update && apt-get install -y git build-essential libtool autotools-dev automake pkg-config libssl-dev libevent-dev bsdmainutils
-
-RUN apt-get install -y libdb4.8-dev libdb4.8++-dev
-RUN apt-get install -y libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-program-options-dev libboost-test-dev libboost-thread-dev
-RUN apt-get install -y libzmq3-dev libsodium-dev
+RUN apt-get update && apt-get install -y git build-essential libtool autotools-dev automake pkg-config \
+    libssl-dev libevent-dev bsdmainutils libdb4.8-dev libdb4.8++-dev \
+    libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-program-options-dev \
+    libboost-test-dev libboost-thread-dev libzmq3-dev libsodium-dev
 
 RUN git clone https://github.com/BTCGPU/BTCGPU
 RUN cd BTCGPU && ./autogen.sh && ./configure --disable-shared && make
