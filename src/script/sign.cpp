@@ -254,7 +254,7 @@ static std::vector<valtype> CombineMultisig(const CScript& scriptPubKey, const B
             if (sigs.count(pubkey))
                 continue; // Already got a sig for this pubkey
 
-            if (checker.CheckSig(sig, pubkey, scriptPubKey, sigversion))
+            if (checker.CheckSig(sig, pubkey, scriptPubKey, sigversion, STANDARD_SCRIPT_VERIFY_FLAGS))
             {
                 sigs[pubkey] = sig;
                 break;
@@ -392,7 +392,7 @@ class DummySignatureChecker : public BaseSignatureChecker
 public:
     DummySignatureChecker() {}
 
-    bool CheckSig(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKey, const CScript& scriptCode, SigVersion sigversion) const override
+    bool CheckSig(const std::vector<unsigned char>& scriptSig, const std::vector<unsigned char>& vchPubKey, const CScript& scriptCode, SigVersion sigversion, uint32_t flags) const override
     {
         return true;
     }
