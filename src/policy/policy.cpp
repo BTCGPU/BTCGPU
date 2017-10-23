@@ -98,8 +98,8 @@ bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType, const bool w
 
 bool IsStandardTx(const CTransaction& tx, std::string& reason, const bool witnessEnabled)
 {
-    if (tx.nVersion > CTransaction::MAX_STANDARD_VERSION || tx.nVersion < 1) {
-        reason = "version";
+    if (tx.nVersion > 0 || tx.nVersion < CTransaction::MIN_STANDARD_VERSION) {
+        reason = "Bitcoin Gold tx versions are negative for replay protection against Bitcoin";
         return false;
     }
 
