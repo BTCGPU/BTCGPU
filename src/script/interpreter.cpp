@@ -209,7 +209,6 @@ bool static UsesForkId(const valtype &vchSig) {
 }
 
 bool static IsForkIdEnabled(unsigned int flags) {
-    // TODO: add check for the block height
     return flags & SCRIPT_ENABLE_SIGHASH_FORKID;
 }
 
@@ -1216,7 +1215,6 @@ PrecomputedTransactionData::PrecomputedTransactionData(const CTransaction& txTo)
     hashOutputs = GetOutputsHash(txTo);
 }
 
-// TODO: move this function to a better place
 // Include a 24-bit fork id in its most significant bits
 int static GetForkID() {
     return 1;

@@ -351,6 +351,23 @@ static bool IsCurrentForFeeEstimation()
     return true;
 }
 
+bool static IsUAHFenabled(const CChainParams& chainParams, int nHeight) {
+    return nHeight >= chainParams.GetConsensus().BTGHeight;
+}
+
+bool IsUAHFenabled(const CChainParams& chainParams, const CBlockIndex *pindexPrev) {
+    if (pindexPrev == nullptr) {
+        return false;
+    }
+
+    return IsUAHFenabled(chainParams, pindexPrev->nHeight);
+}
+
+bool IsUAHFenabledForCurrentBlock(const CChainParams& chainParams) {
+    AssertLockHeld(cs_main);
+    return IsUAHFenabled(chainParams, chainActive.Tip());
+}
+
 /* Make mempool consistent after a reorg, by re-adding or recursively erasing
  * disconnected block transactions from the mempool, and also removing any
  * other transactions from the mempool that are no longer valid given the new
@@ -1613,6 +1630,12 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
     if (IsWitnessEnabled(pindex->pprev, consensusparams)) {
         flags |= SCRIPT_VERIFY_WITNESS;
         flags |= SCRIPT_VERIFY_NULLDUMMY;
+    }
+
+    // If the UAHF is enabled, we start accepting replay protected txns
+    if (IsUAHFenabled(config, pindex->pprev)) {
+        flags |= SCRIPT_VERIFY_STRICTENC;
+        flags |= SCRIPT_ENABLE_SIGHASH_FORKID;
     }
 
     return flags;
