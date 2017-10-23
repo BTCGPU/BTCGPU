@@ -59,7 +59,7 @@ BASE_SCRIPTS= [
     # vv Tests less than 5m vv
     'p2p-fullblocktest.py',
     'fundrawtransaction.py',
-    # TODO(h4x3rotab): Temporarily disabled: 'p2p-compactblocks.py',
+    # TODO(h4x3rotab): Temporarily disabled: 'p2p-compactblocks.py', 'btg-hardfork.py'
     'segwit.py',
     # vv Tests less than 2m vv
     'wallet.py',
@@ -78,7 +78,6 @@ BASE_SCRIPTS= [
     'bip68-112-113-p2p.py',
     'rawtransactions.py',
     'reindex.py',
-    'btg-hardfork.py',
     # vv Tests less than 30s vv
     'keypool-topup.py',
     'zmq_test.py',
@@ -162,6 +161,7 @@ NON_SCRIPTS = [
     "test_runner.py",
     # TODO(h4x3rotab): Temporarily disabled:
     "p2p-compactblocks.py",
+    'btg-hardfork.py',
 ]
 
 def main():

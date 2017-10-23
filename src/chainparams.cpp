@@ -197,8 +197,8 @@ public:
             3.1         // * estimated number of transactions per second after that timestamp
         };
 
-        vFoundersRewardAddress = {
-            "2N7eDqMJfmtUPFEZumx81HqN4YKXyD4CmLU",
+        vPremineAddressWhitelist = {
+            "3CjLoKt9KYcfjf4MWAbGz8xnpfJvzvMxMi",
         };
     }
 };
@@ -297,8 +297,8 @@ public:
             14706531,
             0.15
         };
-        vFoundersRewardAddress = {
-            "2N7eDqMJfmtUPFEZumx81HqN4YKXyD4CmLU",
+        vPremineAddressWhitelist = {
+            "2N2fhczECs7sHa3WjavaShhq4gJAbwsXMT8",
         };
     }
 };
@@ -384,7 +384,7 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
     
-        vFoundersRewardAddress = {
+        vPremineAddressWhitelist = {
             "2N7eDqMJfmtUPFEZumx81HqN4YKXyD4CmLU",
         };
     }
@@ -421,9 +421,9 @@ void UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime,
 }
 
 // Block height must be >=BTGHeight and <BTGHeight + BTGPremineWindow
-// The founders reward address is expected to be a multisig (P2SH) address
-bool CChainParams::IsFoundersRewardScript(const CScript& scriptPubKey) const {
-    for (const std::string& addr : vFoundersRewardAddress) {
+// The premine address is expected to be a multisig (P2SH) address
+bool CChainParams::IsPremineAddressScript(const CScript& scriptPubKey) const {
+    for (const std::string& addr : vPremineAddressWhitelist) {
         CBitcoinAddress address(addr.c_str());
         assert(address.IsValid());
         assert(address.IsScript());
