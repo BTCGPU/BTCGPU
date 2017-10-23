@@ -2831,11 +2831,15 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
             return state.DoS(100, false, REJECT_INVALID, "bad-cb-multiple", false, "more than one coinbase");
 
     // Check transactions
-    for (const auto& tx : block.vtx)
+    for (const auto& tx : block.vtx) {
+        if (block.nHeight >= (uint32_t)consensusParams.BTGHeight && tx->nVersion > 0) {
+            return state.Invalid(false, REJECT_INVALID, "Replay Protection of Bitcoin Gold against Bitcoin",
+                strprintf("Positive transaction version number detected. Invalid for Bitcoin Gold replay protection: %d", tx->nVersion));
+        }
         if (!CheckTransaction(*tx, state, false))
             return state.Invalid(false, state.GetRejectCode(), state.GetRejectReason(),
                                  strprintf("Transaction check failed (tx hash %s) %s", tx->GetHash().ToString(), state.GetDebugMessage()));
-
+    }
     unsigned int nSigOps = 0;
     for (const auto& tx : block.vtx)
     {
