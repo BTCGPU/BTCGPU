@@ -213,6 +213,13 @@ bool static IsForkIdEnabled(unsigned int flags) {
     return flags & SCRIPT_ENABLE_SIGHASH_FORKID;
 }
 
+void static CleanupScriptCode(CScript &scriptCode, const std::vector<uint8_t> &vchSig, uint32_t flags) {
+    // Drop the signature in scripts when SIGHASH_FORKID is not used.
+    if (!IsForkIdEnabled(flags) || !UsesForkId(vchSig)) {
+        scriptCode.FindAndDelete(CScript(vchSig));
+    }
+}
+
 bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned int flags, ScriptError* serror) {
     // Empty signature. Not strictly DER encoded, but allowed to provide a
     // compact way to provide an invalid signature for use with CHECK(MULTI)SIG
@@ -926,6 +933,7 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                     if (sigversion == SIGVERSION_BASE) {
                         scriptCode.FindAndDelete(CScript(vchSig));
                     }
+                    CleanupScriptCode(scriptCode, vchSig, flags);
 
                     if (!CheckSignatureEncoding(vchSig, flags, serror) || !CheckPubKeyEncoding(vchPubKey, flags, sigversion, serror)) {
                         //serror is set
@@ -990,6 +998,7 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                         if (sigversion == SIGVERSION_BASE) {
                             scriptCode.FindAndDelete(CScript(vchSig));
                         }
+                        CleanupScriptCode(scriptCode, vchSig, flags);
                     }
 
                     bool fSuccess = true;
