@@ -18,7 +18,9 @@
     ((CBlockHeader::HEADER_SIZE + equihash_solution_size(N, K))*MAX_HEADERS_RESULTS < \
      MAX_PROTOCOL_MESSAGE_LENGTH-1000)
 
+#include "base58.h"
 #include <assert.h>
+#include <boost/assign/list_of.hpp>
 
 #include "chainparamsseeds.h"
 
@@ -183,6 +185,10 @@ public:
                         //   (the tx=... number in the SetBestChain debug.log lines)
             3.1         // * estimated number of transactions per second after that timestamp
         };
+
+        vFoundersRewardAddress = {
+            "2N7eDqMJfmtUPFEZumx81HqN4YKXyD4CmLU",
+        };
     }
 };
 
@@ -276,7 +282,9 @@ public:
             14706531,
             0.15
         };
-
+        vFoundersRewardAddress = {
+            "2N7eDqMJfmtUPFEZumx81HqN4YKXyD4CmLU",
+        };
     }
 };
 
@@ -357,7 +365,12 @@ public:
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
+    
+        vFoundersRewardAddress = {
+            "2N7eDqMJfmtUPFEZumx81HqN4YKXyD4CmLU",
+        };
     }
+    
 };
 
 static std::unique_ptr<CChainParams> globalChainParams;
@@ -387,4 +400,20 @@ void SelectParams(const std::string& network)
 void UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout)
 {
     globalChainParams->UpdateVersionBitsParameters(d, nStartTime, nTimeout);
+}
+
+// Block height must be >=BTGHeight and <BTGHeight + BTGPremineWindow
+// The founders reward address is expected to be a multisig (P2SH) address
+bool CChainParams::IsFoundersRewardScript(const CScript& scriptPubKey) const {
+    for (const std::string& addr : vFoundersRewardAddress) {
+        CBitcoinAddress address(addr.c_str());
+        assert(address.IsValid());
+        assert(address.IsScript());
+        CScriptID scriptID = boost::get<CScriptID>(address.Get()); // Get() returns a boost variant
+        CScript script = CScript() << OP_HASH160 << ToByteVector(scriptID) << OP_EQUAL;
+        if (script == scriptPubKey) {
+            return true;
+        }
+    }
+    return false;
 }

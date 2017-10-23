@@ -2989,6 +2989,19 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
         }
     }
 
+    // Coinbase transaction must include an output sending 20% of
+    // the block reward to a founders reward script, until the last founders
+    // reward block is reached, with exception of the genesis block.
+    // The last founders reward block is defined as the block just before the
+    // first subsidy halving block, which occurs at halving_interval + slow_start_shift
+    if ((nHeight >= consensusParams.BTGHeight) && (nHeight < consensusParams.BTGHeight + consensusParams.BTGPremineWindow)) {
+        const CTxOut& output = block.vtx[0]->vout[0];
+        bool found = Params().IsFoundersRewardScript(output.scriptPubKey);
+    if (!found) {
+            return state.DoS(100, error("%s: founders reward missing", __func__), REJECT_INVALID, "cb-no-founders-reward");
+        }
+    }
+
     // Validation for witness commitments.
     // * We compute the witness hash (which is the hash including witnesses) of all the block's transactions, except the
     //   coinbase (where 0x0000....0000 is used instead).
