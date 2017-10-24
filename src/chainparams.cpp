@@ -140,7 +140,11 @@ public:
         pchMessageStartLegacy[1] = 0xbe;
         pchMessageStartLegacy[2] = 0xb4;
         pchMessageStartLegacy[3] = 0xd9;
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> Legacy logic for Magic
         pchMessageStart[0] = 0xe1;
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
@@ -257,7 +261,6 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000000002e9e7b00e1f6dc5123a04aad68dd0f0968d8c7aa45f6640795c37b1"); //1135275
 
-        
         pchMessageStartLegacy[0] = 0x0b;
         pchMessageStartLegacy[1] = 0x11;
         pchMessageStartLegacy[2] = 0x09;
