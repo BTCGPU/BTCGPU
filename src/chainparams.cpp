@@ -135,7 +135,6 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 32-bit integer with any alignment.
          */
-        
         pchMessageStartLegacy[0] = 0xf9;
         pchMessageStartLegacy[1] = 0xbe;
         pchMessageStartLegacy[2] = 0xb4;
@@ -223,7 +222,7 @@ public:
         consensus.BIP34Hash = uint256S("0x0000000023b3a96d3484e5abb3755c413e7d41500f8e2a5c3f0dd01299cd8ef8");
         consensus.BIP65Height = 581885; // 00000000007f6655f22f98e72ed80d8b06dc761d5da09df0fa1dc4be4f861eb6
         consensus.BIP66Height = 330776; // 000000002104c8c45e99a8853285a3b592602a3ccde2b832481da85e9e4ba182
-        
+
         consensus.BTGHeight = 1210320;
         consensus.BTGPremineWindow = 200;
         consensus.powLimit = uint256S("07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -259,6 +258,7 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000000002e9e7b00e1f6dc5123a04aad68dd0f0968d8c7aa45f6640795c37b1"); //1135275
 
+        
         pchMessageStartLegacy[0] = 0x0b;
         pchMessageStartLegacy[1] = 0x11;
         pchMessageStartLegacy[2] = 0x09;
@@ -268,9 +268,8 @@ public:
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
         pchMessageStart[3] = 0x44;
-        
+
         nDefaultPort = 18338;
-        
         nPruneAfterHeight = 1000;
         const size_t N = 200, K = 9;  // Same as mainchain.
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
