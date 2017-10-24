@@ -297,9 +297,9 @@ void PruneAndFlush();
 /** Prune block files up to a given height */
 void PruneBlockFilesManual(int nManualPruneHeight);
 
-/** Check is UAHF has activated. */
-bool IsUAHFenabled(const CChainParams& chainParams, const CBlockIndex *pindexPrev);
-bool IsUAHFenabledForCurrentBlock(const CChainParams& chainParams);
+/** Check is BTG hard fork has activated. */
+bool IsBTGHardForkEnabled(const CChainParams& chainParams, const CBlockIndex *pindexPrev);
+bool IsBTGHardForkEnabledForCurrentBlock(const CChainParams& chainParams);
 
 /** (try to) add transaction to memory pool
  * plTxnReplaced will be appended to with all transactions replaced from mempool **/

@@ -351,21 +351,21 @@ static bool IsCurrentForFeeEstimation()
     return true;
 }
 
-bool static IsUAHFenabled(const CChainParams& chainParams, int nHeight) {
+bool static IsBTGHardForkEnabled(const CChainParams& chainParams, int nHeight) {
     return nHeight >= chainParams.GetConsensus().BTGHeight;
 }
 
-bool IsUAHFenabled(const CChainParams& chainParams, const CBlockIndex *pindexPrev) {
+bool IsBTGHardForkEnabled(const CChainParams& chainParams, const CBlockIndex *pindexPrev) {
     if (pindexPrev == nullptr) {
         return false;
     }
 
-    return IsUAHFenabled(chainParams, pindexPrev->nHeight);
+    return IsBTGHardForkEnabled(chainParams, pindexPrev->nHeight);
 }
 
-bool IsUAHFenabledForCurrentBlock(const CChainParams& chainParams) {
+bool IsBTGHardForkEnabledForCurrentBlock(const CChainParams& chainParams) {
     AssertLockHeld(cs_main);
-    return IsUAHFenabled(chainParams, chainActive.Tip());
+    return IsBTGHardForkEnabled(chainParams, chainActive.Tip());
 }
 
 /* Make mempool consistent after a reorg, by re-adding or recursively erasing
@@ -1632,8 +1632,8 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
         flags |= SCRIPT_VERIFY_NULLDUMMY;
     }
 
-    // If the UAHF is enabled, we start accepting replay protected txns
-    if (IsUAHFenabled(config, pindex->pprev)) {
+    // If the BTG hard fork is enabled, we start accepting replay protected txns
+    if (IsBTGHardForkEnabled(Params(), pindex->pprev)) {
         flags |= SCRIPT_VERIFY_STRICTENC;
         flags |= SCRIPT_ENABLE_SIGHASH_FORKID;
     }
