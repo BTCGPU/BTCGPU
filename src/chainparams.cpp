@@ -268,7 +268,6 @@ public:
         pchMessageStart[2] = 0x6d;
         pchMessageStart[3] = 0x44;
         nDefaultPort = 18338;
-
         nPruneAfterHeight = 1000;
         const size_t N = 200, K = 9;  // Same as mainchain.
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -287,7 +286,6 @@ public:
 //        vSeeds.emplace_back("dnsseed.minepool.gold", true);
         vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("btg.dnsseed.minertopia.org", true);
-
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
