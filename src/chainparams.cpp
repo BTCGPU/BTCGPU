@@ -135,11 +135,11 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 32-bit integer with any alignment.
          */
-        pchMessageStart[0] = 0xf9;
-        pchMessageStart[1] = 0xbe;
-        pchMessageStart[2] = 0xb4;
-        pchMessageStart[3] = 0xd9;
-        nDefaultPort = 8338; // different port than Bitcoin
+        pchMessageStart[0] = 0xe1;
+        pchMessageStart[1] = 0x47;
+        pchMessageStart[2] = 0x6d;
+        pchMessageStart[3] = 0x44;
+        nDefaultPort = 8333; // different port than Bitcoin
         nPruneAfterHeight = 100000;
         const size_t N = 200, K = 9;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -153,8 +153,8 @@ public:
 
         // Note that of those with the service bits flag, most only support a subset of possible options
         // TODO: Shall change this to our
-//        vSeeds.emplace_back("seed.bitcoin.sipa.be", true); // Pieter Wuille, only supports x1, x5, x9, and xd
-//        vSeeds.emplace_back("dnsseed.bluematt.me", true); // Matt Corallo, only supports x9
+        vSeeds.emplace_back("seed.bitcoin.sipa.be", true); // Pieter Wuille, only supports x1, x5, x9, and xd
+        vSeeds.emplace_back("dnsseed.bluematt.me", true); // Matt Corallo, only supports x9
 //        vSeeds.emplace_back("dnsseed.bitcoin.dashjr.org", false); // Luke Dashjr
 //        vSeeds.emplace_back("seed.bitcoinstats.com", true); // Christian Decker, supports x1 - xf
 //        vSeeds.emplace_back("seed.bitcoin.jonasschnelli.ch", true); // Jonas Schnelli, only supports x1, x5, x9, and xd
@@ -250,11 +250,11 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000000002e9e7b00e1f6dc5123a04aad68dd0f0968d8c7aa45f6640795c37b1"); //1135275
 
-        pchMessageStart[0] = 0x0b;
-        pchMessageStart[1] = 0x11;
-        pchMessageStart[2] = 0x09;
-        pchMessageStart[3] = 0x07;
-        nDefaultPort = 18333;
+        pchMessageStart[0] = 0xe0;
+        pchMessageStart[1] = 0x47;
+        pchMessageStart[2] = 0x6d;
+        pchMessageStart[3] = 0x44;
+        nDefaultPort = 18338;
         nPruneAfterHeight = 1000;
         const size_t N = 200, K = 9;  // Same as mainchain.
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -270,10 +270,10 @@ public:
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
 //        vSeeds.emplace_back("dnsseed.minepool.gold", true);
-//        vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
-//        vSeeds.emplace_back("btg.dnsseed.minertopia.org", true)
-        vSeeds.emplace_back("testnet-seed.bitcoin.jonasschnelli.ch", true);
-        vSeeds.emplace_back("seed.tbtc.petertodd.org", true);
+        vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
+        vSeeds.emplace_back("btg.dnsseed.minertopia.org", true);
+//        vSeeds.emplace_back("testnet-seed.bitcoin.jonasschnelli.ch", true);
+//        vSeeds.emplace_back("seed.tbtc.petertodd.org", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
