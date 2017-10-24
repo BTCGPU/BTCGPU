@@ -62,7 +62,7 @@ public:
     std::string GetHex(size_t len) { return HexStr(hash, hash+len); }
 
     template<size_t W>
-    friend bool HasCollision(StepRow<W>& a, StepRow<W>& b, int l);
+    friend bool HasCollision(StepRow<W>& a, StepRow<W>& b, size_t l);
 };
 
 class CompareSR
@@ -78,7 +78,7 @@ public:
 };
 
 template<size_t WIDTH>
-bool HasCollision(StepRow<WIDTH>& a, StepRow<WIDTH>& b, int l);
+bool HasCollision(StepRow<WIDTH>& a, StepRow<WIDTH>& b, size_t l);
 
 template<size_t WIDTH>
 class FullStepRow : public StepRow<WIDTH>
@@ -95,7 +95,7 @@ public:
 
     FullStepRow(const FullStepRow<WIDTH>& a) : StepRow<WIDTH> {a} { }
     template<size_t W>
-    FullStepRow(const FullStepRow<W>& a, const FullStepRow<W>& b, size_t len, size_t lenIndices, int trim);
+    FullStepRow(const FullStepRow<W>& a, const FullStepRow<W>& b, size_t len, size_t lenIndices, size_t trim);
     FullStepRow& operator=(const FullStepRow<WIDTH>& a);
 
     inline bool IndicesBefore(const FullStepRow<WIDTH>& a, size_t len, size_t lenIndices) const { return memcmp(hash+len, a.hash+len, lenIndices) < 0; }
@@ -125,7 +125,7 @@ public:
 
     TruncatedStepRow(const TruncatedStepRow<WIDTH>& a) : StepRow<WIDTH> {a} { }
     template<size_t W>
-    TruncatedStepRow(const TruncatedStepRow<W>& a, const TruncatedStepRow<W>& b, size_t len, size_t lenIndices, int trim);
+    TruncatedStepRow(const TruncatedStepRow<W>& a, const TruncatedStepRow<W>& b, size_t len, size_t lenIndices, size_t trim);
     TruncatedStepRow& operator=(const TruncatedStepRow<WIDTH>& a);
 
     inline bool IndicesBefore(const TruncatedStepRow<WIDTH>& a, size_t len, size_t lenIndices) const { return memcmp(hash+len, a.hash+len, lenIndices) < 0; }
