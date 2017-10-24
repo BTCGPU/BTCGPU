@@ -140,7 +140,7 @@ public:
         pchMessageStartLegacy[1] = 0xbe;
         pchMessageStartLegacy[2] = 0xb4;
         pchMessageStartLegacy[3] = 0xd9;
-        
+
         pchMessageStart[0] = 0xe1;
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
@@ -257,17 +257,18 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000000002e9e7b00e1f6dc5123a04aad68dd0f0968d8c7aa45f6640795c37b1"); //1135275
 
+        
         pchMessageStartLegacy[0] = 0x0b;
         pchMessageStartLegacy[1] = 0x11;
         pchMessageStartLegacy[2] = 0x09;
         pchMessageStartLegacy[3] = 0x07;
-        
+
         pchMessageStart[0] = 0xe0;
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
         pchMessageStart[3] = 0x44;
 
-        nDefaultPort = 18333;
+        nDefaultPort = 18338;
         nPruneAfterHeight = 1000;
         const size_t N = 200, K = 9;  // Same as mainchain.
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -285,8 +286,8 @@ public:
 //        vSeeds.emplace_back("dnsseed.minepool.gold", true);
         vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("btg.dnsseed.minertopia.org", true);
-        vSeeds.emplace_back("testnet-seed.bitcoin.jonasschnelli.ch", true);
-        vSeeds.emplace_back("seed.tbtc.petertodd.org", true);
+//        vSeeds.emplace_back("testnet-seed.bitcoin.jonasschnelli.ch", true);
+//        vSeeds.emplace_back("seed.tbtc.petertodd.org", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
