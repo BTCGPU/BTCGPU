@@ -145,7 +145,7 @@ public:
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
         pchMessageStart[3] = 0x44;
-        nDefaultPort = 8338; // different port than Bitcoin
+        nDefaultPort = 8333; // different port than Bitcoin
         nPruneAfterHeight = 100000;
         const size_t N = 200, K = 9;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -161,8 +161,8 @@ public:
         // TODO: Shall change this to our
         vSeeds.emplace_back("seed.bitcoin.sipa.be", true); // Pieter Wuille, only supports x1, x5, x9, and xd
         vSeeds.emplace_back("dnsseed.bluematt.me", true); // Matt Corallo, only supports x9
-//        vSeeds.emplace_back("dnsseed.bitcoin.dashjr.org", false); // Luke Dashjr
-//        vSeeds.emplace_back("seed.bitcoinstats.com", true); // Christian Decker, supports x1 - xf
+        vSeeds.emplace_back("dnsseed.bitcoin.dashjr.org", false); // Luke Dashjr
+        vSeeds.emplace_back("seed.bitcoinstats.com", true); // Christian Decker, supports x1 - xf
 //        vSeeds.emplace_back("seed.bitcoin.jonasschnelli.ch", true); // Jonas Schnelli, only supports x1, x5, x9, and xd
 //        vSeeds.emplace_back("seed.btc.petertodd.org", true); // Peter Todd, only supports x1, x5, x9, and xd
 
@@ -265,7 +265,7 @@ public:
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
         pchMessageStart[3] = 0x44;
-        nDefaultPort = 18338;
+        nDefaultPort = 18333;
         nPruneAfterHeight = 1000;
         const size_t N = 200, K = 9;  // Same as mainchain.
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -283,8 +283,8 @@ public:
 //        vSeeds.emplace_back("dnsseed.minepool.gold", true);
         vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("btg.dnsseed.minertopia.org", true);
-//        vSeeds.emplace_back("testnet-seed.bitcoin.jonasschnelli.ch", true);
-//        vSeeds.emplace_back("seed.tbtc.petertodd.org", true);
+        vSeeds.emplace_back("testnet-seed.bitcoin.jonasschnelli.ch", true);
+        vSeeds.emplace_back("seed.tbtc.petertodd.org", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
@@ -359,6 +359,11 @@ public:
         consensus.defaultAssumeValid = uint256S("0x00");
 
         pchMessageStart[0] = 0xfa;
+        pchMessageStart[1] = 0xbf;
+        pchMessageStart[2] = 0xb5;
+        pchMessageStart[3] = 0xda;
+        
+        pchMessageStart[0] = 0xde;
         pchMessageStart[1] = 0xbf;
         pchMessageStart[2] = 0xb5;
         pchMessageStart[3] = 0xda;
