@@ -697,7 +697,7 @@ public:
     std::atomic<int64_t> nMinPingUsecTime;
     // Whether a ping is requested.
     std::atomic<bool> fPingQueued;
-    // Whether the node uses the bitcoin cash magic to communicate.
+    // Whether the node uses the bitcoin gold magic to communicate.
     std::atomic<bool> fUsesGoldMagic;
     
     // Minimum fee rate with which to filter inv's to this node

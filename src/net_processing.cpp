@@ -2732,7 +2732,7 @@ bool ProcessMessages(CNode* pfrom, CConnman& connman, const std::atomic<bool>& i
     if (pfrom->nVersion == 0 &&
         memcmp(msg.hdr.pchMessageStart, chainparams.MessageStart(),
                CMessageHeader::MESSAGE_START_SIZE) == 0) {
-            pfrom->fUsesGoldMagic = false;
+            pfrom->fUsesGoldMagic = true;
         }
     
     // Scan for message start
