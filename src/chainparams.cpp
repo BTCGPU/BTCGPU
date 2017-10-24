@@ -140,16 +140,12 @@ public:
         pchMessageStartLegacy[1] = 0xbe;
         pchMessageStartLegacy[2] = 0xb4;
         pchMessageStartLegacy[3] = 0xd9;
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> Legacy logic for Magic
         pchMessageStart[0] = 0xe1;
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
         pchMessageStart[3] = 0x44;
-        nDefaultPort = 8338; // different port than Bitcoin
+        nDefaultPort = 8333; // different port than Bitcoin
         nPruneAfterHeight = 100000;
         const size_t N = 200, K = 9;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -270,7 +266,7 @@ public:
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
         pchMessageStart[3] = 0x44;
-
+        
         nDefaultPort = 18338;
         nPruneAfterHeight = 1000;
         const size_t N = 200, K = 9;  // Same as mainchain.
@@ -289,8 +285,8 @@ public:
 //        vSeeds.emplace_back("dnsseed.minepool.gold", true);
         vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("btg.dnsseed.minertopia.org", true);
-//        vSeeds.emplace_back("testnet-seed.bitcoin.jonasschnelli.ch", true);
-//        vSeeds.emplace_back("seed.tbtc.petertodd.org", true);
+        vSeeds.emplace_back("testnet-seed.bitcoin.jonasschnelli.ch", true);
+        vSeeds.emplace_back("seed.tbtc.petertodd.org", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
@@ -368,6 +364,11 @@ public:
         pchMessageStartLegacy[1] = 0xbf;
         pchMessageStartLegacy[2] = 0xb5;
         pchMessageStartLegacy[3] = 0xda;
+        
+        pchMessageStart[0] = 0xde;
+        pchMessageStart[1] = 0xbf;
+        pchMessageStart[2] = 0xb5;
+        pchMessageStart[3] = 0xda;
         
         pchMessageStart[0] = 0xde;
         pchMessageStart[1] = 0xbf;
