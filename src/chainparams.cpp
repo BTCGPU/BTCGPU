@@ -135,6 +135,12 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 32-bit integer with any alignment.
          */
+        
+        pchMessageStartLegacy[0] = 0xf9;
+        pchMessageStartLegacy[1] = 0xbe;
+        pchMessageStartLegacy[2] = 0xb4;
+        pchMessageStartLegacy[3] = 0xd9;
+        
         pchMessageStart[0] = 0xe1;
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
@@ -250,6 +256,11 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000000002e9e7b00e1f6dc5123a04aad68dd0f0968d8c7aa45f6640795c37b1"); //1135275
 
+        pchMessageStartLegacy[0] = 0x0b;
+        pchMessageStartLegacy[1] = 0x11;
+        pchMessageStartLegacy[2] = 0x09;
+        pchMessageStartLegacy[3] = 0x07;
+        
         pchMessageStart[0] = 0xe0;
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;

@@ -1384,6 +1384,9 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                   cleanSubVer, pfrom->nVersion,
                   pfrom->nStartingHeight, addrMe.ToString(), pfrom->GetId(),
                   remoteAddr);
+        if (pfrom->fUsesGoldMagic) {
+            LogPrintf("peer %d uses Gold magic in its headers\n", pfrom->id);
+        }
 
         int64_t nTimeOffset = nTime - GetTime();
         pfrom->nTimeOffset = nTimeOffset;
@@ -2723,8 +2726,17 @@ bool ProcessMessages(CNode* pfrom, CConnman& connman, const std::atomic<bool>& i
     CNetMessage& msg(msgs.front());
 
     msg.SetVersion(pfrom->GetRecvVersion());
+    
+    // This is a new peer. Before doing anything, we need to detect what magic
+    // the peer is using.
+    if (pfrom->nVersion == 0 &&
+        memcmp(msg.hdr.pchMessageStart, chainparams.MessageStart(),
+               CMessageHeader::MESSAGE_START_SIZE) == 0) {
+            pfrom->fUsesGoldMagic = false;
+        }
+    
     // Scan for message start
-    if (memcmp(msg.hdr.pchMessageStart, chainparams.MessageStart(), CMessageHeader::MESSAGE_START_SIZE) != 0) {
+    if (memcmp(msg.hdr.pchMessageStart, pfrom->GetMagic(chainparams), CMessageHeader::MESSAGE_START_SIZE) != 0) {
         LogPrintf("PROCESSMESSAGE: INVALID MESSAGESTART %s peer=%d\n", SanitizeString(msg.hdr.GetCommand()), pfrom->GetId());
         pfrom->fDisconnect = true;
         return false;
@@ -2732,7 +2744,7 @@ bool ProcessMessages(CNode* pfrom, CConnman& connman, const std::atomic<bool>& i
 
     // Read header
     CMessageHeader& hdr = msg.hdr;
-    if (!hdr.IsValid(chainparams.MessageStart()))
+    if (!hdr.IsValid(pfrom->GetMagic(chainparams)))
     {
         LogPrintf("PROCESSMESSAGE: ERRORS IN HEADER %s peer=%d\n", SanitizeString(hdr.GetCommand()), pfrom->GetId());
         return fMoreWork;

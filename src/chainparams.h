@@ -59,6 +59,7 @@ public:
 
     const Consensus::Params& GetConsensus() const { return consensus; }
     const CMessageHeader::MessageStartChars& MessageStart() const { return pchMessageStart; }
+    const CMessageHeader::MessageStartChars& MessageStartLegacy() const { return pchMessageStartLegacy; }
     int GetDefaultPort() const { return nDefaultPort; }
 
     const CBlock& GenesisBlock() const { return genesis; }
@@ -85,6 +86,7 @@ protected:
     CChainParams() {}
 
     Consensus::Params consensus;
+    CMessageHeader::MessageStartChars pchMessageStartLegacy;
     CMessageHeader::MessageStartChars pchMessageStart;
     int nDefaultPort;
     uint64_t nPruneAfterHeight;
