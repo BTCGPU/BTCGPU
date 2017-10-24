@@ -2733,10 +2733,14 @@ bool ProcessMessages(CNode* pfrom, CConnman& connman, const std::atomic<bool>& i
         memcmp(msg.hdr.pchMessageStart, chainparams.MessageStart(),
                CMessageHeader::MESSAGE_START_SIZE) == 0) {
 <<<<<<< HEAD
+<<<<<<< HEAD
             pfrom->fUsesGoldMagic = true;
 =======
             pfrom->fUsesGoldMagic = false;
 >>>>>>> Legacy logic for Magic
+=======
+            pfrom->fUsesGoldMagic = true;
+>>>>>>> Changed incorrect Magic for testnet
         }
     
     // Scan for message start

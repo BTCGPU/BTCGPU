@@ -286,11 +286,6 @@ public:
 //        vSeeds.emplace_back("dnsseed.minepool.gold", true);
         vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("btg.dnsseed.minertopia.org", true);
-<<<<<<< HEAD
-=======
-        vSeeds.emplace_back("testnet-seed.bitcoin.jonasschnelli.ch", true);
-        vSeeds.emplace_back("seed.tbtc.petertodd.org", true);
->>>>>>> Minor changes on the Magic
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
@@ -373,15 +368,7 @@ public:
         pchMessageStart[1] = 0xbf;
         pchMessageStart[2] = 0xb5;
         pchMessageStart[3] = 0xda;
-<<<<<<< HEAD
 
-=======
-        
-        pchMessageStart[0] = 0xde;
-        pchMessageStart[1] = 0xbf;
-        pchMessageStart[2] = 0xb5;
-        pchMessageStart[3] = 0xda;
->>>>>>> Minor changes on the Magic
         nDefaultPort = 18444;
         nPruneAfterHeight = 1000;
         const size_t N = 48, K = 5;
