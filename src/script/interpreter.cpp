@@ -220,8 +220,9 @@ bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned i
        if(!IsDefinedHashtypeSignature(vchSig)) {
         return set_error(serror, SCRIPT_ERR_SIG_HASHTYPE);
        }
+        bool requiresForkId=!(flags & SCRIPT_ALLOW_NON_FORKID);
 	bool usesForkId = GetHashType(vchSig) & SIGHASH_FORKID;
-	if (!usesForkId) {
+	if (!usesForkId && requiresForkId) {
 	    return set_error(serror, SCRIPT_ERR_MUST_USE_FORKID);
 	}
     }

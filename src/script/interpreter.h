@@ -119,8 +119,9 @@ enum
     //  This was needed in BCH because they had testing code to be able to run nodes before and after the fork.  However, that's not the case in BTG..
     /// SCRIPT_ENABLE_SIGHASH_FORKID is necessary for BCH because there are/were running nodes on the BCH network prior to the fork that signaled BCH but didn't have the mandatory replay protection.  In order to 
     /// control whether or not those nodes were active or whether or not the new replay behavior was active (post fork), there needed to be this logic.  Since BTG won't have nodes running before the replay protection is active, this state is impossible.
-    //
     //SCRIPT_ENABLE_SIGHASH_FORKID = (1U << 16),
+    // EDIT: Re-enabling this as a flag EXTRA part of the checksignature because there's a few places where CheckSignatureEncoding is used to parse old-style transactions (e.g. regression tests)
+    SCRIPT_ALLOW_NON_FORKID = (1U << 17),
 };
 
 bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned int flags, ScriptError* serror);
