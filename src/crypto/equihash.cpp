@@ -230,7 +230,7 @@ FullStepRow<WIDTH>::FullStepRow(const FullStepRow<W>& a, const FullStepRow<W>& b
 {
     assert(len+lenIndices <= W);
     assert(len-trim+(2*lenIndices) <= WIDTH);
-    for (size_t i = static_cast<size_t>(trim); i < len; i++)
+    for (size_t i = trim; i < len; i++)
         hash[i-trim] = a.hash[i] ^ b.hash[i];
     if (a.IndicesBefore(b, len, lenIndices)) {
         std::copy(a.hash+len, a.hash+len+lenIndices, hash+len-trim);
