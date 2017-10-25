@@ -181,13 +181,24 @@ bool static IsLowDERSignature(const valtype &vchSig, ScriptError* serror) {
     return true;
 }
 
-bool static IsDefinedHashtypeSignature(const valtype &vchSig) {
+static uint32_t GetHashType(const valtype &vchSig) {
+    if (vchSig.size() == 0) {
+        return 0;
+    }
+
+    return vchSig[vchSig.size() - 1];
+}
+static bool IsDefinedHashtypeSignature(const valtype &vchSig) {
     if (vchSig.size() == 0) {
         return false;
     }
-    unsigned char nHashType = vchSig[vchSig.size() - 1] & (~(SIGHASH_ANYONECANPAY));
-    if (nHashType < SIGHASH_ALL || nHashType > SIGHASH_SINGLE)
+    uint32_t nHashType =
+        GetHashType(vchSig) & ~(SIGHASH_ANYONECANPAY | SIGHASH_FORKID);
+    if (nHashType < SIGHASH_ALL || nHashType > SIGHASH_SINGLE) {
         return false;
+    }
+
+return true;
 
     return true;
 }
@@ -203,8 +214,16 @@ bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned i
     } else if ((flags & SCRIPT_VERIFY_LOW_S) != 0 && !IsLowDERSignature(vchSig, serror)) {
         // serror is set
         return false;
-    } else if ((flags & SCRIPT_VERIFY_STRICTENC) != 0 && !IsDefinedHashtypeSignature(vchSig)) {
+    } else if ((flags & SCRIPT_VERIFY_STRICTENC) != 0)
+    {
+	//todo: make this mandatory?
+       if(!IsDefinedHashtypeSignature(vchSig)) {
         return set_error(serror, SCRIPT_ERR_SIG_HASHTYPE);
+       }
+	bool usesForkId = GetHashType(vchSig) & SIGHASH_FORKID;
+	if (!usesForkId) {
+	    return set_error(serror, SCRIPT_ERR_MUST_USE_FORKID);
+	}
     }
     return true;
 }
@@ -1055,13 +1074,15 @@ private:
     const CScript& scriptCode; //!< output script being consumed
     const unsigned int nIn;    //!< input index of txTo being signed
     const bool fAnyoneCanPay;  //!< whether the hashtype has the SIGHASH_ANYONECANPAY flag set
+    const bool fForkID;        //!< whether the hashtype has the SIGHASH_FORKID flag set
     const bool fHashSingle;    //!< whether the hashtype is SIGHASH_SINGLE
     const bool fHashNone;      //!< whether the hashtype is SIGHASH_NONE
 
 public:
     CTransactionSignatureSerializer(const CTransaction &txToIn, const CScript &scriptCodeIn, unsigned int nInIn, int nHashTypeIn) :
         txTo(txToIn), scriptCode(scriptCodeIn), nIn(nInIn),
-        fAnyoneCanPay(!!(nHashTypeIn & SIGHASH_ANYONECANPAY)),
+	fAnyoneCanPay(!!(nHashTypeIn & SIGHASH_ANYONECANPAY)),
+        fForkID(!!(nHashTypeIn & SIGHASH_FORKID)),
         fHashSingle((nHashTypeIn & 0x1f) == SIGHASH_SINGLE),
         fHashNone((nHashTypeIn & 0x1f) == SIGHASH_NONE) {}
 
@@ -1173,8 +1194,20 @@ PrecomputedTransactionData::PrecomputedTransactionData(const CTransaction& txTo)
     hashOutputs = GetOutputsHash(txTo);
 }
 
+
 uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsigned int nIn, int nHashType, const CAmount& amount, SigVersion sigversion, const PrecomputedTransactionData* cache)
 {
+    uint32_t nForkSigHashType=nHashType; // see item 10 in https://github.com/Bitcoin-UAHF/spec/blob/master/replay-protected-sighash.md
+    /* Two-way replay protection in BCH was implemented with a quadratic scaling fix replicating a lot of segwit's functionality.  They change the encoded versionbits inside the transaction hash (in addition to their
+       own 'segwit-lite' implementation.  Much/most of the replay-protected modified sighash in BCH is actually implementing that functionality.
+       However, because BTCG has segwit already, that fix is unnecessary.  The only thing necessary is to add the forkid to the nHashType in the hash to change the transaction hash.
+    */
+    if(nHashType & SIGHASH_FORKID)
+    {
+	static const uint32_t THIS_CLIENT_SIG_FORKID=SIG_FORKID_BTG;
+	nForkSigHashType|=THIS_CLIENT_SIG_FORKID << 8;
+    }
+
     if (sigversion == SIGVERSION_WITNESS_V0) {
         uint256 hashPrevouts;
         uint256 hashSequence;
@@ -1215,7 +1248,7 @@ uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsig
         // Locktime
         ss << txTo.nLockTime;
         // Sighash type
-        ss << nHashType;
+        ss << nForkSigHashType;
 
         return ss.GetHash();
     }
@@ -1239,7 +1272,7 @@ uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsig
 
     // Serialize and hash
     CHashWriter ss(SER_GETHASH, 0);
-    ss << txTmp << nHashType;
+    ss << txTmp << nForkSigHashType;  //The two-way replay-protection for non-segwit transactions happens here 
     return ss.GetHash();
 }
 
@@ -1258,7 +1291,10 @@ bool TransactionSignatureChecker::CheckSig(const std::vector<unsigned char>& vch
     std::vector<unsigned char> vchSig(vchSigIn);
     if (vchSig.empty())
         return false;
-    int nHashType = vchSig.back();
+
+    uint32_t nHashType = GetHashType(vchSig);
+    vchSig.pop_back();
+
     vchSig.pop_back();
 
     uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, nHashType, amount, sigversion, this->txdata);
