@@ -32,7 +32,7 @@ enum
 enum
 {
     SIG_FORKID_BCH = 0x0,
-    SIG_FORKID_BTG = 0x79, 
+    SIG_FORKID_BTG = 79,  //Atomic number AU
 };
 
 /** Script verification flags */
