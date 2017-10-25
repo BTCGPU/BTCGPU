@@ -824,24 +824,39 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
     const CKeyStore& keystore = tempKeystore;
 #endif
 
-    int nHashType = SIGHASH_ALL;
+    int nHashType = SIGHASH_ALL | SIGHASH_FORKID;
     if (request.params.size() > 3 && !request.params[3].isNull()) {
         static std::map<std::string, int> mapSigHashValues = {
-            {std::string("ALL"), int(SIGHASH_ALL)},
-            {std::string("ALL|ANYONECANPAY"), int(SIGHASH_ALL|SIGHASH_ANYONECANPAY)},
-            {std::string("NONE"), int(SIGHASH_NONE)},
-            {std::string("NONE|ANYONECANPAY"), int(SIGHASH_NONE|SIGHASH_ANYONECANPAY)},
-            {std::string("SINGLE"), int(SIGHASH_SINGLE)},
-            {std::string("SINGLE|ANYONECANPAY"), int(SIGHASH_SINGLE|SIGHASH_ANYONECANPAY)},
+            {"ALL", SIGHASH_ALL},
+            {"ALL|ANYONECANPAY", SIGHASH_ALL | SIGHASH_ANYONECANPAY},
+            {"ALL|FORKID", SIGHASH_ALL | SIGHASH_FORKID},
+            {"ALL|FORKID|ANYONECANPAY",
+             SIGHASH_ALL | SIGHASH_FORKID | SIGHASH_ANYONECANPAY},
+            {"NONE", SIGHASH_NONE},
+            {"NONE|ANYONECANPAY", SIGHASH_NONE | SIGHASH_ANYONECANPAY},
+            {"NONE|FORKID", SIGHASH_NONE | SIGHASH_FORKID},
+            {"NONE|FORKID|ANYONECANPAY",
+             SIGHASH_NONE | SIGHASH_FORKID | SIGHASH_ANYONECANPAY},
+            {"SINGLE", SIGHASH_SINGLE},
+            {"SINGLE|ANYONECANPAY", SIGHASH_SINGLE | SIGHASH_ANYONECANPAY},
+            {"SINGLE|FORKID", SIGHASH_SINGLE | SIGHASH_FORKID},
+            {"SINGLE|FORKID|ANYONECANPAY",
+             SIGHASH_SINGLE | SIGHASH_FORKID | SIGHASH_ANYONECANPAY},
         };
         std::string strHashType = request.params[3].get_str();
         if (mapSigHashValues.count(strHashType))
             nHashType = mapSigHashValues[strHashType];
         else
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid sighash param");
+
+	nHashType = mapSigHashValues[strHashType];
+	if ((nHashType & SIGHASH_FORKID) == 0) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER,
+		                       "Signature must use SIGHASH_FORKID");
+	}
     }
 
-    bool fHashSingle = ((nHashType & ~SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE);
+    bool fHashSingle = ((nHashType & ~(SIGHASH_ANYONECANPAY | SIGHASH_FORKID)) == SIGHASH_SINGLE);
 
     // Script verification errors
     UniValue vErrors(UniValue::VARR);

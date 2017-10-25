@@ -62,12 +62,21 @@ std::string FormatScript(const CScript& script)
 }
 
 const std::map<unsigned char, std::string> mapSigHashTypes = {
-    {static_cast<unsigned char>(SIGHASH_ALL), std::string("ALL")},
-    {static_cast<unsigned char>(SIGHASH_ALL|SIGHASH_ANYONECANPAY), std::string("ALL|ANYONECANPAY")},
-    {static_cast<unsigned char>(SIGHASH_NONE), std::string("NONE")},
-    {static_cast<unsigned char>(SIGHASH_NONE|SIGHASH_ANYONECANPAY), std::string("NONE|ANYONECANPAY")},
-    {static_cast<unsigned char>(SIGHASH_SINGLE), std::string("SINGLE")},
-    {static_cast<unsigned char>(SIGHASH_SINGLE|SIGHASH_ANYONECANPAY), std::string("SINGLE|ANYONECANPAY")},
+    {SIGHASH_ALL, "ALL"},
+    {SIGHASH_ALL | SIGHASH_ANYONECANPAY, "ALL|ANYONECANPAY"},
+    {SIGHASH_ALL | SIGHASH_FORKID, "ALL|FORKID"},
+    {SIGHASH_ALL | SIGHASH_FORKID | SIGHASH_ANYONECANPAY,
+     "ALL|FORKID|ANYONECANPAY"},
+    {SIGHASH_NONE, "NONE"},
+    {SIGHASH_NONE | SIGHASH_ANYONECANPAY, "NONE|ANYONECANPAY"},
+    {SIGHASH_NONE | SIGHASH_FORKID, "NONE|FORKID"},
+    {SIGHASH_NONE | SIGHASH_FORKID | SIGHASH_ANYONECANPAY,
+     "NONE|FORKID|ANYONECANPAY"},
+    {SIGHASH_SINGLE, "SINGLE"},
+    {SIGHASH_SINGLE | SIGHASH_ANYONECANPAY, "SINGLE|ANYONECANPAY"},
+    {SIGHASH_SINGLE | SIGHASH_FORKID, "SINGLE|FORKID"},
+    {SIGHASH_SINGLE | SIGHASH_FORKID | SIGHASH_ANYONECANPAY,
+     "SINGLE|FORKID|ANYONECANPAY"},
 };
 
 /**

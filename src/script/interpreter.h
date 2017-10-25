@@ -24,7 +24,15 @@ enum
     SIGHASH_ALL = 1,
     SIGHASH_NONE = 2,
     SIGHASH_SINGLE = 3,
+    SIGHASH_FORKID = 0x40,
     SIGHASH_ANYONECANPAY = 0x80,
+};
+
+/** Fork IDs */
+enum
+{
+    SIG_FORKID_BCH = 0x0,
+    SIG_FORKID_BTG = 0x79, 
 };
 
 /** Script verification flags */
@@ -106,6 +114,13 @@ enum
     // Public keys in segregated witness scripts must be compressed
     //
     SCRIPT_VERIFY_WITNESS_PUBKEYTYPE = (1U << 15),
+    
+    // Do we accept signature using SIGHASH_FORKID NOTE: this is disabled because the activation has already happened, meaning it should *always* be yes for mandatory two-way replay protection.
+    //  This was needed in BCH because they had testing code to be able to run nodes before and after the fork.  However, that's not the case in BTG..
+    /// SCRIPT_ENABLE_SIGHASH_FORKID is necessary for BCH because there are/were running nodes on the BCH network prior to the fork that signaled BCH but didn't have the mandatory replay protection.  In order to 
+    /// control whether or not those nodes were active or whether or not the new replay behavior was active (post fork), there needed to be this logic.  Since BTG won't have nodes running before the replay protection is active, this state is impossible.
+    //
+    //SCRIPT_ENABLE_SIGHASH_FORKID = (1U << 16),
 };
 
 bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned int flags, ScriptError* serror);
