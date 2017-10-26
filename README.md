@@ -8,7 +8,7 @@ At the predetermined block height, Bitcoin Gold miners will begin creating block
 
 ## WARNING
 
-Bitcoin Gold is a work in progress. If you don’t understand what you are doing, please don’t compile and run your own client from the staging tree. Your own client will **NOT WORK**. However, you're more than welcome to help test the code and join the development.
+Bitcoin Gold is a work in progress. If you don’t understand what you are doing, please don’t compile and run your own client from the staging tree. Your own client will **NOT WORK** for both testnet and mainnet. However, you're more than welcome to help test the code and join the development.
 
 ## Links
 
