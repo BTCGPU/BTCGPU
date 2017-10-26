@@ -35,6 +35,8 @@ enum
     SIG_FORKID_BTG = 79,  //Atomic number AU
 };
 
+static const int THIS_CLIENT_SIG_FORKID=SIG_FORKID_BTG;
+
 /** Script verification flags */
 enum
 {
@@ -139,7 +141,7 @@ enum SigVersion
     SIGVERSION_WITNESS_V0 = 1,
 };
 
-uint256 SignatureHash(const CScript &scriptCode, const CTransaction& txTo, unsigned int nIn, int nHashType, const CAmount& amount, SigVersion sigversion, const PrecomputedTransactionData* cache = nullptr);
+uint256 SignatureHash(const CScript &scriptCode, const CTransaction& txTo, unsigned int nIn, int nHashType, const CAmount& amount, SigVersion sigversion, const PrecomputedTransactionData* cache = nullptr,int selected_forkid=THIS_CLIENT_SIG_FORKID /*ONLY FOR TESTING*/);
 
 class BaseSignatureChecker
 {

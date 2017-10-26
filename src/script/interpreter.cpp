@@ -1195,8 +1195,7 @@ PrecomputedTransactionData::PrecomputedTransactionData(const CTransaction& txTo)
     hashOutputs = GetOutputsHash(txTo);
 }
 
-
-uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsigned int nIn, int nHashType, const CAmount& amount, SigVersion sigversion, const PrecomputedTransactionData* cache)
+uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsigned int nIn, int nHashType, const CAmount& amount, SigVersion sigversion, const PrecomputedTransactionData* cache,int selected_forkid)
 {
     int nForkSigHashType=nHashType; // see item 10 in https://github.com/Bitcoin-UAHF/spec/blob/master/replay-protected-sighash.md
     /* Two-way replay protection in BCH was implemented with a quadratic scaling fix replicating a lot of segwit's functionality.  They change the encoded versionbits inside the transaction hash (in addition to their
@@ -1205,8 +1204,7 @@ uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsig
     */
     if(nHashType & SIGHASH_FORKID)
     {
-	static const int THIS_CLIENT_SIG_FORKID=SIG_FORKID_BTG;
-	nForkSigHashType|=THIS_CLIENT_SIG_FORKID << 8;
+	nForkSigHashType|=selected_forkid << 8;
     }
 
     if (sigversion == SIGVERSION_WITNESS_V0) {
