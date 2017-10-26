@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "base58.h"
 #include "serialize.h"
 #include "streams.h"
 #include "version.h"
@@ -64,6 +65,42 @@ BOOST_AUTO_TEST_CASE(zcash_header_compatible)
     BOOST_CHECK_EQUAL(btg_header.nHeight, (uint32_t)zcash_header.hashReserved.GetUint64(0));
     BOOST_CHECK_EQUAL(btg_header.nReserved[5], (uint32_t)zcash_header.hashReserved.GetUint64(3));
     BOOST_CHECK_EQUAL(btg_header.nSolution[2], zcash_header.nSolution[2]);
+}
+
+// For address conversion.
+class FakeChainParam : public CChainParams
+{
+public:
+    FakeChainParam()
+    {
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
+    }
+};
+static const FakeChainParam fakeLegacyChainParam;
+
+std::string ConvertToNewAddress(const std::string& old_address)
+{
+    CBitcoinAddress addr(old_address);
+    BOOST_CHECK(addr.IsValid(fakeLegacyChainParam));
+    CBitcoinAddress new_addr(addr.Get(fakeLegacyChainParam));
+    return new_addr.ToString();
+}
+
+std::string ConvertToOldAddress(const std::string& new_address)
+{
+    CBitcoinAddress addr(new_address);
+    BOOST_CHECK(addr.IsValid());
+    CBitcoinAddress old_addr(addr.Get(), fakeLegacyChainParam);
+    return old_addr.ToString();
+}
+
+BOOST_AUTO_TEST_CASE(address_compatible)
+{
+    std::string p2pkh_addr = "16FoV6CpUT5YPHL8rcY7SQoHvnyXY4yRsD";
+    BOOST_CHECK_EQUAL(ConvertToOldAddress(ConvertToNewAddress(p2pkh_addr)), p2pkh_addr);
+    std::string p2sh_addr = "3CjLoKt9KYcfjf4MWAbGz8xnpfJvzvMxMi";
+    BOOST_CHECK_EQUAL(ConvertToOldAddress(ConvertToNewAddress(p2sh_addr)), p2sh_addr);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
