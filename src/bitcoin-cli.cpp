@@ -49,6 +49,7 @@ std::string HelpMessageCli()
     strUsage += HelpMessageOpt("-rpcclienttimeout=<n>", strprintf(_("Timeout in seconds during HTTP requests, or 0 for no timeout. (default: %d)"), DEFAULT_HTTP_CLIENT_TIMEOUT));
     strUsage += HelpMessageOpt("-stdin", _("Read extra arguments from standard input, one per line until EOF/Ctrl-D (recommended for sensitive information such as passphrases)"));
     strUsage += HelpMessageOpt("-rpcwallet=<walletname>", _("Send RPC for non-default wallet on RPC server (argument is wallet filename in bitcoind directory, required if bitcoind/-Qt runs with multiple wallets)"));
+    strUsage += HelpMessageOpt("-convertaddress=<bticoin_address>", _("Convert a Bitcoin address into Bitcoin Gold address format."));
 
     return strUsage;
 }
@@ -105,7 +106,8 @@ static int AppInitRPC(int argc, char* argv[])
                   "  bitcoin-cli [options] <command> [params]  " + strprintf(_("Send command to %s"), _(PACKAGE_NAME)) + "\n" +
                   "  bitcoin-cli [options] -named <command> [name=value] ... " + strprintf(_("Send command to %s (with named arguments)"), _(PACKAGE_NAME)) + "\n" +
                   "  bitcoin-cli [options] help                " + _("List commands") + "\n" +
-                  "  bitcoin-cli [options] help <command>      " + _("Get help for a command") + "\n";
+                  "  bitcoin-cli [options] help <command>      " + _("Get help for a command") + "\n"
+                  "  bitcoin-cli [options] -convertaddress=address " + _("Convert Bitcoin address to Bitcoin Gold address")  + "\n";
 
             strUsage += "\n" + HelpMessageCli();
         }
