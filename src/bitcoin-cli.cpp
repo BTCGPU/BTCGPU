@@ -7,6 +7,8 @@
 #include "config/bitcoin-config.h"
 #endif
 
+#include "base58.h"
+#include "chainparams.h"
 #include "chainparamsbase.h"
 #include "clientversion.h"
 #include "fs.h"
@@ -70,6 +72,22 @@ public:
 
 };
 
+
+static int ConvertAddressFormat()
+{
+    SelectParams(CBaseChainParams::MAIN);
+    const CChainParams& params = BitcoinAddressFormatParams();
+    std::string old_address = gArgs.GetArg("-convertaddress", "");
+    CBitcoinAddress addr(old_address);
+    if (!addr.IsValid(params)) {
+        fprintf(stderr, "Invalid Bitcoin address: %s\n", old_address.c_str());
+        return EXIT_FAILURE;
+    }
+    CBitcoinAddress new_addr(addr.Get(params));
+    fprintf(stdout, "%s\n", new_addr.ToString().c_str());
+    return EXIT_SUCCESS;
+}
+
 //
 // This function returns either one of EXIT_ codes when it's expected to stop the process or
 // CONTINUE_EXECUTION when it's expected to continue further.
@@ -120,6 +138,15 @@ static int AppInitRPC(int argc, char* argv[])
     {
         fprintf(stderr, "Error: SSL mode for RPC (-rpcssl) is no longer supported.\n");
         return EXIT_FAILURE;
+    }
+    if (gArgs.IsArgSet("-convertaddress")) {
+        std::string chain_name = ChainNameFromCommandLine();
+        if (chain_name != CBaseChainParams::MAIN) {
+            fprintf(stderr, "Error: Only the address format of mainnet can be converted. You selected: %s\n",
+                    chain_name.c_str());
+            return EXIT_FAILURE;
+        }
+        return ConvertAddressFormat();
     }
     return CONTINUE_EXECUTION;
 }

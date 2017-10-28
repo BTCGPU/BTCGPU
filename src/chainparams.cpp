@@ -378,11 +378,28 @@ public:
     }
 };
 
-static std::unique_ptr<CChainParams> globalChainParams;
+class BitcoinAddressChainParam : public CMainParams
+{
+public:
+    BitcoinAddressChainParam()
+    {
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
+    }
+};
 
-const CChainParams &Params() {
+static std::unique_ptr<CChainParams> globalChainParams;
+static BitcoinAddressChainParam chainParamsForAddressConversion;
+
+const CChainParams &Params()
+{
     assert(globalChainParams);
     return *globalChainParams;
+}
+
+const CChainParams &BitcoinAddressFormatParams()
+{
+    return chainParamsForAddressConversion;
 }
 
 std::unique_ptr<CChainParams> CreateChainParams(const std::string& chain)
