@@ -2989,6 +2989,22 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
         }
     }
 
+    if (nHeight >= consensusParams.BTGHeight &&
+            nHeight < consensusParams.BTGHeight + consensusParams.BTGPremineWindow) {
+        if (block.vtx.size() != 1) {
+            return state.DoS(
+                100, error("%s: no transaction allowed in premine window",__func__),
+                REJECT_INVALID, "premine-no-tx-allowed");
+        }
+        const CTxOut& output = block.vtx[0]->vout[0];
+        bool valid = Params().IsPremineAddressScript(output.scriptPubKey);
+        if (!valid) {
+            return state.DoS(
+                100, error("%s: not in premine whitelist", __func__),
+                REJECT_INVALID, "cb-not-premine-whitelist");
+        }
+    }
+
     // Validation for witness commitments.
     // * We compute the witness hash (which is the hash including witnesses) of all the block's transactions, except the
     //   coinbase (where 0x0000....0000 is used instead).
