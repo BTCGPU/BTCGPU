@@ -87,7 +87,8 @@ static int AppInitRPC(int argc, char* argv[])
                   "  bgold-cli [options] <command> [params]  " + strprintf(_("Send command to %s"), _(PACKAGE_NAME)) + "\n" +
                   "  bgold-cli [options] -named <command> [name=value] ... " + strprintf(_("Send command to %s (with named arguments)"), _(PACKAGE_NAME)) + "\n" +
                   "  bgold-cli [options] help                " + _("List commands") + "\n" +
-                  "  bgold-cli [options] help <command>      " + _("Get help for a command") + "\n";
+                  "  bgold-cli [options] help <command>      " + _("Get help for a command") + "\n"
+                  "  bgold-cli [options] -convertaddress=address " + _("Convert Bitcoin address to Bitcoin Gold address")  + "\n";
 
             strUsage += "\n" + HelpMessageCli();
         }
