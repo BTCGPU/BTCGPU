@@ -48,7 +48,7 @@ static CBlock BuildBlockTestCase() {
     block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
     assert(!mutated);
     // TODO(h4x3rotab): Generate Equihash solution if applicable.
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, Params().GetConsensus())) {
+    while (!CheckProofOfWork(block.GetHash(), block.nBits, false, Params().GetConsensus())) {
         block.nNonce = ArithToUint256(UintToArith256(block.nNonce) + 1);
     }
     return block;
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(EmptyBlockRoundTripTest)
     block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
     assert(!mutated);
     // TODO(h4x3rotab): Generate Equihash solution if applicable.
-    while (!CheckProofOfWork(block.GetHash(), block.nBits, Params().GetConsensus())) {
+    while (!CheckProofOfWork(block.GetHash(), block.nBits, false, Params().GetConsensus())) {
         block.nNonce = ArithToUint256(UintToArith256(block.nNonce) + 1);
     }
 
