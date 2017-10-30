@@ -369,7 +369,7 @@ void CreateCreditAndSpend(const CKeyStore& keystore, const CScript& outscript, C
     inputm.vout.resize(1);
     inputm.vout[0].nValue = 1;
     inputm.vout[0].scriptPubKey = CScript();
-    bool ret = SignSignature(keystore, *output, inputm, 0, SIGHASH_ALL);
+    bool ret = SignSignature(keystore, *output, inputm, 0, SIGHASH_ALL | SIGHASH_FORKID);
     assert(ret == success);
     CDataStream ssin(SER_NETWORK, PROTOCOL_VERSION);
     ssin << inputm;
@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE(test_big_witness_transaction) {
 
     // sign all inputs
     for(uint32_t i = 0; i < mtx.vin.size(); i++) {
-        bool hashSigned = SignSignature(keystore, scriptPubKey, mtx, i, 1000, sigHashes.at(i % sigHashes.size()));
+        bool hashSigned = SignSignature(keystore, scriptPubKey, mtx, i, 1000,  SIGHASH_FORKID | sigHashes.at(i % sigHashes.size()));
         assert(hashSigned);
     }
 

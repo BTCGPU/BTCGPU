@@ -228,7 +228,7 @@ bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned i
             return set_error(serror, SCRIPT_ERR_SIG_HASHTYPE);
 
         bool requiresForkId = !AllowsNonForkId(flags);
-        bool usesForkId = UsesForkId(flags);
+        bool usesForkId = UsesForkId(vchSig);
         if (requiresForkId && !usesForkId)
             return set_error(serror, SCRIPT_ERR_SIG_HASHTYPE);
     }
@@ -1081,6 +1081,7 @@ private:
     const CScript& scriptCode; //!< output script being consumed
     const unsigned int nIn;    //!< input index of txTo being signed
     const bool fAnyoneCanPay;  //!< whether the hashtype has the SIGHASH_ANYONECANPAY flag set
+    const bool fForkID;        //!< whether the hashtype has the SIGHASH_FORKID flag set
     const bool fHashSingle;    //!< whether the hashtype is SIGHASH_SINGLE
     const bool fHashNone;      //!< whether the hashtype is SIGHASH_NONE
 
@@ -1088,6 +1089,7 @@ public:
     CTransactionSignatureSerializer(const CTransaction &txToIn, const CScript &scriptCodeIn, unsigned int nInIn, int nHashTypeIn) :
         txTo(txToIn), scriptCode(scriptCodeIn), nIn(nInIn),
         fAnyoneCanPay(!!(nHashTypeIn & SIGHASH_ANYONECANPAY)),
+        fForkID(!!(nHashTypeIn & SIGHASH_FORKID)),
         fHashSingle((nHashTypeIn & 0x1f) == SIGHASH_SINGLE),
         fHashNone((nHashTypeIn & 0x1f) == SIGHASH_NONE) {}
 
