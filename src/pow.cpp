@@ -16,13 +16,13 @@
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
-    unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
     
-    // Genesis block
-    if (pindexLast == NULL)
-        return nProofOfWorkLimit;
-    
-    if (pindexLast->nHeight < params.BTGHeight) {
+    assert(pindexLast != nullptr);
+    int nHeight = pindexLast->nHeight + 1;
+    bool postfork = nHeight >= params.BTGHeight;
+    unsigned int nProofOfWorkLimit = UintToArith256(params.PowLimit(postfork)).GetCompact();
+
+    if (!postfork) {
         return BitcoinGetNextWorkRequired(pindexLast, pblock, params);
     }
     else if (nHeight < params.BTGHeight + params.BTGPremineWindow) {
