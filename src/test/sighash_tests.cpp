@@ -115,9 +115,9 @@ void static RandomTransaction(CMutableTransaction &tx, bool fSingle) {
     }
 }
 
-BOOST_FIXTURE_TEST_SUITE(sighash_tests, BasicTestingSetup)
+BOOST_FIXTURE_TEST_SUITE(legacy_sighash_tests, BasicTestingSetup)
 
-BOOST_AUTO_TEST_CASE(sighash_test)
+BOOST_AUTO_TEST_CASE(legacy_sighash_test)
 {
     SeedInsecureRand(false);
 
@@ -132,6 +132,7 @@ BOOST_AUTO_TEST_CASE(sighash_test)
     #endif
     for (int i=0; i<nRandomTests; i++) {
         int nHashType = InsecureRand32();
+ 	nHashType &= ~SIGHASH_FORKID;
         CMutableTransaction txTo;
         RandomTransaction(txTo, (nHashType & 0x1f) == SIGHASH_SINGLE);
         CScript scriptCode;
@@ -163,11 +164,11 @@ BOOST_AUTO_TEST_CASE(sighash_test)
     #endif
 }
 
-// Goal: check that SignatureHash generates correct hash
-BOOST_AUTO_TEST_CASE(sighash_from_data)
+// Goal: check that legacy_SignatureHash generates correct hash
+BOOST_AUTO_TEST_CASE(legacy_sighash_from_data)
 {
     UniValue tests = read_json(std::string(json_tests::sighash, json_tests::sighash + sizeof(json_tests::sighash)));
-
+    
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
         UniValue test = tests[idx];
         std::string strTest = test.write();
@@ -190,6 +191,14 @@ BOOST_AUTO_TEST_CASE(sighash_from_data)
           raw_script = test[1].get_str();
           nIn = test[2].get_int();
           nHashType = test[3].get_int();
+
+	  if(nHashType & SIGHASH_FORKID)
+	  {
+              //SKIP this test, legacy sighash data cannot correctly be sighashed with the legacy algorithm if the random  nHashType has SIGHASH_FORKID
+              //BOOST_ERROR("Bad test, legacy sighash test randomly generated with SIGHASH_FORKID:" << strTest);
+	      continue;
+	  }
+
           sigHashHex = test[4].get_str();
 
           CDataStream stream(ParseHex(raw_tx), SER_NETWORK, PROTOCOL_VERSION);

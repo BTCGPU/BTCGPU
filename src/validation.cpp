@@ -1583,6 +1583,23 @@ public:
     }
 };
 
+static bool IsForkIDenabled(const Consensus::Params& params, int nHeight) {
+    return nHeight >= params.BTGHeight;
+}
+
+bool IsForkIDenabled(const Consensus::Params& params, const CBlockIndex *pindexPrev) {
+    if (pindexPrev == nullptr) {
+        return false;
+    }
+
+    return IsForkIDenabled(params, pindexPrev->nHeight);
+}
+
+bool IsForkIDenabledForCurrentBlock(const Consensus::Params& params) {
+    AssertLockHeld(cs_main);
+    return IsForkIDenabled(params, chainActive.Tip());
+}
+
 // Protected by cs_main
 static ThresholdConditionCache warningcache[VERSIONBITS_NUM_BITS];
 
@@ -1615,6 +1632,14 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
         flags |= SCRIPT_VERIFY_WITNESS;
         flags |= SCRIPT_VERIFY_NULLDUMMY;
     }
+
+	if (IsForkIDenabled(consensusparams, pindex->pprev)) {
+		flags |= SCRIPT_VERIFY_STRICTENC;
+	}
+	else
+	{
+		flags |= SCRIPT_ALLOW_NON_FORKID;
+	}
 
     return flags;
 }
