@@ -76,19 +76,12 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg, int64_t nLastBlockTi
 unsigned int BitcoinGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     assert(pindexLast != nullptr);
-<<<<<<< HEAD
-    unsigned int nProofOfWorkLimit = UintToArith256(params.PowLimit(false)).GetCompact();
-
-    // Only change once per difficulty adjustment interval
-    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
-=======
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
     
     int nHeightNext = pindexLast->nHeight + 1;
     int diffAdjustmentInterval = params.DifficultyAdjustmentInterval();
     
     if (nHeightNext % params.DifficultyAdjustmentInterval() != 0)
->>>>>>> Fix bad testnet consensus params.
     {
         if (params.fPowAllowMinDifficultyBlocks)
         {
