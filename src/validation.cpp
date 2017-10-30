@@ -351,6 +351,23 @@ static bool IsCurrentForFeeEstimation()
     return true;
 }
 
+bool static IsBTGHardForkEnabled(const CChainParams& chainParams, int nHeight) {
+    return nHeight >= chainParams.GetConsensus().BTGHeight;
+}
+
+bool IsBTGHardForkEnabled(const CChainParams& chainParams, const CBlockIndex *pindexPrev) {
+    if (pindexPrev == nullptr) {
+        return false;
+    }
+
+    return IsBTGHardForkEnabled(chainParams, pindexPrev->nHeight);
+}
+
+bool IsBTGHardForkEnabledForCurrentBlock(const CChainParams& chainParams) {
+    AssertLockHeld(cs_main);
+    return IsBTGHardForkEnabled(chainParams, chainActive.Tip());
+}
+
 /* Make mempool consistent after a reorg, by re-adding or recursively erasing
  * disconnected block transactions from the mempool, and also removing any
  * other transactions from the mempool that are no longer valid given the new
@@ -1614,6 +1631,12 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
     if (IsWitnessEnabled(pindex->pprev, consensusparams)) {
         flags |= SCRIPT_VERIFY_WITNESS;
         flags |= SCRIPT_VERIFY_NULLDUMMY;
+    }
+
+    // If the BTG hard fork is enabled, we start accepting replay protected txns
+    if (IsBTGHardForkEnabled(Params(), pindex->pprev)) {
+        flags |= SCRIPT_VERIFY_STRICTENC;
+        flags |= SCRIPT_ENABLE_SIGHASH_FORKID;
     }
 
     return flags;

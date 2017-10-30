@@ -114,7 +114,9 @@ int bitcoinconsensus_verify_script(const unsigned char *scriptPubKey, unsigned i
                                    const unsigned char *txTo        , unsigned int txToLen,
                                    unsigned int nIn, unsigned int flags, bitcoinconsensus_error* err)
 {
-    if (flags & bitcoinconsensus_SCRIPT_FLAGS_VERIFY_WITNESS) {
+    // TODO: figure out why FORKID needs amount info
+    if ((flags & bitcoinconsensus_SCRIPT_ENABLE_SIGHASH_FORKID) ||
+        (flags & bitcoinconsensus_SCRIPT_FLAGS_VERIFY_WITNESS)) {
         return set_error(err, bitcoinconsensus_ERR_AMOUNT_REQUIRED);
     }
 
