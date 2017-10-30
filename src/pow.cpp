@@ -16,16 +16,15 @@
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
-    unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
-    
-    // Genesis block
-    if (pindexLast == NULL)
-        return nProofOfWorkLimit;
-    
-    if (pindexLast->nHeight < params.BTGHeight) {
+    assert(pindexLast != nullptr);
+    int nHeight = pindexLast->nHeight + 1;
+    bool postfork = nHeight >= params.BTGHeight;
+    unsigned int nProofOfWorkLimit = UintToArith256(params.PowLimit(postfork)).GetCompact();
+
+    if (!postfork) {
         return BitcoinGetNextWorkRequired(pindexLast, pblock, params);
     }
-    else if (pindexLast->nHeight < params.BTGHeight + params.BTGPremineWindow) {
+    else if (nHeight < params.BTGHeight + params.BTGPremineWindow) {
         return nProofOfWorkLimit;
     }
     
@@ -60,7 +59,7 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg, int64_t nLastBlockTi
         nActualTimespan = params.MaxActualTimespan();
 
     // Retarget
-    const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
+    const arith_uint256 bnPowLimit = UintToArith256(params.PowLimit(true));
     arith_uint256 bnNew {bnAvg};
     bnNew /= params.AveragingWindowTimespan();
     bnNew *= nActualTimespan;
@@ -72,18 +71,15 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg, int64_t nLastBlockTi
 }
 
 
-// Depricated for Bitcoin Gold
+// Deprecated for Bitcoin Gold
 unsigned int BitcoinGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     assert(pindexLast != nullptr);
-    unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
-    
-    int nHeightNext = pindexLast->nHeight + 1;
-    int diffAdjustmentInterval = params.DifficultyAdjustmentInterval();
-    
-    if (nHeightNext % params.DifficultyAdjustmentInterval() != 0)
+    unsigned int nProofOfWorkLimit = UintToArith256(params.PowLimit(false)).GetCompact();
+
+    // Only change once per difficulty adjustment interval
+    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
     {
-        // Difficulty adjustment interval is not finished. Keep the last value.
         if (params.fPowAllowMinDifficultyBlocks)
         {
             // Special difficulty rule for testnet:
@@ -102,13 +98,13 @@ unsigned int BitcoinGetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
         }
         return pindexLast->nBits;
     }
-    
+
     // Go back by what we want to be 14 days worth of blocks
     int nHeightFirst = pindexLast->nHeight - (params.DifficultyAdjustmentInterval()-1);
     assert(nHeightFirst >= 0);
     const CBlockIndex* pindexFirst = pindexLast->GetAncestor(nHeightFirst);
     assert(pindexFirst);
-    
+
     return BitcoinCalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
 }
 
@@ -127,7 +123,7 @@ unsigned int BitcoinCalculateNextWorkRequired(const CBlockIndex* pindexLast, int
         nActualTimespan = params.nPowTargetTimespanLegacy*4;
     
     // Retarget
-    const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
+    const arith_uint256 bnPowLimit = UintToArith256(params.PowLimit(false));
     arith_uint256 bnNew;
     bnNew.SetCompact(pindexLast->nBits);
     bnNew *= nActualTimespan;
@@ -166,7 +162,7 @@ bool CheckEquihashSolution(const CBlockHeader *pblock, const CChainParams& param
     return true;
 }
 
-bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params& params)
+bool CheckProofOfWork(uint256 hash, unsigned int nBits, bool postfork, const Consensus::Params& params)
 {
     bool fNegative;
     bool fOverflow;
@@ -175,7 +171,7 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
 
     // Check range
-    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(params.powLimit))
+    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(params.PowLimit(postfork)))
         return false;
 
     // Check proof of work matches claimed amount

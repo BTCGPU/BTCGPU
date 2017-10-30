@@ -139,7 +139,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
         if (pblock->nHeight < (uint32_t)params.GetConsensus().BTGHeight) {
             // Solve sha256d.
             while (nMaxTries > 0 && (int)pblock->nNonce.GetUint64(0) < nInnerLoopCount &&
-                   !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus())) {
+                   !CheckProofOfWork(pblock->GetHash(), pblock->nBits, false, Params().GetConsensus())) {
                 pblock->nNonce = ArithToUint256(UintToArith256(pblock->nNonce) + 1);
                 --nMaxTries;
             }
@@ -175,7 +175,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
                     pblock->nSolution = soln;
                     // TODO(h4x3rotab): Add metrics counter like Zcash? `solutionTargetChecks.increment();`
                     // TODO(h4x3rotab): Maybe switch to EhBasicSolve and better deal with `nMaxTries`?
-                    return CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus());
+                    return CheckProofOfWork(pblock->GetHash(), pblock->nBits, true, Params().GetConsensus());
                 };
                 bool found = EhBasicSolveUncancellable(n, k, curr_state, validBlock);
                 --nMaxTries;
