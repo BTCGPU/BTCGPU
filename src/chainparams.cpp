@@ -221,8 +221,8 @@ public:
         consensus.BIP66Height = 330776; // 000000002104c8c45e99a8853285a3b592602a3ccde2b832481da85e9e4ba182
         consensus.BTGHeight = 1210320;
         consensus.BTGPremineWindow = 200;
-        consensus.BitcoinPostforkBlock = uint256S("000000000000001c4c6810d14fc015d7461bb1a8ef34a9278c358cb2a00db211");
-        consensus.BitcoinPostforkTime = 1508112260;
+        consensus.BitcoinPostforkBlock = uint256S("00000000ef93c2d9bac8da61ff11a699a5b815f77a194c567c5de0dbdf0bf28b");
+        consensus.BitcoinPostforkTime = 1508111338;
         consensus.powLimit = uint256S("07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowAveragingWindow = 17;
