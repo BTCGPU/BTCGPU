@@ -16,7 +16,6 @@
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
-    
     assert(pindexLast != nullptr);
     int nHeight = pindexLast->nHeight + 1;
     bool postfork = nHeight >= params.BTGHeight;
