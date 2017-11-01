@@ -2748,10 +2748,14 @@ bool ProcessMessages(CNode* pfrom, CConnman& connman, const std::atomic<bool>& i
     
     // This is a new peer. Before doing anything, we need to detect what magic
     // the peer is using.
-    if (pfrom->nVersion == 0 &&
-        memcmp(msg.hdr.pchMessageStart, chainparams.MessageStart(),
-               CMessageHeader::MESSAGE_START_SIZE) == 0) {
-        pfrom->fUsesGoldMagic = true;
+    if (pfrom->nVersion == 0) {
+        if (memcmp(msg.hdr.pchMessageStart, chainparams.MessageStart(),
+                   CMessageHeader::MESSAGE_START_SIZE) == 0) {
+            pfrom->fUsesGoldMagic = true;
+        } else if (fBTGBootstrapping) {
+            // Allow to connect to Bitcoin clients when bootstrapping.
+            pfrom->fUsesGoldMagic = false;
+        }
     }
     
     // Scan for message start
