@@ -47,16 +47,38 @@ static CUpdatedBlock latestblock;
 
 extern void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry);
 
-double GetDifficulty(const CBlockIndex* blockindex)
+double GetDifficultyINTERNAL(const CBlockIndex* blockindex)
 {
-    if (blockindex == nullptr)
+    // Floating point number that is a multiple of the minimum difficulty,
+    // minimum difficulty = 1.0.
+
+    uint32_t bits = blockindex->nBits;
+
+    uint32_t powLimit =
+        UintToArith256(Params().GetConsensus().powLimit).GetCompact();
+    int nShift = (bits >> 24) & 0xff;
+    int nShiftAmount = (powLimit >> 24) & 0xff;
+
+    double dDiff =
+        (double)(powLimit & 0x00ffffff) / 
+        (double)(bits & 0x00ffffff);
+
+    while (nShift < nShiftAmount)
     {
-        if (chainActive.Tip() == nullptr)
-            return 1.0;
-        else
-            blockindex = chainActive.Tip();
+        dDiff *= 256.0;
+        nShift++;
+    }
+    while (nShift > nShiftAmount)
+    {
+        dDiff /= 256.0;
+        nShift--;
     }
 
+    return dDiff;
+}
+
+double GetDifficultyBitcoin(const CBlockIndex* blockindex)
+{
     int nShift = (blockindex->nBits >> 24) & 0xff;
 
     double dDiff =
@@ -74,6 +96,26 @@ double GetDifficulty(const CBlockIndex* blockindex)
     }
 
     return dDiff;
+}
+
+double GetDifficulty(const CBlockIndex* blockindex)
+{
+    if (blockindex == nullptr)
+    {
+        if (chainActive.Tip() == nullptr)
+            return 1.0;
+        else
+            blockindex = chainActive.Tip();
+    }
+
+    if (blockindex->nHeight >= Params().GetConsensus().BTGHeight)
+    {
+        return GetDifficultyINTERNAL(blockindex);
+    }
+    else
+    {
+        return GetDifficultyBitcoin(blockindex);
+    }
 }
 
 UniValue blockheaderToJSON(const CBlockIndex* blockindex)
