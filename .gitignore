@@ -88,6 +88,9 @@ qrc_*.cpp
 .DS_Store
 build
 
+# VSCode
+.vscode/
+
 #lcov
 *.gcno
 *.gcda

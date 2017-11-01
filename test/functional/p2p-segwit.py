@@ -1258,7 +1258,7 @@ class SegWitTest(BitcoinTestFramework):
 
         # Test each hashtype
         prev_utxo = UTXO(tx.sha256, 0, tx.vout[0].nValue)
-        for sigflag in [ 0, SIGHASH_ANYONECANPAY ]:
+        for sigflag in [ 0, SIGHASH_ANYONECANPAY, SIGHASH_FORKID, SIGHASH_ANYONECANPAY | SIGHASH_FORKID ]:
             for hashtype in [SIGHASH_ALL, SIGHASH_NONE, SIGHASH_SINGLE]:
                 hashtype |= sigflag
                 block = self.build_next_block()
@@ -1299,7 +1299,7 @@ class SegWitTest(BitcoinTestFramework):
         for i in range(NUM_TESTS):
             tx.vout.append(CTxOut(split_value, scriptPubKey))
         tx.wit.vtxinwit.append(CTxInWitness())
-        sign_P2PK_witness_input(witness_program, tx, 0, SIGHASH_ALL, prev_utxo.nValue, key)
+        sign_P2PK_witness_input(witness_program, tx, 0, SIGHASH_ALL|SIGHASH_FORKID, prev_utxo.nValue, key)
         for i in range(NUM_TESTS):
             temp_utxos.append(UTXO(tx.sha256, i, split_value))
 
@@ -1364,14 +1364,14 @@ class SegWitTest(BitcoinTestFramework):
         tx.vin.append(CTxIn(COutPoint(temp_utxos[0].sha256, temp_utxos[0].n), b""))
         tx.vout.append(CTxOut(temp_utxos[0].nValue, scriptPKH))
         tx.wit.vtxinwit.append(CTxInWitness())
-        sign_P2PK_witness_input(witness_program, tx, 0, SIGHASH_ALL, temp_utxos[0].nValue, key)
+        sign_P2PK_witness_input(witness_program, tx, 0, SIGHASH_ALL|SIGHASH_FORKID, temp_utxos[0].nValue, key)
         tx2 = CTransaction()
         tx2.vin.append(CTxIn(COutPoint(tx.sha256, 0), b""))
         tx2.vout.append(CTxOut(tx.vout[0].nValue, CScript([OP_TRUE])))
 
         script = GetP2PKHScript(pubkeyhash)
-        sig_hash = SegwitVersion1SignatureHash(script, tx2, 0, SIGHASH_ALL, tx.vout[0].nValue)
-        signature = key.sign(sig_hash) + b'\x01' # 0x1 is SIGHASH_ALL
+        sig_hash = SegwitVersion1SignatureHash(script, tx2, 0, SIGHASH_ALL|SIGHASH_FORKID, tx.vout[0].nValue)
+        signature = key.sign(sig_hash) + b'\x41' # 0x41 is SIGHASH_ALL|SIGHASH_FORKID
 
         # Check that we can't have a scriptSig
         tx2.vin[0].scriptSig = CScript([signature, pubkey])
@@ -1402,7 +1402,7 @@ class SegWitTest(BitcoinTestFramework):
             tx.vin.append(CTxIn(COutPoint(i.sha256, i.n), b""))
             tx.vout.append(CTxOut(i.nValue, CScript([OP_TRUE])))
             tx.wit.vtxinwit.append(CTxInWitness())
-            sign_P2PK_witness_input(witness_program, tx, index, SIGHASH_SINGLE|SIGHASH_ANYONECANPAY, i.nValue, key)
+            sign_P2PK_witness_input(witness_program, tx, index, SIGHASH_SINGLE|SIGHASH_ANYONECANPAY|SIGHASH_FORKID, i.nValue, key)
             index += 1
         block = self.build_next_block()
         self.update_witness_block_with_transactions(block, [tx])
@@ -1702,8 +1702,8 @@ class SegWitTest(BitcoinTestFramework):
         tx2.vin.append(CTxIn(COutPoint(tx.sha256, 0), b""))
         tx2.vout.append(CTxOut(tx.vout[0].nValue-1000, scriptWSH))
         script = GetP2PKHScript(pubkeyhash)
-        sig_hash = SegwitVersion1SignatureHash(script, tx2, 0, SIGHASH_ALL, tx.vout[0].nValue)
-        signature = key.sign(sig_hash) + b'\x01' # 0x1 is SIGHASH_ALL
+        sig_hash = SegwitVersion1SignatureHash(script, tx2, 0, SIGHASH_ALL|SIGHASH_FORKID, tx.vout[0].nValue)
+        signature = key.sign(sig_hash) + b'\x41' # 0x41 is SIGHASH_ALL|SIGHASH_FORKID
         tx2.wit.vtxinwit.append(CTxInWitness())
         tx2.wit.vtxinwit[0].scriptWitness.stack = [ signature, pubkey ]
         tx2.rehash()
@@ -1726,7 +1726,7 @@ class SegWitTest(BitcoinTestFramework):
         tx3.vin.append(CTxIn(COutPoint(tx2.sha256, 0), b""))
         tx3.vout.append(CTxOut(tx2.vout[0].nValue-1000, scriptP2SH))
         tx3.wit.vtxinwit.append(CTxInWitness())
-        sign_P2PK_witness_input(witness_program, tx3, 0, SIGHASH_ALL, tx2.vout[0].nValue, key)
+        sign_P2PK_witness_input(witness_program, tx3, 0, SIGHASH_ALL|SIGHASH_FORKID, tx2.vout[0].nValue, key)
 
         # Should fail policy test.
         self.test_node.test_transaction_acceptance(tx3, True, False, b'non-mandatory-script-verify-flag (Using non-compressed keys in segwit)')
@@ -1743,7 +1743,7 @@ class SegWitTest(BitcoinTestFramework):
         tx4.vin.append(CTxIn(COutPoint(tx3.sha256, 0), scriptSig))
         tx4.vout.append(CTxOut(tx3.vout[0].nValue-1000, scriptPubKey))
         tx4.wit.vtxinwit.append(CTxInWitness())
-        sign_P2PK_witness_input(witness_program, tx4, 0, SIGHASH_ALL, tx3.vout[0].nValue, key)
+        sign_P2PK_witness_input(witness_program, tx4, 0, SIGHASH_ALL|SIGHASH_FORKID, tx3.vout[0].nValue, key)
 
         # Should fail policy test.
         self.test_node.test_transaction_acceptance(tx4, True, False, b'non-mandatory-script-verify-flag (Using non-compressed keys in segwit)')
@@ -1756,8 +1756,8 @@ class SegWitTest(BitcoinTestFramework):
         tx5 = CTransaction()
         tx5.vin.append(CTxIn(COutPoint(tx4.sha256, 0), b""))
         tx5.vout.append(CTxOut(tx4.vout[0].nValue-1000, CScript([OP_TRUE])))
-        (sig_hash, err) = SignatureHash(scriptPubKey, tx5, 0, SIGHASH_ALL)
-        signature = key.sign(sig_hash) + b'\x01' # 0x1 is SIGHASH_ALL
+        (sig_hash, err) = SignatureHash(scriptPubKey, tx5, 0, SIGHASH_ALL|SIGHASH_FORKID)
+        signature = key.sign(sig_hash) + b'\x41' # 0x41 is SIGHASH_ALL|SIGHASH_FORKID
         tx5.vin[0].scriptSig = CScript([signature, pubkey])
         tx5.rehash()
         # Should pass policy and consensus.

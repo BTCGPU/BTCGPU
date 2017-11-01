@@ -132,6 +132,7 @@ BOOST_AUTO_TEST_CASE(sighash_test)
     #endif
     for (int i=0; i<nRandomTests; i++) {
         int nHashType = InsecureRand32();
+        nHashType &= ~SIGHASH_FORKID;
         CMutableTransaction txTo;
         RandomTransaction(txTo, (nHashType & 0x1f) == SIGHASH_SINGLE);
         CScript scriptCode;
@@ -191,6 +192,9 @@ BOOST_AUTO_TEST_CASE(sighash_from_data)
           nIn = test[2].get_int();
           nHashType = test[3].get_int();
           sigHashHex = test[4].get_str();
+
+          if (nHashType & SIGHASH_FORKID)
+            continue;
 
           CDataStream stream(ParseHex(raw_tx), SER_NETWORK, PROTOCOL_VERSION);
           stream >> tx;
