@@ -18,6 +18,7 @@
 #include "fs.h"
 #include "hash.h"
 #include "init.h"
+#include "netbase.h"
 #include "policy/fees.h"
 #include "policy/policy.h"
 #include "policy/rbf.h"
@@ -349,6 +350,23 @@ static bool IsCurrentForFeeEstimation()
     if (chainActive.Height() < pindexBestHeader->nHeight - 1)
         return false;
     return true;
+}
+
+bool static IsBTGHardForkEnabled(const CChainParams& chainParams, int nHeight) {
+    return nHeight >= chainParams.GetConsensus().BTGHeight;
+}
+
+bool IsBTGHardForkEnabled(const CChainParams& chainParams, const CBlockIndex *pindexPrev) {
+    if (pindexPrev == nullptr) {
+        return false;
+    }
+
+    return IsBTGHardForkEnabled(chainParams, pindexPrev->nHeight);
+}
+
+bool IsBTGHardForkEnabledForCurrentBlock(const CChainParams& chainParams) {
+    AssertLockHeld(cs_main);
+    return IsBTGHardForkEnabled(chainParams, chainActive.Tip());
 }
 
 /* Make mempool consistent after a reorg, by re-adding or recursively erasing
@@ -1054,7 +1072,8 @@ bool IsInitialBlockDownload()
         return true;
     if (chainActive.Tip()->nChainWork < UintToArith256(chainParams.GetConsensus().nMinimumChainWork))
         return true;
-    if (chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge))
+    int64_t target_time = fBTGBootstrapping ? (int64_t)chainParams.GetConsensus().BitcoinPostforkTime : GetTime();
+    if (chainActive.Tip()->GetBlockTime() < (target_time - nMaxTipAge))
         return true;
     LogPrintf("Leaving InitialBlockDownload (latching to false)\n");
     latchToFalse.store(true, std::memory_order_relaxed);
@@ -1614,6 +1633,12 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
     if (IsWitnessEnabled(pindex->pprev, consensusparams)) {
         flags |= SCRIPT_VERIFY_WITNESS;
         flags |= SCRIPT_VERIFY_NULLDUMMY;
+    }
+
+    if (IsBTGHardForkEnabled(Params(), pindex->pprev)) {
+        flags |= SCRIPT_VERIFY_STRICTENC;
+    } else {
+        flags |= SCRIPT_ALLOW_NON_FORKID;
     }
 
     return flags;

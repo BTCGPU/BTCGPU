@@ -440,7 +440,11 @@ void MaybeSetPeerAsAnnouncingHeaderAndIDs(NodeId nodeid, CConnman& connman) {
 // Requires cs_main
 bool CanDirectFetch(const Consensus::Params &consensusParams)
 {
-    return chainActive.Tip()->GetBlockTime() > GetAdjustedTime() - consensusParams.nPowTargetSpacing * 20;
+    int64_t target_time = GetAdjustedTime();
+    if (fBTGBootstrapping && consensusParams.BitcoinPostforkTime > 0) {
+        target_time = consensusParams.BitcoinPostforkTime;
+    }
+    return chainActive.Tip()->GetBlockTime() > target_time - consensusParams.nPowTargetSpacing * 20;
 }
 
 // Requires cs_main
@@ -2293,7 +2297,11 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         //   nUnconnectingHeaders gets reset back to 0.
         if (mapBlockIndex.find(headers[0].hashPrevBlock) == mapBlockIndex.end() && nCount < MAX_BLOCKS_TO_ANNOUNCE) {
             nodestate->nUnconnectingHeaders++;
-            connman.PushMessage(pfrom, msgMaker.Make(NetMsgType::GETHEADERS, chainActive.GetLocator(pindexBestHeader), uint256()));
+            uint256 stop_hash;
+            if (fBTGBootstrapping) {
+                stop_hash = chainparams.GetConsensus().BitcoinPostforkBlock;
+            }
+            connman.PushMessage(pfrom, msgMaker.Make(NetMsgType::GETHEADERS, chainActive.GetLocator(pindexBestHeader), stop_hash));
             LogPrint(BCLog::NET, "received header %s: missing prev block %s, sending getheaders (%d) to end (peer=%d, nUnconnectingHeaders=%d)\n",
                     headers[0].GetHash().ToString(),
                     headers[0].hashPrevBlock.ToString(),
@@ -2321,14 +2329,19 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
 
         CValidationState state;
+        // When bootstrapping BTG network, continue even if there are invalid blocks.
         if (!ProcessNewBlockHeaders(headers, state, chainparams, &pindexLast)) {
-            int nDoS;
-            if (state.IsInvalid(nDoS)) {
-                if (nDoS > 0) {
-                    LOCK(cs_main);
-                    Misbehaving(pfrom->GetId(), nDoS);
+            if (fBTGBootstrapping && pindexLast != nullptr) {
+                LogPrint(BCLog::NET, "though found invalid headers, continue with valid headers for bootstrapping.\n");
+            } else {
+                int nDoS;
+                if (state.IsInvalid(nDoS)) {
+                    if (nDoS > 0) {
+                        LOCK(cs_main);
+                        Misbehaving(pfrom->GetId(), nDoS);
+                    }
+                    return error("invalid header received");
                 }
-                return error("invalid header received");
             }
         }
 
@@ -2348,7 +2361,11 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             // TODO: optimize: if pindexLast is an ancestor of chainActive.Tip or pindexBestHeader, continue
             // from there instead.
             LogPrint(BCLog::NET, "more getheaders (%d) to end to peer=%d (startheight:%d)\n", pindexLast->nHeight, pfrom->GetId(), pfrom->nStartingHeight);
-            connman.PushMessage(pfrom, msgMaker.Make(NetMsgType::GETHEADERS, chainActive.GetLocator(pindexLast), uint256()));
+            uint256 stop_hash;
+            if (fBTGBootstrapping) {
+                stop_hash = chainparams.GetConsensus().BitcoinPostforkBlock;
+            }
+            connman.PushMessage(pfrom, msgMaker.Make(NetMsgType::GETHEADERS, chainActive.GetLocator(pindexLast), stop_hash));
         }
 
         bool fCanDirectFetch = CanDirectFetch(chainparams.GetConsensus());
@@ -2394,7 +2411,9 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                             pindexLast->GetBlockHash().ToString(), pindexLast->nHeight);
                 }
                 if (vGetData.size() > 0) {
-                    if (nodestate->fSupportsDesiredCmpctVersion && vGetData.size() == 1 && mapBlocksInFlight.size() == 1 && pindexLast->pprev->IsValid(BLOCK_VALID_CHAIN)) {
+                    if (nodestate->fSupportsDesiredCmpctVersion && vGetData.size() == 1 &&
+                            mapBlocksInFlight.size() == 1 && pindexLast->pprev->IsValid(BLOCK_VALID_CHAIN) &&
+                            !DISABLE_CMPCTBLOCK) {
                         // In any case, we want to download using a compact block, not a regular one
                         vGetData[0] = CInv(MSG_CMPCT_BLOCK, vGetData[0].hash);
                     }
@@ -2937,7 +2956,11 @@ bool SendMessages(CNode* pto, CConnman& connman, const std::atomic<bool>& interr
                 if (pindexStart->pprev)
                     pindexStart = pindexStart->pprev;
                 LogPrint(BCLog::NET, "initial getheaders (%d) to peer=%d (startheight:%d)\n", pindexStart->nHeight, pto->GetId(), pto->nStartingHeight);
-                connman.PushMessage(pto, msgMaker.Make(NetMsgType::GETHEADERS, chainActive.GetLocator(pindexStart), uint256()));
+                uint256 stop_hash;
+                if (fBTGBootstrapping) {
+                    stop_hash = consensusParams.BitcoinPostforkBlock;
+                }
+                connman.PushMessage(pto, msgMaker.Make(NetMsgType::GETHEADERS, chainActive.GetLocator(pindexStart), stop_hash));
             }
         }
 
