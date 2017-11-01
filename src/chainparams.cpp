@@ -360,7 +360,7 @@ public:
         pchMessageStartLegacy[2] = 0xb5;
         pchMessageStartLegacy[3] = 0xda;
         
-        pchMessageStart[0] = 0xde;
+        pchMessageStart[0] = 0xfa;
         pchMessageStart[1] = 0xbf;
         pchMessageStart[2] = 0xb5;
         pchMessageStart[3] = 0xda;
