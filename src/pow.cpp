@@ -51,7 +51,6 @@ unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg, int64_t nLastBlockTi
     
     // Limit adjustment
     int64_t nActualTimespan = nLastBlockTime - nFirstBlockTime;
-    nActualTimespan = params.AveragingWindowTimespan() + (nActualTimespan - params.AveragingWindowTimespan())/4;
     
     if (nActualTimespan < params.MinActualTimespan())
         nActualTimespan = params.MinActualTimespan();
