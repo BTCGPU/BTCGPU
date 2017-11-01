@@ -18,6 +18,7 @@
 #include "fs.h"
 #include "hash.h"
 #include "init.h"
+#include "netbase.h"
 #include "policy/fees.h"
 #include "policy/policy.h"
 #include "policy/rbf.h"
@@ -1071,7 +1072,8 @@ bool IsInitialBlockDownload()
         return true;
     if (chainActive.Tip()->nChainWork < UintToArith256(chainParams.GetConsensus().nMinimumChainWork))
         return true;
-    if (chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge))
+    int64_t target_time = fBTGBootstrapping ? (int64_t)chainParams.GetConsensus().BitcoinPostforkTime : GetTime();
+    if (chainActive.Tip()->GetBlockTime() < (target_time - nMaxTipAge))
         return true;
     LogPrintf("Leaving InitialBlockDownload (latching to false)\n");
     latchToFalse.store(true, std::memory_order_relaxed);

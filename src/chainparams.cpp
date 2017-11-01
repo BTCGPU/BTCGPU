@@ -98,6 +98,8 @@ public:
         consensus.BIP66Height = 363725; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
         consensus.BTGHeight = 491407; // Around 10/25/2017 12:00 UTC
         consensus.BTGPremineWindow = 8000;
+        consensus.BitcoinPostforkBlock = uint256S("000000000000000000e5438564434edaf41e63829a637521a96235adf4653e1b");
+        consensus.BitcoinPostforkTime = 1508808039;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowAveragingWindow = 17;
@@ -140,6 +142,7 @@ public:
         pchMessageStart[2] = 0xb4;
         pchMessageStart[3] = 0xd9;
         nDefaultPort = 8338; // different port than Bitcoin
+        nBitcoinDefaultPort = 8333;
         nPruneAfterHeight = 100000;
         const size_t N = 200, K = 9;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -218,6 +221,8 @@ public:
         consensus.BIP66Height = 330776; // 000000002104c8c45e99a8853285a3b592602a3ccde2b832481da85e9e4ba182
         consensus.BTGHeight = 1210320;
         consensus.BTGPremineWindow = 200;
+        consensus.BitcoinPostforkBlock = uint256S("00000000ef93c2d9bac8da61ff11a699a5b815f77a194c567c5de0dbdf0bf28b");
+        consensus.BitcoinPostforkTime = 1508111338;
         consensus.powLimit = uint256S("07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowAveragingWindow = 17;
@@ -255,6 +260,7 @@ public:
         pchMessageStart[2] = 0x09;
         pchMessageStart[3] = 0x07;
         nDefaultPort = 18338;
+        nBitcoinDefaultPort = 18333;
         nPruneAfterHeight = 1000;
         const size_t N = 200, K = 9;  // Same as mainchain.
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -319,6 +325,8 @@ public:
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in rpc activation tests)
         consensus.BTGHeight = 3000;
         consensus.BTGPremineWindow = 10;
+        consensus.BitcoinPostforkBlock = uint256();
+        consensus.BitcoinPostforkTime = 0;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowAveragingWindow = 17;
@@ -351,6 +359,7 @@ public:
         pchMessageStart[2] = 0xb5;
         pchMessageStart[3] = 0xda;
         nDefaultPort = 18444;
+        nBitcoinDefaultPort = 18444;
         nPruneAfterHeight = 1000;
         const size_t N = 48, K = 5;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
