@@ -101,13 +101,14 @@ public:
         consensus.BitcoinPostforkBlock = uint256S("000000000000000000e5438564434edaf41e63829a637521a96235adf4653e1b");
         consensus.BitcoinPostforkTime = 1508808039;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.powLimitStart = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         
         //based on https://github.com/BTCGPU/BTCGPU/issues/78
-        consensus.nPowAveragingWindow = 40;
+        consensus.nPowAveragingWindow = 30;
         assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
-        consensus.nPowMaxAdjustDown = 12; // 12% adjustment down
-        consensus.nPowMaxAdjustUp = 12; // 12% adjustment up
+        consensus.nPowMaxAdjustDown = 15;
+        consensus.nPowMaxAdjustUp = 15;
         
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60;; // 10 minutes
         consensus.nPowTargetSpacing = 10 * 60;
@@ -219,17 +220,18 @@ public:
         consensus.BIP65Height = 581885; // 00000000007f6655f22f98e72ed80d8b06dc761d5da09df0fa1dc4be4f861eb6
         consensus.BIP66Height = 330776; // 000000002104c8c45e99a8853285a3b592602a3ccde2b832481da85e9e4ba182
         consensus.BTGHeight = 1210320;
-        consensus.BTGPremineWindow = 200;
+        consensus.BTGPremineWindow = 50;
         consensus.BitcoinPostforkBlock = uint256S("00000000ef93c2d9bac8da61ff11a699a5b815f77a194c567c5de0dbdf0bf28b");
         consensus.BitcoinPostforkTime = 1508111338;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.powLimitStart = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         
         //based on https://github.com/BTCGPU/BTCGPU/issues/78
-        consensus.nPowAveragingWindow = 40;
+        consensus.nPowAveragingWindow = 30;
         assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
-        consensus.nPowMaxAdjustDown = 12; // 12% adjustment down
-        consensus.nPowMaxAdjustUp = 12; // 12% adjustment up
+        consensus.nPowMaxAdjustDown = 15;
+        consensus.nPowMaxAdjustUp = 15;
         
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
@@ -335,11 +337,12 @@ public:
         consensus.BitcoinPostforkBlock = uint256();
         consensus.BitcoinPostforkTime = 0;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.powLimitStart = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         //based on https://github.com/BTCGPU/BTCGPU/issues/78
-        consensus.nPowAveragingWindow = 40;
-        consensus.nPowMaxAdjustDown = 12; // 12% adjustment down
-        consensus.nPowMaxAdjustUp = 12; // 12% adjustment up
+        consensus.nPowAveragingWindow = 30;
+        consensus.nPowMaxAdjustDown = 15;
+        consensus.nPowMaxAdjustUp = 15;
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
