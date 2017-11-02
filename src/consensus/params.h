@@ -64,6 +64,8 @@ struct Params {
     /** Proof of work parameters */
     uint256 powLimit;
     uint256 powLimitLegacy;
+    uint256 powLimitStart;
+    
     const uint256& PowLimit(bool postfork) const { return postfork ? powLimit : powLimitLegacy; }
     bool fPowAllowMinDifficultyBlocks;
     bool fPowNoRetargeting;
