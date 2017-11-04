@@ -30,6 +30,11 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     else if (nHeight < params.BTGHeight + params.BTGPremineWindow + params.nPowAveragingWindow){
         return UintToArith256(params.powLimitStart).GetCompact();
     }
+    else if (params.BTGTestnetEndDate > 0 && pblock->nTime >= params.BTGTestnetEndDate) {
+        // Bitcoin Gold testnet v1 difficulty bomb.
+        // 1510142400 = Nov 8, 2017 12:00:00 PM UTC+0
+        return arith_uint256(1).GetCompact();
+    }
     
     const CBlockIndex* pindexFirst = pindexLast;
     arith_uint256 bnTot {0};
