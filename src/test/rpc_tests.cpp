@@ -343,4 +343,24 @@ BOOST_AUTO_TEST_CASE(rpc_convert_values_generatetoaddress)
     BOOST_CHECK_EQUAL(result[2].get_int(), 9);
 }
 
+BOOST_AUTO_TEST_CASE(rpc_getblocksubsidy)
+{
+    UniValue result;
+
+    BOOST_CHECK_THROW(CallRPC(std::string("getblocksubsidy too many args")), std::runtime_error);
+    BOOST_CHECK_THROW(CallRPC(std::string("getblocksubsidy -1")), std::runtime_error);
+    BOOST_CHECK_NO_THROW(result = CallRPC("getblocksubsidy 50000"));
+    UniValue o1 = result.get_obj();
+    UniValue reward = find_value(o1, "reward");
+    BOOST_CHECK_EQUAL(reward.get_int64(), 5000000000);
+    BOOST_CHECK_NO_THROW(result = CallRPC("getblocksubsidy 1000000"));
+    o1 = result.get_obj();
+    reward = find_value(o1, "reward");
+    BOOST_CHECK_EQUAL(reward.get_int64(), 312500000);
+    BOOST_CHECK_NO_THROW(result = CallRPC("getblocksubsidy 2000000"));
+    o1 = result.get_obj();
+    reward = find_value(o1, "reward");
+    BOOST_CHECK_EQUAL(reward.get_int64(), 9765625);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
