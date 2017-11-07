@@ -68,6 +68,8 @@ chmod +x ${WRAP_DIR}/${prog}
 done
 
 cd bitcoin
+make clean || true
+rm -rf temp
 BASEPREFIX=`pwd`/depends
 # Build dependencies for each host
 for i in $HOSTS; do
@@ -85,6 +87,7 @@ export PATH=${WRAP_DIR}:${PATH}
 # Create the release tarball using (arbitrarily) the first host
 ./autogen.sh
 CONFIG_SITE=${BASEPREFIX}/`echo "${HOSTS}" | awk '{print $1;}'`/share/config.site ./configure --prefix=/
+make clean
 make dist
 SOURCEDIST=`echo bitcoin-*.tar.gz`
 DISTNAME=`echo ${SOURCEDIST} | sed 's/.tar.*//'`
