@@ -105,7 +105,7 @@ public:
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         
         //based on https://github.com/BTCGPU/BTCGPU/issues/78
-        consensus.nPowAveragingWindow = 20;
+        consensus.nPowAveragingWindow = 30;
         assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
         consensus.nPowMaxAdjustDown = 32;
         consensus.nPowMaxAdjustUp = 16;
@@ -228,7 +228,7 @@ public:
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         
         //based on https://github.com/BTCGPU/BTCGPU/issues/78
-        consensus.nPowAveragingWindow = 20;
+        consensus.nPowAveragingWindow = 30;
         assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
         consensus.nPowMaxAdjustDown = 32;
         consensus.nPowMaxAdjustUp = 16;
@@ -265,7 +265,7 @@ public:
         pchMessageStartLegacy[2] = 0x09;
         pchMessageStartLegacy[3] = 0x07;
 
-        pchMessageStart[0] = 0xe0;
+        pchMessageStart[0] = 0xe1;
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
         pchMessageStart[3] = 0x44;
@@ -340,7 +340,7 @@ public:
         consensus.powLimitStart = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         //based on https://github.com/BTCGPU/BTCGPU/issues/78
-        consensus.nPowAveragingWindow = 20;
+        consensus.nPowAveragingWindow = 30;
         consensus.nPowMaxAdjustDown = 16;
         consensus.nPowMaxAdjustUp = 32;
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // two weeks
