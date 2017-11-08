@@ -1756,7 +1756,7 @@ class SegWitTest(BitcoinTestFramework):
         tx5 = CTransaction()
         tx5.vin.append(CTxIn(COutPoint(tx4.sha256, 0), b""))
         tx5.vout.append(CTxOut(tx4.vout[0].nValue-1000, CScript([OP_TRUE])))
-        (sig_hash, err) = SignatureHash(scriptPubKey, tx5, 0, SIGHASH_ALL|SIGHASH_FORKID)
+        sig_hash = SegwitVersion1SignatureHash(scriptPubKey, tx5, 0, SIGHASH_ALL|SIGHASH_FORKID, tx4.vout[0].nValue)
         signature = key.sign(sig_hash) + b'\x41' # 0x41 is SIGHASH_ALL|SIGHASH_FORKID
         tx5.vin[0].scriptSig = CScript([signature, pubkey])
         tx5.rehash()
