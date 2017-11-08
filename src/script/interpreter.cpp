@@ -1207,7 +1207,9 @@ uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsig
     if (UsesForkId(nHashType))
         nForkHashType |= forkid << 8;
 
-    if (sigversion == SIGVERSION_WITNESS_V0) {
+    // force new tx with FORKID to use bip143 transaction digest algorithm
+    // see https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
+    if (sigversion == SIGVERSION_WITNESS_V0 || UsesForkId(nHashType)) {
         uint256 hashPrevouts;
         uint256 hashSequence;
         uint256 hashOutputs;

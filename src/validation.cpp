@@ -352,21 +352,21 @@ static bool IsCurrentForFeeEstimation()
     return true;
 }
 
-bool static IsBTGHardForkEnabled(const CChainParams& chainParams, int nHeight) {
-    return nHeight >= chainParams.GetConsensus().BTGHeight;
+bool static IsBTGHardForkEnabled(int nHeight, const Consensus::Params& params) {
+    return nHeight >= params.BTGHeight;
 }
 
-bool IsBTGHardForkEnabled(const CChainParams& chainParams, const CBlockIndex *pindexPrev) {
+bool IsBTGHardForkEnabled(const CBlockIndex* pindexPrev, const Consensus::Params& params) {
     if (pindexPrev == nullptr) {
         return false;
     }
 
-    return IsBTGHardForkEnabled(chainParams, pindexPrev->nHeight);
+    return IsBTGHardForkEnabled(pindexPrev->nHeight, params);
 }
 
-bool IsBTGHardForkEnabledForCurrentBlock(const CChainParams& chainParams) {
+bool IsBTGHardForkEnabledForCurrentBlock(const Consensus::Params& params) {
     AssertLockHeld(cs_main);
-    return IsBTGHardForkEnabled(chainParams, chainActive.Tip());
+    return IsBTGHardForkEnabled(chainActive.Tip(), params);
 }
 
 /* Make mempool consistent after a reorg, by re-adding or recursively erasing
@@ -1637,7 +1637,7 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
         flags |= SCRIPT_VERIFY_NULLDUMMY;
     }
 
-    if (IsBTGHardForkEnabled(Params(), pindex->pprev)) {
+    if (IsBTGHardForkEnabled(pindex->pprev, consensusparams)) {
         flags |= SCRIPT_VERIFY_STRICTENC;
     } else {
         flags |= SCRIPT_ALLOW_NON_FORKID;
