@@ -50,6 +50,8 @@ struct Params {
     int BTGHeight;
     /** Premining blocks for Bitcoin GPU hard fork **/
     int BTGPremineWindow;
+    /** Bitcoin Gold testnet reset hard deadline date. Should be zero for mainnet and regtest. **/
+    int BTGTestnetEndDate;
     /** The first post-fork block of Bitcoin blockchain. **/
     uint256 BitcoinPostforkBlock;
     uint32_t BitcoinPostforkTime;
