@@ -351,16 +351,22 @@ BOOST_AUTO_TEST_CASE(rpc_getblocksubsidy)
     BOOST_CHECK_THROW(CallRPC(std::string("getblocksubsidy -1")), std::runtime_error);
     BOOST_CHECK_NO_THROW(result = CallRPC("getblocksubsidy 50000"));
     UniValue o1 = result.get_obj();
-    UniValue reward = find_value(o1, "reward");
-    BOOST_CHECK_EQUAL(reward.get_int64(), 5000000000);
+    UniValue miner = find_value(o1, "miner");
+    BOOST_CHECK_EQUAL(miner.get_int64(), 5000000000);
+    UniValue founders = find_value(o1, "founders");
+    BOOST_CHECK_EQUAL(founders.get_int64(), 0);
     BOOST_CHECK_NO_THROW(result = CallRPC("getblocksubsidy 1000000"));
     o1 = result.get_obj();
-    reward = find_value(o1, "reward");
-    BOOST_CHECK_EQUAL(reward.get_int64(), 312500000);
+    miner = find_value(o1, "miner");
+    BOOST_CHECK_EQUAL(miner.get_int64(), 312500000);
+    founders = find_value(o1, "founders");
+    BOOST_CHECK_EQUAL(founders.get_int64(), 0);
     BOOST_CHECK_NO_THROW(result = CallRPC("getblocksubsidy 2000000"));
     o1 = result.get_obj();
-    reward = find_value(o1, "reward");
-    BOOST_CHECK_EQUAL(reward.get_int64(), 9765625);
+    miner = find_value(o1, "miner");
+    BOOST_CHECK_EQUAL(miner.get_int64(), 9765625);
+    founders = find_value(o1, "founders");
+    BOOST_CHECK_EQUAL(founders.get_int64(), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

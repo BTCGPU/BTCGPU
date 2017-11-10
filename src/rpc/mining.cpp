@@ -852,12 +852,13 @@ UniValue getblocksubsidy(const JSONRPCRequest& request)
   LOCK(cs_main);
   int nHeight = (request.params.size() == 1) ? request.params[0].get_int() : chainActive.Height();
   if (nHeight < 0)
-    throw std::runtime_error("Block height out of range.");
+    throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range.");
 
   UniValue result(UniValue::VOBJ);
 
   CAmount nReward = GetBlockSubsidy(nHeight, Params().GetConsensus());
-  result.push_back(Pair("reward", nReward));
+  result.push_back(Pair("miner", nReward));
+  result.push_back(Pair("founders", 0));
 
   return result;
 }
