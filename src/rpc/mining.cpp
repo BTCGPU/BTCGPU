@@ -840,7 +840,8 @@ UniValue getblocksubsidy(const JSONRPCRequest& request)
       "1. height          (numeric, optional) The block height. If not provided, defaults to the current height of the chain.\n"
       "\nResult:\n"
       "{\n"
-      "\"reward\" : n,    (numeric) The mining reward amount in satoshis.\n"
+      "\"miner\": n,    (numeric) The mining reward amount in satoshis.\n"
+      "\"founders\": f, (numeric) Always 0, for Zcash mining compatibility.\n"
       "}\n"
       "\nExamples:\n"
       + HelpExampleCli("getblocksubsidy", "1000")
