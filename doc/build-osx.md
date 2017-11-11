@@ -57,9 +57,9 @@ Bitcoin Gold is now available at `./src/bgoldd`
 
 Before running, it's recommended you create an RPC configuration file.
 
-    echo -e "rpcuser=bitcoinrpc\nrpcpassword=$(xxd -l 16 -p /dev/urandom)" > "$HOME/Library/Application Support/BitcoinGold/bitcoin.conf"
+    echo -e "rpcuser=bitcoinrpc\nrpcpassword=$(xxd -l 16 -p /dev/urandom)" > "$HOME/Library/Application Support/BitcoinGold/bitcoingold.conf"
 
-    chmod 600 "$HOME/Library/Application Support/BitcoinGold/bitcoin.conf"
+    chmod 600 "$HOME/Library/Application Support/BitcoinGold/bitcoingold.conf"
 
 The first time you run bgoldd, it will start downloading the blockchain. This process could take several hours.
 
