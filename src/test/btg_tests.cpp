@@ -9,6 +9,8 @@
 #include "primitives/block.h"
 #include "test/test_bitcoin.h"
 
+#include "test/data/btg_cltv_multisig_data.h"
+
 #include <stdint.h>
 
 #include <boost/test/unit_test.hpp>
@@ -101,6 +103,18 @@ BOOST_AUTO_TEST_CASE(address_compatible)
     BOOST_CHECK_EQUAL(ConvertToOldAddress(ConvertToNewAddress(p2pkh_addr)), p2pkh_addr);
     std::string p2sh_addr = "3CjLoKt9KYcfjf4MWAbGz8xnpfJvzvMxMi";
     BOOST_CHECK_EQUAL(ConvertToOldAddress(ConvertToNewAddress(p2sh_addr)), p2sh_addr);
+}
+
+BOOST_AUTO_TEST_CASE(cltv_multisig_whitelist)
+{
+    std::vector<CltvMultiSigTestData> data = GetCltvMultiSigTestData();
+    const CChainParams& params = Params();
+    for (const CltvMultiSigTestData& test_case : data) {
+        std::vector<unsigned char> redeem_script_data = ParseHex(test_case.redeem_script);
+        CScript redeem_script(redeem_script_data.begin(), redeem_script_data.end());
+        CScript p2sh_script = GetScriptForDestination(CScriptID(redeem_script));
+        BOOST_CHECK(params.IsPremineAddressScript(p2sh_script, test_case.height));
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
