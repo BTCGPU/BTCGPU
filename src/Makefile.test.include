@@ -85,6 +85,7 @@ BITCOIN_TESTS =\
   test/univalue_tests.cpp \
   test/util_tests.cpp \
   test/equihash_tests.cpp \
+  test/btg_cltv_multisig_data.h \
   test/btg_tests.cpp
 
 if ENABLE_WALLET

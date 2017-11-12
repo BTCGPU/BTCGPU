@@ -7,9 +7,8 @@
 #include "streams.h"
 #include "version.h"
 #include "primitives/block.h"
+#include "test/btg_cltv_multisig_data.h"
 #include "test/test_bitcoin.h"
-
-#include "test/data/btg_cltv_multisig_data.h"
 
 #include <stdint.h>
 
