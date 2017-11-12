@@ -48,7 +48,7 @@ class BTGTimeLockTest(BitcoinTestFramework):
         pubkeys = []
         for i in range(6):
             raw_key = CECKey()
-            raw_key.set_secretbytes(b'privkey%d' % i)
+            raw_key.set_secretbytes(('privkey%d' % i).encode('ascii'))
             rawkeys.append(raw_key)
         pubkeys = [CPubKey(key.get_pubkey()) for key in rawkeys]
 
