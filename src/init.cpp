@@ -1370,9 +1370,6 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
     }
 
     fBTGBootstrapping = gArgs.GetBoolArg("-bootstrap", false);
-    if (ChainNameFromCommandLine() == CBaseChainParams::MAIN && !fBTGBootstrapping) {
-        return InitError("mainnet is not ready for launch.");
-    }
     fSkipHardforkIBD = gArgs.GetBoolArg("-skiphardforkibd", false);
 
     // ********************************************************* Step 7: load block chain
