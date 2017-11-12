@@ -775,7 +775,7 @@ class CScript(bytes):
         # need to change
         def _repr(o):
             if isinstance(o, bytes):
-                return b"x('%s')" % hexlify(o).decode('ascii')
+                return (b"x('%s')" % hexlify(o)).decode('ascii')
             else:
                 return repr(o)
 
