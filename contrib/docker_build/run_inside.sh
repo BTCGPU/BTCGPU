@@ -14,11 +14,18 @@ rm -rf $OUTDIR
 mkdir $OUTDIR
 chmod a+rwx $OUTDIR
 
+cd bitcoin
+cd depends
+# ???? I don't know
+make libsodium
+cd ..
+cd ..
+
 MAKEOPTS=(-j$1)
 
 
 WRAP_DIR=$HOME/wrapped
-HOSTS="x86_64-linux-gnu"
+HOSTS="x86_64-pc-linux-gnu"
 CONFIGFLAGS="--enable-glibc-back-compat --enable-reduce-exports --disable-bench --disable-gui-tests --with-gui=no --disable-tests --disable-bench"
 HOST_CFLAGS="-O2 -g"
 HOST_CXXFLAGS="-O2 -g"
@@ -118,7 +125,7 @@ for i in ${HOSTS}; do
 	find . -name "lib*.a" -delete
 	rm -rf ${DISTNAME}/lib/pkgconfig
 	find ${DISTNAME}/bin -type f -executable -exec ../contrib/devtools/split-debug.sh {} {} {}.dbg \;
-	find ${DISTNAME}/lib -type f -exec ../contrib/devtools/split-debug.sh {} {} {}.dbg \;
+	#find ${DISTNAME}/lib -type f -exec ../contrib/devtools/split-debug.sh {} {} {}.dbg \;
 	find ${DISTNAME} -not -name "*.dbg" | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ${OUTDIR}/${DISTNAME}-${i}.tar.gz
 	find ${DISTNAME} -name "*.dbg" | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ${OUTDIR}/${DISTNAME}-${i}-debug.tar.gz
 	cd ../../
