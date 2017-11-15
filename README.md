@@ -8,10 +8,10 @@ At the predetermined block height, Bitcoin Gold miners will begin creating block
 
 ## WARNING
 
-Bitcoin Gold is a work in progress. If you don’t understand what you are doing, please don’t compile and run your own client from the staging tree. Your own client will **NOT WORK** for both testnet and mainnet. However, you're more than welcome to help test the code and join the development.
+This is the staging tree of Bitcoin Gold. If you don’t understand what you are doing, please don’t compile and run your own client from the staging tree. For release verision, please switch to [0.15 branch](https://github.com/BTCGPU/BTCGPU/tree/0.15) or [release page](https://github.com/BTCGPU/BTCGPU/releases).
 
 ## Links
 
-* Website: http://btcgpu.org
+* Website: http://bitcoingold.org
 * Slack: [invitation](https://join.slack.com/t/bitcoin-gold/shared_invite/enQtMjY1MzkzMzUxNjY4LWM1YmQ4MjZhZTQxMWE1ZDQyNjA4N2QwZTkyZjYzMjhiMzdlMmVkNjQ3NzZlZDdmMDE4NWIyY2JmYzdjYmE2MzA)
 * TODO-list: https://trello.com/b/P1rLw1G9/bitcoin-gold-todos
