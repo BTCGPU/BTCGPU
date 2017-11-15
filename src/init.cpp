@@ -1384,10 +1384,12 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
     // block tree db settings
     int dbMaxOpenFiles = gArgs.GetArg("-dbmaxopenfiles", DEFAULT_DB_MAX_OPEN_FILES);
     bool dbCompression = gArgs.GetBoolArg("-dbcompression", DEFAULT_DB_COMPRESSION);
+    size_t dbMaxFileSize = gArgs.GetArg("-dbmaxfilesize", DEFAULT_DB_MAX_FILE_SIZE) << 20;
 
     LogPrintf("Block index database configuration:\n");
     LogPrintf("* Using %d max open files\n", dbMaxOpenFiles);
     LogPrintf("* Compression is %s\n", dbCompression ? "enabled" : "disabled");
+    LogPrintf("* Using %d MB files\n", (dbMaxFileSize / 1024 / 1024));
 
     // cache size calculations
     int64_t nTotalCache = (gArgs.GetArg("-dbcache", nDefaultDbCache) << 20);
@@ -1428,7 +1430,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                 delete pcoinscatcher;
                 delete pblocktree;
 
-                pblocktree = new CBlockTreeDB(nBlockTreeDBCache, false, fReset, dbCompression, dbMaxOpenFiles);
+                pblocktree = new CBlockTreeDB(nBlockTreeDBCache, false, fReset, dbCompression, dbMaxOpenFiles, dbMaxFileSize);
 
                 if (fReset) {
                     pblocktree->WriteReindexing(true);
