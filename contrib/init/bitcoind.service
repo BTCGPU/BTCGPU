@@ -7,9 +7,9 @@ User=bitcoin
 Group=bitcoin
 
 Type=forking
-PIDFile=/var/lib/bitcoind/bitcoind.pid
-ExecStart=/usr/bin/bitcoind -daemon -pid=/var/lib/bitcoind/bitcoind.pid \
--conf=/etc/bitcoin/bitcoin.conf -datadir=/var/lib/bitcoind -disablewallet
+PIDFile=/var/lib/bitcoind/bgoldd.pid
+ExecStart=/usr/bin/bitcoind -daemon -pid=/var/lib/bitcoind/bgoldd.pid \
+-conf=/etc/bitcoin/bitcoingold.conf -datadir=/var/lib/bitcoind -disablewallet
 
 Restart=always
 PrivateTmp=true
