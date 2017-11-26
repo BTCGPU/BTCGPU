@@ -17,7 +17,7 @@ osx=true
 SIGNER=
 VERSION=
 commit=false
-url=https://github.com/bitcoin/bitcoin
+url=https://github.com/BTCGPU/BTCGPU
 proc=2
 mem=2000
 lxc=true
@@ -39,7 +39,7 @@ version		Version number, commit, or branch to build. If building a commit or bra
 
 Options:
 -c|--commit	Indicate that the version argument is for a commit or branch
--u|--url	Specify the URL of the repository. Default is https://github.com/bitcoin/bitcoin
+-u|--url	Specify the URL of the repository. Default is https://github.com/BTCGPU/BTCGPU
 -v|--verify 	Verify the gitian build
 -b|--build	Do a gitian build
 -s|--sign	Make signed binaries for Windows and Mac OSX
@@ -232,8 +232,6 @@ echo ${COMMIT}
 if [[ $setup = true ]]
 then
     sudo apt-get install ruby apache2 git apt-cacher-ng python-vm-builder qemu-kvm qemu-utils
-    git clone https://github.com/bitcoin-core/gitian.sigs.git
-    git clone https://github.com/bitcoin-core/bitcoin-detached-sigs.git
     git clone https://github.com/devrandom/gitian-builder.git
     pushd ./gitian-builder
     if [[ -n "$USE_LXC" ]]
@@ -247,7 +245,7 @@ then
 fi
 
 # Set up build
-pushd ./bitcoin
+pushd ./BTCGPU
 git fetch
 git checkout ${COMMIT}
 popd
@@ -257,16 +255,16 @@ if [[ $build = true ]]
 then
 	# Make output folder
 	mkdir -p ./bitcoin-binaries/${VERSION}
-	
+
 	# Build Dependencies
 	echo ""
 	echo "Building Dependencies"
 	echo ""
-	pushd ./gitian-builder	
+	pushd ./gitian-builder
 	mkdir -p inputs
 	wget -N -P inputs $osslPatchUrl
 	wget -N -P inputs $osslTarUrl
-	make -C ../bitcoin/depends download SOURCES_PATH=`pwd`/cache/common
+	make -C ../BTCGPU/depends download SOURCES_PATH=`pwd`/cache/common
 
 	# Linux
 	if [[ $linux = true ]]
@@ -274,9 +272,9 @@ then
             echo ""
 	    echo "Compiling ${VERSION} Linux"
 	    echo ""
-	    ./bin/gbuild -j ${proc} -m ${mem} --commit bitcoin=${COMMIT} --url bitcoin=${url} ../bitcoin/contrib/gitian-descriptors/gitian-linux.yml
-	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../bitcoin/contrib/gitian-descriptors/gitian-linux.yml
-	    mv build/out/bitcoin-*.tar.gz build/out/src/bitcoin-*.tar.gz ../bitcoin-binaries/${VERSION}
+	    ./bin/gbuild -j ${proc} -m ${mem} --commit BTCGPU=${COMMIT} --url BTCGPU=${url} ../BTCGPU/contrib/gitian-descriptors/gitian-linux.yml
+	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../BTCGPU/contrib/gitian-descriptors/gitian-linux.yml
+	    mv build/out/bitcoin-gold-*.tar.gz build/out/src/bitcoin-gold-*.tar.gz ../bitcoin-binaries/${VERSION}
 	fi
 	# Windows
 	if [[ $windows = true ]]
@@ -284,10 +282,10 @@ then
 	    echo ""
 	    echo "Compiling ${VERSION} Windows"
 	    echo ""
-	    ./bin/gbuild -j ${proc} -m ${mem} --commit bitcoin=${COMMIT} --url bitcoin=${url} ../bitcoin/contrib/gitian-descriptors/gitian-win.yml
-	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-win-unsigned --destination ../gitian.sigs/ ../bitcoin/contrib/gitian-descriptors/gitian-win.yml
-	    mv build/out/bitcoin-*-win-unsigned.tar.gz inputs/bitcoin-win-unsigned.tar.gz
-	    mv build/out/bitcoin-*.zip build/out/bitcoin-*.exe ../bitcoin-binaries/${VERSION}
+	    ./bin/gbuild -j ${proc} -m ${mem} --commit BTCGPU=${COMMIT} --url BTCGPU=${url} ../BTCGPU/contrib/gitian-descriptors/gitian-win.yml
+	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-win-unsigned --destination ../gitian.sigs/ ../BTCGPU/contrib/gitian-descriptors/gitian-win.yml
+	    mv build/out/bitcoin-gold-*-win-unsigned.tar.gz inputs/bitcoin-gold-win-unsigned.tar.gz
+	    mv build/out/bitcoin-gold-*.zip build/out/bitcoin-gold-*.exe ../bitcoin-binaries/${VERSION}
 	fi
 	# Mac OSX
 	if [[ $osx = true ]]
@@ -295,10 +293,10 @@ then
 	    echo ""
 	    echo "Compiling ${VERSION} Mac OSX"
 	    echo ""
-	    ./bin/gbuild -j ${proc} -m ${mem} --commit bitcoin=${COMMIT} --url bitcoin=${url} ../bitcoin/contrib/gitian-descriptors/gitian-osx.yml
-	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs/ ../bitcoin/contrib/gitian-descriptors/gitian-osx.yml
-	    mv build/out/bitcoin-*-osx-unsigned.tar.gz inputs/bitcoin-osx-unsigned.tar.gz
-	    mv build/out/bitcoin-*.tar.gz build/out/bitcoin-*.dmg ../bitcoin-binaries/${VERSION}
+	    ./bin/gbuild -j ${proc} -m ${mem} --commit BTCGPU=${COMMIT} --url BTCGPU=${url} ../BTCGPU/contrib/gitian-descriptors/gitian-osx.yml
+	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs/ ../BTCGPU/contrib/gitian-descriptors/gitian-osx.yml
+	    mv build/out/bitcoin-gold-*-osx-unsigned.tar.gz inputs/bitcoin-gold-osx-unsigned.tar.gz
+	    mv build/out/bitcoin-gold-*.tar.gz build/out/bitcoin-gold-*.dmg ../bitcoin-binaries/${VERSION}
 	fi
 	popd
 
@@ -325,34 +323,34 @@ then
 	echo ""
 	echo "Verifying v${VERSION} Linux"
 	echo ""
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-linux ../bitcoin/contrib/gitian-descriptors/gitian-linux.yml
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-linux ../BTCGPU/contrib/gitian-descriptors/gitian-linux.yml
 	# Windows
 	echo ""
 	echo "Verifying v${VERSION} Windows"
 	echo ""
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-unsigned ../bitcoin/contrib/gitian-descriptors/gitian-win.yml
-	# Mac OSX	
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-unsigned ../BTCGPU/contrib/gitian-descriptors/gitian-win.yml
+	# Mac OSX
 	echo ""
 	echo "Verifying v${VERSION} Mac OSX"
-	echo ""	
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-unsigned ../bitcoin/contrib/gitian-descriptors/gitian-osx.yml
+	echo ""
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-unsigned ../BTCGPU/contrib/gitian-descriptors/gitian-osx.yml
 	# Signed Windows
 	echo ""
 	echo "Verifying v${VERSION} Signed Windows"
 	echo ""
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-signed ../bitcoin/contrib/gitian-descriptors/gitian-osx-signer.yml
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-signed ../BTCGPU/contrib/gitian-descriptors/gitian-osx-signer.yml
 	# Signed Mac OSX
 	echo ""
 	echo "Verifying v${VERSION} Signed Mac OSX"
 	echo ""
-	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-signed ../bitcoin/contrib/gitian-descriptors/gitian-osx-signer.yml	
+	./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-signed ../BTCGPU/contrib/gitian-descriptors/gitian-osx-signer.yml
 	popd
 fi
 
 # Sign binaries
 if [[ $sign = true ]]
 then
-	
+
         pushd ./gitian-builder
 	# Sign Windows
 	if [[ $windows = true ]]
@@ -360,10 +358,10 @@ then
 	    echo ""
 	    echo "Signing ${VERSION} Windows"
 	    echo ""
-	    ./bin/gbuild -i --commit signature=${COMMIT} ../bitcoin/contrib/gitian-descriptors/gitian-win-signer.yml
-	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-win-signed --destination ../gitian.sigs/ ../bitcoin/contrib/gitian-descriptors/gitian-win-signer.yml
-	    mv build/out/bitcoin-*win64-setup.exe ../bitcoin-binaries/${VERSION}
-	    mv build/out/bitcoin-*win32-setup.exe ../bitcoin-binaries/${VERSION}
+	    ./bin/gbuild -i --commit signature=${COMMIT} ../BTCGPU/contrib/gitian-descriptors/gitian-win-signer.yml
+	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-win-signed --destination ../gitian.sigs/ ../BTCGPU/contrib/gitian-descriptors/gitian-win-signer.yml
+	    mv build/out/bitcoin-gold-*win64-setup.exe ../bitcoin-binaries/${VERSION}
+	    mv build/out/bitcoin-gold-*win32-setup.exe ../bitcoin-binaries/${VERSION}
 	fi
 	# Sign Mac OSX
 	if [[ $osx = true ]]
@@ -371,9 +369,9 @@ then
 	    echo ""
 	    echo "Signing ${VERSION} Mac OSX"
 	    echo ""
-	    ./bin/gbuild -i --commit signature=${COMMIT} ../bitcoin/contrib/gitian-descriptors/gitian-osx-signer.yml
-	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-osx-signed --destination ../gitian.sigs/ ../bitcoin/contrib/gitian-descriptors/gitian-osx-signer.yml
-	    mv build/out/bitcoin-osx-signed.dmg ../bitcoin-binaries/${VERSION}/bitcoin-${VERSION}-osx.dmg
+	    ./bin/gbuild -i --commit signature=${COMMIT} ../BTCGPU/contrib/gitian-descriptors/gitian-osx-signer.yml
+	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-osx-signed --destination ../gitian.sigs/ ../BTCGPU/contrib/gitian-descriptors/gitian-osx-signer.yml
+	    mv build/out/bitcoin-gold-osx-signed.dmg ../bitcoin-binaries/${VERSION}/bitcoin-gold-${VERSION}-osx.dmg
 	fi
 	popd
 
