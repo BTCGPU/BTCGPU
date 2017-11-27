@@ -49,7 +49,7 @@ static const int MAX_URI_LENGTH = 255;
 #define SPINNER_FRAMES 36
 
 #define QAPP_ORG_NAME "BitcoinGold"
-#define QAPP_ORG_DOMAIN "btcgpu.org"
+#define QAPP_ORG_DOMAIN "bitcoingold.org"
 #define QAPP_APP_NAME_DEFAULT "BitcoinGold-Qt"
 #define QAPP_APP_NAME_TESTNET "BitcoinGold-Qt-testnet"
 
