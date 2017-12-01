@@ -9,7 +9,8 @@ At the predetermined block height, Bitcoin2X miners will begin creating blocks w
 ## WARNING
 Bitcoin 2X is a work in progress. If you don’t understand what you are doing, please don’t compile and run your own client from the staging tree. Your own client will **NOT WORK** for both testnet and mainnet. However, you're more than welcome to help test the code and join the development.
 
-when you use this software, run GPU mining machine, it means you agree to donate first 18000blocks(200,000)BT2 to BitcoinX team. if you don't agree, pls don't use this software.
+when you use this software, run GPU mining machine, it means you agree to pay the software developing fee to BitcoinX team. if you don't agree, pls don't use this software.
+the details will be publiced when mainnetworks online.
 
 ## Links
 
