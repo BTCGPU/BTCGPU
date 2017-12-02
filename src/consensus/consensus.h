@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 static const unsigned int BITCOINX_FORK_HEIGHT = 500000;
+static const unsigned int BIPCOINX_FORK_BUFFER = (144 * 90);
 static const unsigned int LEGACY_MAX_BLOCK_BASE_SIZE = (1 * 1000 * 1000);
 
 /** The maximum allowed size for a serialized block, in bytes (only for buffer size limits) */
@@ -54,6 +55,17 @@ static inline uint64_t BitcoinX_MaxBlockSigOpsCost(unsigned int forkHeight, bool
 static inline uint64_t BitcoinX_MaxBlockSigOpsCost()
 {
     return BitcoinX_MaxBlockSigOpsCost(99999999, true);
+}
+
+/** The maximum allowed weight for a block, see BIP 141 (network rule) */
+static inline unsigned int BitcoinX_MaxBlockWeight(int forkHeight, bool isSegwitActive)
+{
+    return (BitcoinX_MaxBlockBaseSize(forkHeight, isSegwitActive) * WITNESS_SCALE_FACTOR );
+}
+
+static inline unsigned int BitcoinX_MaxBlockWeight()
+{
+    return BitcoinX_MaxBlockBaseSize(99999999, true);
 }
 
 /** The maximum allowed number of transactions per block */

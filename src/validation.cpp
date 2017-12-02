@@ -3045,6 +3045,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     //   {0xaa, 0x21, 0xa9, 0xed}, and the following 32 bytes are SHA256^2(witness root, witness nonce). In case there are
     //   multiple, the last one is used.
     bool fHaveWitness = false;
+	bool fSegwitSeasoned = false;
 	bool fSegWitActive = (VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_SEGWIT, versionbitscache) == THRESHOLD_ACTIVE);
     if (fSegWitActive) {
         int commitpos = GetWitnessCommitmentIndex(block);
@@ -3063,6 +3064,9 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
             }
             fHaveWitness = true;
         }
+		
+		const CBlockIndex* pindexForkBuffer = pindexPrev->GetAncestor(nHeight - BIPCOINX_FORK_BUFFER);
+		fSegwitSeasoned = (VersionBitsState(pindexForkBuffer, consensusParams, Consensus::DEPLOYMENT_SEGWIT, versionbitscache) == THRESHOLD_ACTIVE);
     }
 
 	if (::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) > BitcoinX_MaxBlockBaseSize(nHeight, fSegWitActive))
@@ -3082,7 +3086,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
 	{
 		nSigOps += GetLegacySigOpCount(*tx);
 	}
-	if (nSigOps * WITNESS_SCALE_FACTOR > BitcoinX_MaxBlockSigOpsCost(nHeight, fSegWitActive))
+	if (nSigOps * WITNESS_SCALE_FACTOR > BitcoinX_MaxBlockSigOpsCost(nHeight, fSegwitSeasoned))
 		return state.DoS(100, false, REJECT_INVALID, "bad-blk-sigops", false, "out-of-bounds SigOpCount");
 
     // After the coinbase witness nonce and commitment are verified,
@@ -3091,7 +3095,7 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     // large by filling up the coinbase witness, which doesn't change
     // the block hash, so we couldn't mark the block as permanently
     // failed).
-    if (GetBlockWeight(block, consensusParams) > MAX_BLOCK_WEIGHT) {
+    if (GetBlockWeight(block, consensusParams) > BitcoinX_MaxBlockWeight(nHeight, fSegwitSeasoned)) {
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-weight", false, strprintf("%s : weight limit failed", __func__));
     }
 
