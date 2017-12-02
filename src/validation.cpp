@@ -1808,7 +1808,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         // * p2sh (when P2SH enabled in flags and excludes coinbase)
         // * witness (when witness enabled in flags and excludes coinbase)
         nSigOpsCost += GetTransactionSigOpCost(tx, view, flags);
-        if (nSigOpsCost > MAX_BLOCK_SIGOPS_COST)
+        if (nSigOpsCost > BitcoinX_MaxBlockSigOpsCost(pindex->nHeight, (flags & SCRIPT_VERIFY_WITNESS) ? true : false))
             return state.DoS(100, error("ConnectBlock(): too many sigops"),
                              REJECT_INVALID, "bad-blk-sigops");
 
@@ -2870,7 +2870,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::P
     {
         nSigOps += GetLegacySigOpCount(*tx);
     }
-    if (nSigOps * WITNESS_SCALE_FACTOR > MAX_BLOCK_SIGOPS_COST)
+    if (nSigOps * WITNESS_SCALE_FACTOR > BitcoinX_MaxBlockSigOpsCost())
         return state.DoS(100, false, REJECT_INVALID, "bad-blk-sigops", false, "out-of-bounds SigOpCount");
 
     if (fCheckPOW && fCheckMerkleRoot)
@@ -3045,7 +3045,8 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     //   {0xaa, 0x21, 0xa9, 0xed}, and the following 32 bytes are SHA256^2(witness root, witness nonce). In case there are
     //   multiple, the last one is used.
     bool fHaveWitness = false;
-    if (VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_SEGWIT, versionbitscache) == THRESHOLD_ACTIVE) {
+	bool fSegWitActive = (VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_SEGWIT, versionbitscache) == THRESHOLD_ACTIVE);
+    if (fSegWitActive) {
         int commitpos = GetWitnessCommitmentIndex(block);
         if (commitpos != -1) {
             bool malleated = false;
@@ -3064,6 +3065,9 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
         }
     }
 
+	if (::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) > BitcoinX_MaxBlockBaseSize(nHeight, fSegWitActive))
+		return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
+
     // No witness data is allowed in blocks that don't commit to witness data, as this would otherwise leave room for spam
     if (!fHaveWitness) {
       for (const auto& tx : block.vtx) {
@@ -3072,6 +3076,14 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
             }
         }
     }
+
+	unsigned int nSigOps = 0;
+	for (const auto& tx : block.vtx)
+	{
+		nSigOps += GetLegacySigOpCount(*tx);
+	}
+	if (nSigOps * WITNESS_SCALE_FACTOR > BitcoinX_MaxBlockSigOpsCost(nHeight, fSegWitActive))
+		return state.DoS(100, false, REJECT_INVALID, "bad-blk-sigops", false, "out-of-bounds SigOpCount");
 
     // After the coinbase witness nonce and commitment are verified,
     // we can check if the block weight passes (before we've checked the

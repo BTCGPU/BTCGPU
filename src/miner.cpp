@@ -244,7 +244,7 @@ bool BlockAssembler::TestPackage(uint64_t packageSize, int64_t packageSigOpsCost
     // TODO: switch to weight-based accounting for packages instead of vsize-based accounting.
     if (nBlockWeight + WITNESS_SCALE_FACTOR * packageSize >= nBlockMaxWeight)
         return false;
-    if (nBlockSigOpsCost + packageSigOpsCost >= MAX_BLOCK_SIGOPS_COST)
+	if (nBlockSigOpsCost + packageSigOpsCost >= BitcoinX_MaxBlockSigOpsCost(nHeight, fIncludeWitness))
         return false;
     return true;
 }
