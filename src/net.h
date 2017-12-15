@@ -22,7 +22,6 @@
 #include "sync.h"
 #include "uint256.h"
 #include "threadinterrupt.h"
-#include "chainparams.h"
 
 #include <atomic>
 #include <deque>
@@ -517,7 +516,6 @@ public:
     uint64_t nRecvBytes;
     mapMsgCmdSize mapRecvBytesPerMsgCmd;
     bool fWhitelisted;
-    bool fUsesGoldMagic;
     double dPingTime;
     double dPingWait;
     double dMinPing;
@@ -640,9 +638,6 @@ public:
     const uint64_t nKeyedNetGroup;
     std::atomic_bool fPauseRecv;
     std::atomic_bool fPauseSend;
-
-    const NodeId id;
-    
 protected:
 
     mapMsgCmdSize mapSendBytesPerMsgCmd;
@@ -697,11 +692,8 @@ public:
     std::atomic<int64_t> nMinPingUsecTime;
     // Whether a ping is requested.
     std::atomic<bool> fPingQueued;
-    // Whether the node uses the bitcoin gold magic to communicate.
-    std::atomic<bool> fUsesGoldMagic;
-    
+
     // Minimum fee rate with which to filter inv's to this node
-    
     CAmount minFeeFilter;
     CCriticalSection cs_feeFilter;
     CAmount lastSentFeeFilter;
@@ -713,7 +705,7 @@ public:
 private:
     CNode(const CNode&);
     void operator=(const CNode&);
-    
+    const NodeId id;
 
 
     const uint64_t nLocalHostNonce;
@@ -762,12 +754,6 @@ public:
     void SetSendVersion(int nVersionIn);
     int GetSendVersion() const;
 
-    const CMessageHeader::MessageStartChars &
-    GetMagic(const CChainParams &params) const {
-        return fUsesGoldMagic ? params.MessageStart()
-        : params.MessageStartLegacy();
-    }
-    
     CService GetAddrLocal() const;
     //! May not be called more than once
     void SetAddrLocal(const CService& addrLocalIn);
