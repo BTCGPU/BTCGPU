@@ -235,7 +235,7 @@ FullStepRow<WIDTH>::FullStepRow(const FullStepRow<W>& a, const FullStepRow<W>& b
 {
     assert(len+lenIndices <= W);
     assert(len-trim+(2*lenIndices) <= WIDTH);
-    for (size_t i = static_cast<size_t>(trim); i < len; i++)
+    for (size_t i = trim; i < len; i++)
         hash[i-trim] = a.hash[i] ^ b.hash[i];
     if (a.IndicesBefore(b, len, lenIndices)) {
         std::copy(a.hash+len, a.hash+len+lenIndices, hash+len-trim);
@@ -353,7 +353,7 @@ bool Equihash<N,K>::BasicSolve(const eh_HashState& base_state,
 
     // 3) Repeat step 2 until 2n/(k+1) bits remain
     for (unsigned int r = 1; r < K && X.size() > 0; r++) {
-        LogPrint(BCLog::POW, "Round %d:\n", r);
+        LogPrint(BCLog::POW, "Round %u:\n", r);
         // 2a) Sort the list
         LogPrint(BCLog::POW, "- Sorting list\n");
         std::sort(X.begin(), X.end(), CompareSR(CollisionByteLength));
@@ -532,7 +532,7 @@ bool Equihash<N,K>::OptimisedSolve(const eh_HashState& base_state,
 
         // 3) Repeat step 2 until 2n/(k+1) bits remain
         for (size_t r = 1; r < K && Xt.size() > 0; r++) {
-            LogPrint(BCLog::POW, "Round %d:\n", r);
+            LogPrint(BCLog::POW, "Round %zu:\n", r);
             // 2a) Sort the list
             LogPrint(BCLog::POW, "- Sorting list\n");
             std::sort(Xt.begin(), Xt.end(), CompareSR(CollisionByteLength));
@@ -716,7 +716,7 @@ bool Equihash<N,K>::OptimisedSolve(const eh_HashState& base_state,
 invalidsolution:
         invalidCount++;
     }
-    LogPrint(BCLog::POW, "- Number of invalid solutions found: %d\n", invalidCount);
+    LogPrint(BCLog::POW, "- Number of invalid solutions found: %zu\n", invalidCount);
 
     return false;
 }
