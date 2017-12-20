@@ -495,9 +495,6 @@ bool CChainParams::IsPremineAddressScript(const CScript& scriptPubKey, uint32_t 
     static const int LOCK_STAGES = 3 * 12;  // Every month for 3 years
     assert((uint32_t)consensus.BTGHeight <= height &&
            height < (uint32_t)(consensus.BTGHeight + consensus.BTGPremineWindow));
-    if (!consensus.BTGPremineEnforceWhitelist) {
-        return true;
-    }
     int block = height - consensus.BTGHeight;
     int num_unlocked = consensus.BTGPremineWindow * 40 / 100;  // 40% unlocked.
     int num_locked = consensus.BTGPremineWindow - num_unlocked;  // 60% time-locked.

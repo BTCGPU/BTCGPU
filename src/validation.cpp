@@ -3019,7 +3019,8 @@ static bool ContextualCheckBlock(const CBlock& block, CValidationState& state, c
     }
 
     if (nHeight >= consensusParams.BTGHeight &&
-        nHeight < consensusParams.BTGHeight + consensusParams.BTGPremineWindow)
+        nHeight < consensusParams.BTGHeight + consensusParams.BTGPremineWindow &&
+        !consensusParams.BTGPremineEnforceWhitelist)
     {
         if (block.vtx[0]->vout.size() != 1) {
             return state.DoS(
