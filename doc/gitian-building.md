@@ -310,12 +310,12 @@ cd ..
 
 **Note**: When sudo asks for a password, enter the password for the user *debian* not for *root*.
 
-Clone the git repositories for bitcoin and Gitian.
+Clone the git repositories for BTCGPU and Gitian.
 
 ```bash
 git clone https://github.com/devrandom/gitian-builder.git
-git clone https://github.com/bitcoin/bitcoin
-git clone https://github.com/bitcoin-core/gitian.sigs.git
+git clone https://github.com/BTCGPU/BTCGPU.git
+git clone https://github.com/BTCGPU/gitian.sigs.git
 ```
 
 Setting up the Gitian image
@@ -341,7 +341,7 @@ There will be a lot of warnings printed during the build of the image. These can
 Getting and building the inputs
 --------------------------------
 
-At this point you have two options, you can either use the automated script (found in [contrib/gitian-build.sh](/contrib/gitian-build.sh)) or you could manually do everything by following this guide. If you're using the automated script, then run it with the "--setup" command. Afterwards, run it with the "--build" command (example: "contrib/gitian-build.sh -b signer 0.13.0"). Otherwise ignore this.
+At this point you have two options, you can either use the automated script (found in [contrib/gitian-build.sh](/contrib/gitian-build.sh)) or you could manually do everything by following this guide. If you're using the automated script, then run it with the "--setup" command. Afterwards, run it with the "--build" command (example: "contrib/gitian-build.sh -b signer 0.15.0.2"). Otherwise ignore this.
 
 Follow the instructions in [doc/release-process.md](release-process.md#fetch-and-create-inputs-first-time-or-when-dependency-versions-change)
 in the bitcoin repository under 'Fetch and create inputs' to install sources which require
@@ -367,7 +367,7 @@ tail -f var/build.log
 
 Output from `gbuild` will look something like
 
-    Initialized empty Git repository in /home/debian/gitian-builder/inputs/bitcoin/.git/
+    Initialized empty Git repository in /home/debian/gitian-builder/inputs/BTCGPU/.git/
     remote: Counting objects: 57959, done.
     remote: Total 57959 (delta 0), reused 0 (delta 0), pack-reused 57958
     Receiving objects: 100% (57959/57959), 53.76 MiB | 484.00 KiB/s, done.
@@ -398,11 +398,11 @@ and inputs.
 
 For example:
 ```bash
-URL=https://github.com/laanwj/bitcoin.git
-COMMIT=2014_03_windows_unicode_path
-./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../bitcoin/contrib/gitian-descriptors/gitian-linux.yml
-./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../bitcoin/contrib/gitian-descriptors/gitian-win.yml
-./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../bitcoin/contrib/gitian-descriptors/gitian-osx.yml
+URL=https://github.com/akx20000a/BTCGPU.git
+COMMIT=d5522ed66a924a2d505fe45ed2487e741c6c0917
+./bin/gbuild --commit BTCGPU=${COMMIT} --url BTCGPU=${URL} ../BTCGPU/contrib/gitian-descriptors/gitian-linux.yml
+./bin/gbuild --commit BTCGPU=${COMMIT} --url BTCGPU=${URL} ../BTCGPU/contrib/gitian-descriptors/gitian-win.yml
+./bin/gbuild --commit BTCGPU=${COMMIT} --url BTCGPU=${URL} ../BTCGPU/contrib/gitian-descriptors/gitian-osx.yml
 ```
 
 Building fully offline
@@ -448,12 +448,12 @@ Then when building, override the remote URLs that gbuild would otherwise pull fr
 ```bash
 
 cd /some/root/path/
-git clone https://github.com/bitcoin-core/bitcoin-detached-sigs.git
+git clone https://github.com/BTCGPU/bitcoingold-detached-sigs.git
 
-BTCPATH=/some/root/path/bitcoin
-SIGPATH=/some/root/path/bitcoin-detached-sigs
+BTCPATH=/some/root/path/BTCGPU
+SIGPATH=/some/root/path/bitcoingold-detached-sigs
 
-./bin/gbuild --url bitcoin=${BTCPATH},signature=${SIGPATH} ../bitcoin/contrib/gitian-descriptors/gitian-win-signer.yml
+./bin/gbuild --url BTCGPU=${BTCPATH},signature=${SIGPATH} ../BTCGPU/contrib/gitian-descriptors/gitian-win-signer.yml
 ```
 
 Signing externally
@@ -468,9 +468,9 @@ When you execute `gsign` you will get an error from GPG, which can be ignored. C
 in `gitian.sigs` to your signing machine and do
 
 ```bash
-    gpg --detach-sign ${VERSION}-linux/${SIGNER}/bitcoin-linux-build.assert
-    gpg --detach-sign ${VERSION}-win/${SIGNER}/bitcoin-win-build.assert
-    gpg --detach-sign ${VERSION}-osx-unsigned/${SIGNER}/bitcoin-osx-build.assert
+    gpg --detach-sign ${VERSION}-linux/${SIGNER}/bitcoin-gold-linux-build.assert
+    gpg --detach-sign ${VERSION}-win/${SIGNER}/bitcoin-gold-win-build.assert
+    gpg --detach-sign ${VERSION}-osx-unsigned/${SIGNER}/bitcoin-gold-osx-build.assert
 ```
 
 This will create the `.sig` files that can be committed together with the `.assert` files to assert your
@@ -480,5 +480,5 @@ Uploading signatures
 ---------------------
 
 After building and signing you can push your signatures (both the `.assert` and `.assert.sig` files) to the
-[bitcoin-core/gitian.sigs](https://github.com/bitcoin-core/gitian.sigs/) repository, or if that's not possible create a pull
-request. You can also mail the files to Wladimir (laanwj@gmail.com) and he will commit them.
+[BTCGPU/gitian.sigs](https://github.com/BTCGPU/gitian.sigs/) repository, or if that's not possible create a pull
+request.
