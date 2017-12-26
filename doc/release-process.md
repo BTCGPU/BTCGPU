@@ -28,7 +28,7 @@ Before every major release:
 
 ### First time / New builders
 
-If you're using the automated script (found in [contrib/gitian-build.sh](/contrib/gitian-build.sh)), then at this point you should run it with the "--setup" command. Otherwise ignore this.
+If you're using the automated script (found in [contrib/gitian-build.sh](/contrib/gitian-build.sh)), then at this point you should run it with the "--setup" command (example: `./BTCGPU/contrib/gitian-build.sh --setup "signer" 0.15.0'). Otherwise ignore this.
 
 Check out the source code in the following directory hierarchy.
 
@@ -57,7 +57,7 @@ Tag version (or release candidate) in git
 
 ### Setup and perform Gitian builds
 
-If you're using the automated script (found in [contrib/gitian-build.sh](/contrib/gitian-build.sh)), then at this point you should run it with the "--build" command. Otherwise ignore this.
+If you're using the automated script (found in [contrib/gitian-build.sh](/contrib/gitian-build.sh)), then at this point you should run it with the "--build" command (example: `./BTCGPU/contrib/gitian-build.sh -b "signer" 0.15.0'). Otherwise ignore this.
 
 Setup Gitian descriptors:
 
@@ -113,25 +113,25 @@ The gbuild invocations below <b>DO NOT DO THIS</b> by default.
     pushd ./gitian-builder
     ./bin/gbuild --num-make 2 --memory 3000 --commit BTCGPU=v${VERSION} ../BTCGPU/contrib/gitian-descriptors/gitian-linux.yml
     ./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../BTCGPU/contrib/gitian-descriptors/gitian-linux.yml
-    mv build/out/BTCGPU-*.tar.gz build/out/src/BTCGPU-*.tar.gz ../
+    mv build/out/bitcoin-gold-*.tar.gz build/out/src/bitcoin-gold-*.tar.gz ../
 
     ./bin/gbuild --num-make 2 --memory 3000 --commit BTCGPU=v${VERSION} ../BTCGPU/contrib/gitian-descriptors/gitian-win.yml
     ./bin/gsign --signer $SIGNER --release ${VERSION}-win-unsigned --destination ../gitian.sigs/ ../BTCGPU/contrib/gitian-descriptors/gitian-win.yml
-    mv build/out/BTCGPU-*-win-unsigned.tar.gz inputs/BTCGPU-win-unsigned.tar.gz
-    mv build/out/BTCGPU-*.zip build/out/BTCGPU-*.exe ../
+    mv build/out/bitcoin-gold-*-win-unsigned.tar.gz inputs/bitcoin-gold-win-unsigned.tar.gz
+    mv build/out/bitcoin-gold-*.zip build/out/bitcoin-gold-*.exe ../
 
     ./bin/gbuild --num-make 2 --memory 3000 --commit BTCGPU=v${VERSION} ../BTCGPU/contrib/gitian-descriptors/gitian-osx.yml
     ./bin/gsign --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs/ ../BTCGPU/contrib/gitian-descriptors/gitian-osx.yml
-    mv build/out/BTCGPU-*-osx-unsigned.tar.gz inputs/BTCGPU-osx-unsigned.tar.gz
-    mv build/out/BTCGPU-*.tar.gz build/out/BTCGPU-*.dmg ../
+    mv build/out/bitcoin-gold-*-osx-unsigned.tar.gz inputs/bitcoin-gold-osx-unsigned.tar.gz
+    mv build/out/bitcoin-gold-*.tar.gz build/out/bitcoin-gold-*.dmg ../
     popd
 
 Build output expected:
 
-  1. source tarball (`BTCGPU-${VERSION}.tar.gz`)
-  2. linux 32-bit and 64-bit dist tarballs (`BTCGPU-${VERSION}-linux[32|64].tar.gz`)
-  3. windows 32-bit and 64-bit unsigned installers and dist zips (`BTCGPU-${VERSION}-win[32|64]-setup-unsigned.exe`, `BTCGPU-${VERSION}-win[32|64].zip`)
-  4. OS X unsigned installer and dist tarball (`BTCGPU-${VERSION}-osx-unsigned.dmg`, `BTCGPU-${VERSION}-osx64.tar.gz`)
+  1. source tarball (`bitcoin-gold-${VERSION}.tar.gz`)
+  2. linux 32-bit and 64-bit dist tarballs (`bitcoin-gold-${VERSION}-linux[32|64].tar.gz`)
+  3. windows 32-bit and 64-bit unsigned installers and dist zips (`bitcoin-gold-${VERSION}-win[32|64]-setup-unsigned.exe`, `bitcoin-gold-${VERSION}-win[32|64].zip`)
+  4. OS X unsigned installer and dist tarball (`bitcoin-gold-${VERSION}-osx-unsigned.dmg`, `bitcoin-gold-${VERSION}-osx64.tar.gz`)
   5. Gitian signatures (in `gitian.sigs/${VERSION}-<linux|{win,osx}-unsigned>/(your Gitian key)/`)
 
 ### Verify other gitian builders signatures to your own. (Optional)
@@ -203,7 +203,7 @@ Create (and optionally verify) the signed OS X binary:
     ./bin/gbuild -i --commit signature=v${VERSION} ../BTCGPU/contrib/gitian-descriptors/gitian-osx-signer.yml
     ./bin/gsign --signer $SIGNER --release ${VERSION}-osx-signed --destination ../gitian.sigs/ ../BTCGPU/contrib/gitian-descriptors/gitian-osx-signer.yml
     ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-signed ../BTCGPU/contrib/gitian-descriptors/gitian-osx-signer.yml
-    mv build/out/BTCGPU-osx-signed.dmg ../BTCGPU-${VERSION}-osx.dmg
+    mv build/out/bitcoin-gold-osx-signed.dmg ../bitcoin-gold-${VERSION}-osx.dmg
     popd
 
 Create (and optionally verify) the signed Windows binaries:
@@ -212,8 +212,8 @@ Create (and optionally verify) the signed Windows binaries:
     ./bin/gbuild -i --commit signature=v${VERSION} ../BTCGPU/contrib/gitian-descriptors/gitian-win-signer.yml
     ./bin/gsign --signer $SIGNER --release ${VERSION}-win-signed --destination ../gitian.sigs/ ../BTCGPU/contrib/gitian-descriptors/gitian-win-signer.yml
     ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-signed ../BTCGPU/contrib/gitian-descriptors/gitian-win-signer.yml
-    mv build/out/BTCGPU-*win64-setup.exe ../BTCGPU-${VERSION}-win64-setup.exe
-    mv build/out/BTCGPU-*win32-setup.exe ../BTCGPU-${VERSION}-win32-setup.exe
+    mv build/out/bitcoin-gold-*win64-setup.exe ../bitcoin-gold-${VERSION}-win64-setup.exe
+    mv build/out/bitcoin-gold-*win32-setup.exe ../bitcoin-gold-${VERSION}-win32-setup.exe
     popd
 
 Commit your signature for the signed OS X/Windows binaries:
