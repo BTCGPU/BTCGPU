@@ -7,7 +7,7 @@ architectures:
 packages:
 - "faketime"
 remotes:
-- "url": "https://github.com/bitcoin-core/bitcoin-detached-sigs.git"
+- "url": "https://github.com/BTCGPU/bitcoingold-detached-sigs.git"
   "dir": "signature"
 files:
 - "bitcoin-gold-osx-unsigned.tar.gz"
