@@ -258,7 +258,7 @@ then
     sudo apt-get install ruby apache2 git apt-cacher-ng python-vm-builder qemu-kvm qemu-utils
 
     # Only clone valid git repositories
-    urlRegex='^(https?://|git@).*\.git$'
+    urlRegex='^(https?:\/\/*|git@*).*'
 
     if [[ $gsigsUrl =~ $urlRegex ]]
     then
