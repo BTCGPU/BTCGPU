@@ -31,7 +31,7 @@ commitFiles=true
 read -d '' usage <<- EOF
 Usage: $scriptName [-c|u|v|b|s|B|o|h|j|m|] signer version
 
-Run this script from the directory containing the bitcoin, gitian-builder, gitian.sigs, and bitcoin-detached-sigs.
+Run this script from the directory containing the bitcoin, gitian-builder, gitian.sigs, and bitcoingold-detached-sigs.
 
 Arguments:
 signer          GPG signer to sign each build assert file

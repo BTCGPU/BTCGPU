@@ -24,15 +24,15 @@ If you want to build the disk image with `make deploy` (.dmg / optional), you ne
 
 NOTE: Building with Qt4 is still supported, however, could result in a broken UI. Building with Qt5 is recommended.
 
-Build Bitcoin Core
+Build Bitcoin Gold
 ------------------------
 
-1. Clone the Bitcoin Gold source code and cd into `btcgpu`
+1. Clone the Bitcoin Gold source code and cd into `BTCGPU`
 
-        git clone https://github.com/btcgpu/btcpgu
-        cd btcgpu
+        git clone https://github.com/BTCGPU/BTCGPU
+        cd BTCGPU
 
-2.  Build btcgpu:
+2.  Build BTCGPU:
 
     Configure and build the headless bitcoin binaries as well as the GUI (if Qt is found).
 
