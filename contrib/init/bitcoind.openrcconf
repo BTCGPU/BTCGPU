@@ -1,13 +1,13 @@
 # /etc/conf.d/bitcoind: config file for /etc/init.d/bitcoind
 
 # Config file location
-#BITCOIND_CONFIGFILE="/etc/bitcoin/bitcoin.conf"
+#BITCOIND_CONFIGFILE="/etc/bitcoin/bitcoingold.conf"
 
 # What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
 #BITCOIND_PIDDIR="/var/run/bitcoind"
 
 # What filename to give the pidfile
-#BITCOIND_PIDFILE="${BITCOIND_PIDDIR}/bitcoind.pid"
+#BITCOIND_PIDFILE="${BITCOIND_PIDDIR}/bgoldd.pid"
 
 # Where to write bitcoind data (be mindful that the blockchain is large)
 #BITCOIND_DATADIR="/var/lib/bitcoind"

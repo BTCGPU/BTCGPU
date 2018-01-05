@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE(rpc_rawparams)
     BOOST_CHECK_THROW(CallRPC("signrawtransaction null"), std::runtime_error);
     BOOST_CHECK_THROW(CallRPC("signrawtransaction ff00"), std::runtime_error);
     BOOST_CHECK_NO_THROW(CallRPC(std::string("signrawtransaction ")+rawtx));
-    BOOST_CHECK_NO_THROW(CallRPC(std::string("signrawtransaction ")+rawtx+" null null NONE|ANYONECANPAY"));
-    BOOST_CHECK_NO_THROW(CallRPC(std::string("signrawtransaction ")+rawtx+" [] [] NONE|ANYONECANPAY"));
+    BOOST_CHECK_NO_THROW(CallRPC(std::string("signrawtransaction ")+rawtx+" null null NONE|FORKID|ANYONECANPAY"));
+    BOOST_CHECK_NO_THROW(CallRPC(std::string("signrawtransaction ")+rawtx+" [] [] NONE|FORKID|ANYONECANPAY"));
     BOOST_CHECK_THROW(CallRPC(std::string("signrawtransaction ")+rawtx+" null null badenum"), std::runtime_error);
 
     // Only check failure cases for sendrawtransaction, there's no network to send to...
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(rpc_rawsign)
       "\"vout\":1,\"scriptPubKey\":\"a914b10c9df5f7edf436c697f02f1efdba4cf399615187\","
       "\"redeemScript\":\"512103debedc17b3df2badbcdd86d5feb4562b86fe182e5998abd8bcd4f122c6155b1b21027e940bb73ab8732bfdf7f9216ecefca5b94d6df834e77e108f68e66f126044c052ae\"}]";
     r = CallRPC(std::string("createrawtransaction ")+prevout+" "+
-      "{\"3HqAe9LtNBjnsfM4CyYaWTnvCaUYT7v4oZ\":11}");
+      "{\"AXv2N6i59S5ZbTrceXYKEih5Xf7XGqxpc6\":11}");
     std::string notsigned = r.get_str();
     std::string privkey1 = "\"KzsXybp9jX64P5ekX1KUxRQ79Jht9uzW7LorgwE65i5rWACL6LQe\"";
     std::string privkey2 = "\"Kyhdf5LuKTRx4ge69ybABsiUAWjVRK4XGxAKk2FQLp2HjGMy87Z4\"";
@@ -341,6 +341,32 @@ BOOST_AUTO_TEST_CASE(rpc_convert_values_generatetoaddress)
     BOOST_CHECK_EQUAL(result[0].get_int(), 1);
     BOOST_CHECK_EQUAL(result[1].get_str(), "mhMbmE2tE9xzJYCV9aNC8jKWN31vtGrguU");
     BOOST_CHECK_EQUAL(result[2].get_int(), 9);
+}
+
+BOOST_AUTO_TEST_CASE(rpc_getblocksubsidy)
+{
+    UniValue result;
+
+    BOOST_CHECK_THROW(CallRPC(std::string("getblocksubsidy too many args")), std::runtime_error);
+    BOOST_CHECK_THROW(CallRPC(std::string("getblocksubsidy -1")), std::runtime_error);
+    BOOST_CHECK_NO_THROW(result = CallRPC("getblocksubsidy 50000"));
+    UniValue o1 = result.get_obj();
+    UniValue miner = find_value(o1, "miner");
+    BOOST_CHECK_EQUAL(miner.get_int64(), 5000000000);
+    UniValue founders = find_value(o1, "founders");
+    BOOST_CHECK_EQUAL(founders.get_int64(), 0);
+    BOOST_CHECK_NO_THROW(result = CallRPC("getblocksubsidy 1000000"));
+    o1 = result.get_obj();
+    miner = find_value(o1, "miner");
+    BOOST_CHECK_EQUAL(miner.get_int64(), 312500000);
+    founders = find_value(o1, "founders");
+    BOOST_CHECK_EQUAL(founders.get_int64(), 0);
+    BOOST_CHECK_NO_THROW(result = CallRPC("getblocksubsidy 2000000"));
+    o1 = result.get_obj();
+    miner = find_value(o1, "miner");
+    BOOST_CHECK_EQUAL(miner.get_int64(), 9765625);
+    founders = find_value(o1, "founders");
+    BOOST_CHECK_EQUAL(founders.get_int64(), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -775,7 +775,7 @@ class CScript(bytes):
         # need to change
         def _repr(o):
             if isinstance(o, bytes):
-                return b"x('%s')" % hexlify(o).decode('ascii')
+                return (b"x('%s')" % hexlify(o)).decode('ascii')
             else:
                 return repr(o)
 
@@ -823,7 +823,10 @@ class CScript(bytes):
 SIGHASH_ALL = 1
 SIGHASH_NONE = 2
 SIGHASH_SINGLE = 3
+SIGHASH_FORKID = 0x40
 SIGHASH_ANYONECANPAY = 0x80
+
+FORKID_BTG = 79 # Atomic number AU
 
 def FindAndDelete(script, sig):
     """Consensus critical, see FindAndDelete() in Satoshi codebase"""
@@ -849,6 +852,8 @@ def SignatureHash(script, txTo, inIdx, hashtype):
     Returns (hash, err) to precisely match the consensus-critical behavior of
     the SIGHASH_SINGLE bug. (inIdx is *not* checked for validity)
     """
+    assert not (hashtype & SIGHASH_FORKID), "BIP143 is mandatory for FORKID enabled transactions."
+
     HASH_ONE = b'\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
     if inIdx >= len(txTo.vin):
@@ -896,7 +901,7 @@ def SignatureHash(script, txTo, inIdx, hashtype):
 # TODO: Allow cached hashPrevouts/hashSequence/hashOutputs to be provided.
 # Performance optimization probably not necessary for python tests, however.
 # Note that this corresponds to sigversion == 1 in EvalScript, which is used
-# for version 0 witnesses.
+# for version 0 witnesses and all the FORKID transactions.
 def SegwitVersion1SignatureHash(script, txTo, inIdx, hashtype, amount):
 
     hashPrevouts = 0
@@ -923,6 +928,9 @@ def SegwitVersion1SignatureHash(script, txTo, inIdx, hashtype, amount):
     elif ((hashtype & 0x1f) == SIGHASH_SINGLE and inIdx < len(txTo.vout)):
         serialize_outputs = txTo.vout[inIdx].serialize()
         hashOutputs = uint256_from_str(hash256(serialize_outputs))
+
+    if hashtype & SIGHASH_FORKID:
+        hashtype |= FORKID_BTG << 8
 
     ss = bytes()
     ss += struct.pack("<i", txTo.nVersion)

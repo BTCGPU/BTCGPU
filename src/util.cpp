@@ -87,8 +87,9 @@
 // Application startup time (used for uptime calculation)
 const int64_t nStartupTime = GetTime();
 
-const char * const BITCOIN_CONF_FILENAME = "bitcoin.conf";
-const char * const BITCOIN_PID_FILENAME = "bitcoind.pid";
+const char * const BITCOIN_CONF_FILENAME = "bitcoingold.conf";
+const char * const BITCOIN_LEGACY_CONF_FILENAME = "bitcoin.conf";
+const char * const BITCOIN_PID_FILENAME = "bgoldd.pid";
 
 ArgsManager gArgs;
 bool fPrintToConsole = false;
@@ -241,6 +242,7 @@ const CLogCategoryDesc LogCategories[] =
     {BCLog::COINDB, "coindb"},
     {BCLog::QT, "qt"},
     {BCLog::LEVELDB, "leveldb"},
+    {BCLog::POW, "pow"},
     {BCLog::ALL, "1"},
     {BCLog::ALL, "all"},
 };
@@ -524,13 +526,13 @@ void PrintExceptionContinue(const std::exception* pex, const char* pszThread)
 
 fs::path GetDefaultDataDir()
 {
-    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Bitcoin
-    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Bitcoin
-    // Mac: ~/Library/Application Support/Bitcoin
-    // Unix: ~/.bitcoin
+    // Windows < Vista: C:\Documents and Settings\Username\Application Data\BitcoinGold
+    // Windows >= Vista: C:\Users\Username\AppData\Roaming\BitcoinGold
+    // Mac: ~/Library/Application Support/BitcoinGold
+    // Unix: ~/.bitcoingold
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Bitcoin";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "BitcoinGold";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -540,10 +542,10 @@ fs::path GetDefaultDataDir()
         pathRet = fs::path(pszHome);
 #ifdef MAC_OSX
     // Mac
-    return pathRet / "Library/Application Support/Bitcoin";
+    return pathRet / "Library/Application Support/BitcoinGold";
 #else
     // Unix
-    return pathRet / ".bitcoin";
+    return pathRet / ".bitcoingold";
 #endif
 #endif
 }
@@ -598,30 +600,56 @@ fs::path GetConfigFile(const std::string& confPath)
     return pathConfigFile;
 }
 
-void ArgsManager::ReadConfigFile(const std::string& confPath)
-{
-    fs::ifstream streamConfig(GetConfigFile(confPath));
-    if (!streamConfig.good())
-        return; // No bitcoin.conf file is OK
+void ArgsManager::ReadConfigFileInternal(const std::string& confPath) {
+    // Get path and open stream
+    fs::path path = GetConfigFile(confPath);
+    fs::ifstream streamConfig(path);
 
-    {
-        LOCK(cs_args);
-        std::set<std::string> setOptions;
-        setOptions.insert("*");
-
-        for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it)
+    if (streamConfig.good()) {
         {
-            // Don't overwrite existing settings so command line settings override bitcoin.conf
-            std::string strKey = std::string("-") + it->string_key;
-            std::string strValue = it->value[0];
-            InterpretNegativeSetting(strKey, strValue);
-            if (mapArgs.count(strKey) == 0)
-                mapArgs[strKey] = strValue;
-            mapMultiArgs[strKey].push_back(strValue);
+            LOCK(cs_args);
+            std::set<std::string> setOptions;
+            setOptions.insert("*");
+
+            for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it) {
+                // Don't overwrite existing settings so command line settings override bitcoingold.conf
+                std::string strKey = std::string("-") + it->string_key;
+                std::string strValue = it->value[0];
+                InterpretNegativeSetting(strKey, strValue);
+
+                if (mapArgs.count(strKey) == 0) {
+                    mapArgs[strKey] = strValue;
+                }
+
+                mapMultiArgs[strKey].push_back(strValue);
+            }
+        }
+
+        // If datadir is changed in .conf file:
+        ClearDatadirCache();
+    }
+}
+
+void ArgsManager::ReadConfigFile(const std::string& confPath) {
+    fs::path path = GetConfigFile(confPath);
+
+    if (path.filename() == BITCOIN_CONF_FILENAME && !fs::exists(path)) {
+        // Construct legacy config path using confPath as base
+        fs::path legacyConfPath(path.string());
+        legacyConfPath.remove_filename();
+        legacyConfPath /= BITCOIN_LEGACY_CONF_FILENAME;
+
+        if(fs::exists(legacyConfPath) && fs::is_regular_file(legacyConfPath)) {
+            // Rename legacy conf
+            if(RenameOver(legacyConfPath, path)) {
+                LogPrintf("Renamed legacy configuration file %s to %s\n", legacyConfPath.string(), path.string());
+            } else {
+                throw std::runtime_error("Found legacy configuration file at " + legacyConfPath.string() + " but failed to rename it to " + path.string() + "! Manual action needed.");
+            }
         }
     }
-    // If datadir is changed in .conf file:
-    ClearDatadirCache();
+
+    ReadConfigFileInternal(confPath);
 }
 
 #ifndef WIN32
@@ -630,6 +658,7 @@ fs::path GetPidFile()
     fs::path pathPidFile(gArgs.GetArg("-pid", BITCOIN_PID_FILENAME));
     if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
+
 }
 
 void CreatePidFile(const fs::path &path, pid_t pid)

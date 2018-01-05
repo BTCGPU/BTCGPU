@@ -296,7 +296,7 @@ def submit_block_with_tx(node, tx):
     block.rehash()
     block.hashMerkleRoot = block.calc_merkle_root()
     block.solve()
-    node.submitblock(bytes_to_hex_str(block.serialize(True)))
+    node.submitblock(bytes_to_hex_str(block.serialize(True)), '', True)
     return block
 
 

@@ -1162,6 +1162,11 @@ bool AppInitSanityChecks()
 {
     // ********************************************************* Step 4: sanity checks
 
+    // Initialize libsodium
+    if (init_and_check_sodium() == -1) {
+        return false;
+    }
+
     // Initialize elliptic curve code
     std::string sha256_algo = SHA256AutoDetect();
     LogPrintf("Using the '%s' SHA256 implementation\n", sha256_algo);

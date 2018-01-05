@@ -101,6 +101,7 @@ namespace BCLog {
         COINDB      = (1 << 18),
         QT          = (1 << 19),
         LEVELDB     = (1 << 20),
+        POW         = (1 << 30),
         ALL         = ~(uint32_t)0,
     };
 }
@@ -194,6 +195,8 @@ inline bool IsSwitchChar(char c)
 
 class ArgsManager
 {
+private:
+    void ReadConfigFileInternal(const std::string& confPath);
 protected:
     CCriticalSection cs_args;
     std::map<std::string, std::string> mapArgs;

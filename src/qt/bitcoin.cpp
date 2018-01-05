@@ -27,6 +27,7 @@
 #endif
 
 #include "init.h"
+#include "netbase.h"
 #include "rpc/server.h"
 #include "scheduler.h"
 #include "ui_interface.h"
@@ -618,7 +619,7 @@ int main(int argc, char *argv[])
     if (!Intro::pickDataDirectory())
         return EXIT_SUCCESS;
 
-    /// 6. Determine availability of data directory and parse bitcoin.conf
+    /// 6. Determine availability of data directory and parse bitcoingold.conf
     /// - Do not call GetDataDir(true) before this step finishes
     if (!fs::is_directory(GetDataDir(false)))
     {

@@ -2,8 +2,8 @@
 
 *.exe
 src/bitcoin
-src/bitcoind
-src/bitcoin-cli
+src/bgoldd
+src/bgold-cli
 src/bitcoin-tx
 src/test/test_bitcoin
 src/test/test_bitcoin_fuzzy
@@ -87,6 +87,9 @@ qrc_*.cpp
 # Mac specific
 .DS_Store
 build
+
+# VSCode
+.vscode/
 
 #lcov
 *.gcno

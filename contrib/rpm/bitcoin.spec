@@ -24,7 +24,7 @@ URL:		https://bitcoin.org/
 Source0:	https://bitcoin.org/bin/bitcoin-core-%{version}/bitcoin-%{version}.tar.gz
 Source1:	http://download.oracle.com/berkeley-db/db-%{bdbv}.NC.tar.gz
 
-Source10:	https://raw.githubusercontent.com/bitcoin/bitcoin/v%{version}/contrib/debian/examples/bitcoin.conf
+Source10:	https://raw.githubusercontent.com/BTCGPU/BTCGPU/master/contrib/debian/examples/bitcoingold.conf
 
 #man pages
 Source20:	https://raw.githubusercontent.com/bitcoin/bitcoin/v%{version}/doc/man/bitcoind.1
@@ -151,7 +151,7 @@ This package contains utilities needed by the bitcoin-server package.
 %prep
 %setup -q
 %patch0 -p1 -b .libressl
-cp -p %{SOURCE10} ./bitcoin.conf.example
+cp -p %{SOURCE10} ./bitcoingold.conf.example
 tar -zxf %{SOURCE1}
 cp -p db-%{bdbv}.NC/LICENSE ./db-%{bdbv}.NC-LICENSE
 mkdir db4 SELinux
@@ -186,10 +186,10 @@ mv %{buildroot}%{_bindir}/bitcoind %{buildroot}%{_sbindir}/bitcoind
 
 # systemd stuff
 mkdir -p %{buildroot}%{_tmpfilesdir}
-cat <<EOF > %{buildroot}%{_tmpfilesdir}/bitcoin.conf
+cat <<EOF > %{buildroot}%{_tmpfilesdir}/bitcoingold.conf
 d /run/bitcoind 0750 bitcoin bitcoin -
 EOF
-touch -a -m -t 201504280000 %{buildroot}%{_tmpfilesdir}/bitcoin.conf
+touch -a -m -t 201504280000 %{buildroot}%{_tmpfilesdir}/bitcoingold.conf
 
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 cat <<EOF > %{buildroot}%{_sysconfdir}/sysconfig/bitcoin
@@ -200,9 +200,9 @@ OPTIONS=""
 
 # System service defaults.
 # Don't change these unless you know what you're doing.
-CONFIG_FILE="%{_sysconfdir}/bitcoin/bitcoin.conf"
+CONFIG_FILE="%{_sysconfdir}/bitcoin/bitcoingold.conf"
 DATA_DIR="%{_localstatedir}/lib/bitcoin"
-PID_FILE="/run/bitcoind/bitcoind.pid"
+PID_FILE="/run/bitcoind/bgoldd.pid"
 EOF
 touch -a -m -t 201504280000 %{buildroot}%{_sysconfdir}/sysconfig/bitcoin
 
@@ -371,7 +371,7 @@ rm -rf %{buildroot}
 %files core
 %defattr(-,root,root,-)
 %license COPYING db-%{bdbv}.NC-LICENSE
-%doc COPYING bitcoin.conf.example doc/README.md doc/bips.md doc/files.md doc/multiwallet-qt.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md
+%doc COPYING bitcoingold.conf.example doc/README.md doc/bips.md doc/files.md doc/multiwallet-qt.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md
 %attr(0755,root,root) %{_bindir}/bitcoin-qt
 %attr(0644,root,root) %{_datadir}/applications/bitcoin-core.desktop
 %attr(0644,root,root) %{_datadir}/kde4/services/bitcoin-core.protocol
@@ -402,9 +402,9 @@ rm -rf %{buildroot}
 %files server
 %defattr(-,root,root,-)
 %license COPYING db-%{bdbv}.NC-LICENSE
-%doc COPYING bitcoin.conf.example doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md
+%doc COPYING bitcoingold.conf.example doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md
 %attr(0755,root,root) %{_sbindir}/bitcoind
-%attr(0644,root,root) %{_tmpfilesdir}/bitcoin.conf
+%attr(0644,root,root) %{_tmpfilesdir}/bitcoingold.conf
 %attr(0644,root,root) %{_unitdir}/bitcoin.service
 %dir %attr(0750,bitcoin,bitcoin) %{_sysconfdir}/bitcoin
 %dir %attr(0750,bitcoin,bitcoin) %{_localstatedir}/lib/bitcoin
@@ -415,7 +415,7 @@ rm -rf %{buildroot}
 %files utils
 %defattr(-,root,root,-)
 %license COPYING
-%doc COPYING bitcoin.conf.example doc/README.md
+%doc COPYING bitcoingold.conf.example doc/README.md
 %attr(0755,root,root) %{_bindir}/bitcoin-cli
 %attr(0755,root,root) %{_bindir}/bitcoin-tx
 %attr(0755,root,root) %{_bindir}/bench_bitcoin
