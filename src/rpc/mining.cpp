@@ -110,11 +110,14 @@ UniValue getnetworkhashps(const JSONRPCRequest& request)
 
 UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGenerate, uint64_t nMaxTries, bool keepScript)
 {
-    static const int nInnerLoopCount = 0x10000;
+    static const int nInnerLoopBitcoinMask = 0x1FFFF;
+    static const int nInnerLoopBitcoinCount = 0x10000;
     static const int nInnerLoopEquihashMask = 0xFFFF;
     static const int nInnerLoopEquihashCount = 0xFFFF;
     int nHeightEnd = 0;
     int nHeight = 0;
+    int nInnerLoopCount;
+    int nInnerLoopMask;
 
     {   // Don't keep cs_main locked
         LOCK(cs_main);
@@ -138,6 +141,8 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
         }
         if (pblock->nHeight < (uint32_t)params.GetConsensus().BTGHeight) {
             // Solve sha256d.
+            nInnerLoopMask = nInnerLoopBitcoinMask;
+            nInnerLoopCount = nInnerLoopBitcoinCount;
             while (nMaxTries > 0 && (int)pblock->nNonce.GetUint64(0) < nInnerLoopCount &&
                    !CheckProofOfWork(pblock->GetHash(), pblock->nBits, false, Params().GetConsensus())) {
                 pblock->nNonce = ArithToUint256(UintToArith256(pblock->nNonce) + 1);
@@ -145,6 +150,8 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             }
         } else {
             // Solve Equihash.
+            nInnerLoopMask = nInnerLoopEquihashMask;
+            nInnerLoopCount = nInnerLoopEquihashCount;
             crypto_generichash_blake2b_state eh_state;
             EhInitialiseState(n, k, eh_state);
 
@@ -157,7 +164,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             crypto_generichash_blake2b_update(&eh_state, (unsigned char*)&ss[0], ss.size());
 
             while (nMaxTries > 0 &&
-                   ((int)pblock->nNonce.GetUint64(0) & nInnerLoopEquihashMask) < nInnerLoopEquihashCount) {
+                   ((int)pblock->nNonce.GetUint64(0) & nInnerLoopEquihashMask) < nInnerLoopCount) {
                 // Yes, there is a chance every nonce could fail to satisfy the -regtest
                 // target -- 1 in 2^(2^256). That ain't gonna happen
                 pblock->nNonce = ArithToUint256(UintToArith256(pblock->nNonce) + 1);
@@ -188,7 +195,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
         if (nMaxTries == 0) {
             break;
         }
-        if ((int)pblock->nNonce.GetUint64(0) == nInnerLoopCount) {
+        if (((int)pblock->nNonce.GetUint64(0) & nInnerLoopMask) == nInnerLoopCount) {
             continue;
         }
         std::shared_ptr<const CBlock> shared_pblock = std::make_shared<const CBlock>(*pblock);
