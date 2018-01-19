@@ -284,12 +284,8 @@ def run_tests(test_list, src_dir, build_dir, exeext, tmpdir, jobs=1, enable_cove
 
     #Set env vars
     if "BITCOIND" not in os.environ:
-<<<<<<< HEAD
         os.environ["BITCOIND"] = build_dir + '/src/bgoldd' + exeext
-=======
-        os.environ["BITCOIND"] = build_dir + '/src/bitcoind' + exeext
-        os.environ["BITCOINCLI"] = build_dir + '/src/bitcoin-cli' + exeext
->>>>>>> 0.15.1/master
+        os.environ["BITCOINCLI"] = build_dir + '/src/bgold-cli' + exeext
 
     tests_dir = src_dir + '/test/functional/'
 
