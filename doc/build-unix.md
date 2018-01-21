@@ -104,6 +104,21 @@ ZMQ dependencies (provides ZMQ API 4.x):
 
     sudo apt-get install libzmq3-dev
 
+3. On Ubuntu 16.04.3 you need to install the newest libsodium (at least 1.0.13)
+
+    configure: error: Wrong libsodium: version >= 1.0.13 required
+
+I tested it with version 1.0.16 at it passes the `./configure` procedure.
+
+Building and isntalling <a href="https://github.com/jedisct1/libsodium/releases/tag/1.0.16">libsodium</a>:
+
+    $ tar -zxf libsodium-1.0.16.tar.gz
+    $ cd libsodium-1.0.16
+    $ ./autogen.sh
+    $ ./configure
+    $ make
+    $ sudo make install
+
 Dependencies for the GUI: Ubuntu & Debian
 -----------------------------------------
 
