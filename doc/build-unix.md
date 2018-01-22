@@ -108,16 +108,18 @@ ZMQ dependencies (provides ZMQ API 4.x):
 
     configure: error: Wrong libsodium: version >= 1.0.13 required
 
-I tested it with version 1.0.16 at it passes the `./configure` procedure.
+I tested it with version 1.0.15 (from the `depends` directory) at it works.
 
-Building and isntalling <a href="https://github.com/jedisct1/libsodium/releases/tag/1.0.16">libsodium</a>:
-
-    $ tar -zxf libsodium-1.0.16.tar.gz
-    $ cd libsodium-1.0.16
-    $ ./autogen.sh
-    $ ./configure
+    $ cd BTCGPU
+    $ cd depends
     $ make
-    $ sudo make install
+    $ cd ..
+    $ ./autogen.sh
+    $ ./configure --prefix=`pwd`/depends/x86_64-pc-linux-gnu
+    $ make
+    $ make install
+
+The command `make install` installs the executables in the `./depends/x86_64-pc-linux-gnu/` directory.
 
 Dependencies for the GUI: Ubuntu & Debian
 -----------------------------------------
