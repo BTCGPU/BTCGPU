@@ -119,7 +119,7 @@ I tested it with version 1.0.15 (from the `depends` directory) at it works.
     $ make
     $ make install
 
-The command `make install` installs the executables in the `./depends/x86_64-pc-linux-gnu/` directory.
+The command `make install` installs the executables in the `./depends/x86_64-pc-linux-gnu/bin/` directory.
 
 Dependencies for the GUI: Ubuntu & Debian
 -----------------------------------------
