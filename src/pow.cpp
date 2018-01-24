@@ -14,6 +14,9 @@
 #include "uint256.h"
 #include "util.h"
 
+#include <algorithm>
+#include <iostream>
+
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock,
                                  const Consensus::Params& params)
 {
