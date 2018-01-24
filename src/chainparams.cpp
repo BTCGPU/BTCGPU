@@ -99,8 +99,6 @@ public:
         consensus.BTGHeight = 491407; // Around 10/25/2017 12:00 UTC
         consensus.BTGPremineWindow = 8000;
         consensus.BTGPremineEnforceWhitelist = true;
-        consensus.BitcoinPostforkBlock = uint256S("000000000000000000e5438564434edaf41e63829a637521a96235adf4653e1b");
-        consensus.BitcoinPostforkTime = 1508808039;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitStart = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -142,17 +140,11 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 32-bit integer with any alignment.
          */
-        pchMessageStartLegacy[0] = 0xf9;
-        pchMessageStartLegacy[1] = 0xbe;
-        pchMessageStartLegacy[2] = 0xb4;
-        pchMessageStartLegacy[3] = 0xd9;
-
         pchMessageStart[0] = 0xe1;
         pchMessageStart[1] = 0x47;
         pchMessageStart[2] = 0x6d;
         pchMessageStart[3] = 0x44;
         nDefaultPort = 8338; // different port than Bitcoin
-        nBitcoinDefaultPort = 8333;
         nPruneAfterHeight = 100000;
         const size_t N = 200, K = 9;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -234,12 +226,10 @@ public:
         consensus.BTGHeight = 1210320;
         consensus.BTGPremineWindow = 50;
         consensus.BTGPremineEnforceWhitelist = false;
-        consensus.BitcoinPostforkBlock = uint256S("00000000ef93c2d9bac8da61ff11a699a5b815f77a194c567c5de0dbdf0bf28b");
-        consensus.BitcoinPostforkTime = 1508111338;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitStart = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        
+
         //based on https://github.com/BTCGPU/BTCGPU/issues/78
         consensus.nPowAveragingWindow = 30;
         assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
@@ -272,18 +262,11 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000000002e9e7b00e1f6dc5123a04aad68dd0f0968d8c7aa45f6640795c37b1"); //1135275
 
-        
-        pchMessageStartLegacy[0] = 0x0b;
-        pchMessageStartLegacy[1] = 0x11;
-        pchMessageStartLegacy[2] = 0x09;
-        pchMessageStartLegacy[3] = 0x07;
-
         pchMessageStart[0] = 0xe1;
-        pchMessageStart[1] = 0x47;
-        pchMessageStart[2] = 0x6d;
-        pchMessageStart[3] = 0x44;
+        pchMessageStart[1] = 0x48;
+        pchMessageStart[2] = 0x6e;
+        pchMessageStart[3] = 0x45;
         nDefaultPort = 18338;
-        nBitcoinDefaultPort = 18333;
         nPruneAfterHeight = 1000;
         const size_t N = 200, K = 9;  // Same as mainchain.
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -347,8 +330,6 @@ public:
         consensus.BTGHeight = 3000;
         consensus.BTGPremineWindow = 10;
         consensus.BTGPremineEnforceWhitelist = false;
-        consensus.BitcoinPostforkBlock = uint256();
-        consensus.BitcoinPostforkTime = 0;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitStart = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -377,11 +358,6 @@ public:
 
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x00");
-
-        pchMessageStartLegacy[0] = 0xfa;
-        pchMessageStartLegacy[1] = 0xbf;
-        pchMessageStartLegacy[2] = 0xb5;
-        pchMessageStartLegacy[3] = 0xda;
         
         pchMessageStart[0] = 0xfa;
         pchMessageStart[1] = 0xbf;
@@ -389,7 +365,6 @@ public:
         pchMessageStart[3] = 0xda;
 
         nDefaultPort = 18444;
-        nBitcoinDefaultPort = 18444;
         nPruneAfterHeight = 1000;
         const size_t N = 48, K = 5;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
@@ -495,9 +470,6 @@ bool CChainParams::IsPremineAddressScript(const CScript& scriptPubKey, uint32_t 
     static const int LOCK_STAGES = 3 * 12;  // Every month for 3 years
     assert((uint32_t)consensus.BTGHeight <= height &&
            height < (uint32_t)(consensus.BTGHeight + consensus.BTGPremineWindow));
-    if (!consensus.BTGPremineEnforceWhitelist) {
-        return true;
-    }
     int block = height - consensus.BTGHeight;
     int num_unlocked = consensus.BTGPremineWindow * 40 / 100;  // 40% unlocked.
     int num_locked = consensus.BTGPremineWindow - num_unlocked;  // 60% time-locked.

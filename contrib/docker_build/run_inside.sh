@@ -9,12 +9,12 @@ update-locale LANG=en_US.UTF-8
 export LANG='en_US.UTF-8'
 export LC_ALL='en_US.UTF-8'
 umask 002
-export OUTDIR=/bitcoin/out
+export OUTDIR=/BTCGPU/out
 rm -rf $OUTDIR
 mkdir $OUTDIR
 chmod a+rwx $OUTDIR
 
-cd bitcoin
+cd BTCGPU
 cd depends
 # ???? I don't know
 make libsodium
@@ -74,7 +74,7 @@ EOF
 chmod +x ${WRAP_DIR}/${prog}
 done
 
-cd bitcoin
+cd BTCGPU
 make clean || true
 rm -rf temp
 BASEPREFIX=`pwd`/depends
@@ -96,13 +96,13 @@ export PATH=${WRAP_DIR}:${PATH}
 CONFIG_SITE=${BASEPREFIX}/`echo "${HOSTS}" | awk '{print $1;}'`/share/config.site ./configure --prefix=/
 make clean
 make dist
-SOURCEDIST=`echo bitcoin-*.tar.gz`
+SOURCEDIST=`echo bitcoin-gold*.tar.gz`
 DISTNAME=`echo ${SOURCEDIST} | sed 's/.tar.*//'`
 # Correct tar file order
 mkdir -p temp
 pushd temp
 tar xf ../$SOURCEDIST
-find bitcoin-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
+find bitcoin-gold* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
 popd
 
 ORIGPATH="$PATH"
@@ -133,5 +133,3 @@ for i in ${HOSTS}; do
 done
 mkdir -p $OUTDIR/src
 mv $SOURCEDIST $OUTDIR/src
-
-

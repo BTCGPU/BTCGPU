@@ -24,15 +24,15 @@ If you want to build the disk image with `make deploy` (.dmg / optional), you ne
 
 NOTE: Building with Qt4 is still supported, however, could result in a broken UI. Building with Qt5 is recommended.
 
-Build Bitcoin Core
+Build Bitcoin Gold
 ------------------------
 
-1. Clone the Bitcoin Gold source code and cd into `btcgpu`
+1. Clone the Bitcoin Gold source code and cd into `BTCGPU`
 
-        git clone https://github.com/btcgpu/btcpgu
-        cd btcgpu
+        git clone https://github.com/BTCGPU/BTCGPU
+        cd BTCGPU
 
-2.  Build btcgpu:
+2.  Build BTCGPU:
 
     Configure and build the headless bitcoin binaries as well as the GUI (if Qt is found).
 
@@ -57,9 +57,9 @@ Bitcoin Gold is now available at `./src/bgoldd`
 
 Before running, it's recommended you create an RPC configuration file.
 
-    echo -e "rpcuser=bitcoinrpc\nrpcpassword=$(xxd -l 16 -p /dev/urandom)" > "$HOME/Library/Application Support/BitcoinGold/bitcoin.conf"
+    echo -e "rpcuser=bitcoinrpc\nrpcpassword=$(xxd -l 16 -p /dev/urandom)" > "$HOME/Library/Application Support/BitcoinGold/bitcoingold.conf"
 
-    chmod 600 "$HOME/Library/Application Support/BitcoinGold/bitcoin.conf"
+    chmod 600 "$HOME/Library/Application Support/BitcoinGold/bitcoingold.conf"
 
 The first time you run bgoldd, it will start downloading the blockchain. This process could take several hours.
 

@@ -59,8 +59,7 @@ public:
 
     const Consensus::Params& GetConsensus() const { return consensus; }
     const CMessageHeader::MessageStartChars& MessageStart() const { return pchMessageStart; }
-    const CMessageHeader::MessageStartChars& MessageStartLegacy() const { return pchMessageStartLegacy; }
-    int GetDefaultPort(bool bootstrapping = false) const { return bootstrapping ? nBitcoinDefaultPort : nDefaultPort; }
+    int GetDefaultPort() const { return nDefaultPort; }
 
     const CBlock& GenesisBlock() const { return genesis; }
     /** Default value for -checkmempool and -checkblockindex argument */
@@ -86,10 +85,8 @@ protected:
     CChainParams() {}
 
     Consensus::Params consensus;
-    CMessageHeader::MessageStartChars pchMessageStartLegacy;
     CMessageHeader::MessageStartChars pchMessageStart;
     int nDefaultPort;
-    int nBitcoinDefaultPort;
     uint64_t nPruneAfterHeight;
     unsigned int nEquihashN = 0;
     unsigned int nEquihashK = 0;

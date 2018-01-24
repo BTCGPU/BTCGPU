@@ -1,4 +1,4 @@
-Building bitcoind for fun and profit
+Building bgoldd for fun and profit
 -----
 
 Run the script like this

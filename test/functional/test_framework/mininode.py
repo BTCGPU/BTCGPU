@@ -580,8 +580,8 @@ class CBlockHeader(object):
             self.nVersion = struct.unpack("<i", f.read(4))[0]
             self.hashPrevBlock = deser_uint256(f)
             self.hashMerkleRoot = deser_uint256(f)
-            self.nHeight = struct.unpack("<I", f.read(4))
-            self.nReserved = [struct.unpack("<I", f.read(4)) for _ in range(7)]
+            self.nHeight = struct.unpack("<I", f.read(4))[0]
+            self.nReserved = [struct.unpack("<I", f.read(4))[0] for _ in range(7)]
             self.nTime = struct.unpack("<I", f.read(4))[0]
             self.nBits = struct.unpack("<I", f.read(4))[0]
             self.nNonce = deser_uint256(f)
@@ -604,7 +604,7 @@ class CBlockHeader(object):
             r += ser_uint256(self.hashPrevBlock)
             r += ser_uint256(self.hashMerkleRoot)
             r += struct.pack("<I", self.nHeight)
-            for _ in range(7):
+            for i in range(7):
                 r += struct.pack("<I", self.nReserved[i])
             r += struct.pack("<I", self.nTime)
             r += struct.pack("<I", self.nBits)
@@ -640,8 +640,8 @@ class CBlock(CBlockHeader):
         super(CBlock, self).__init__(header)
         self.vtx = []
 
-    def deserialize(self, f):
-        super(CBlock, self).deserialize(f)
+    def deserialize(self, f, legacy=True):
+        super(CBlock, self).deserialize(f, legacy=legacy)
         self.vtx = deser_vector(f, CTransaction)
 
     def serialize(self, with_witness=False):

@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(dbwrapper)
     // Perform tests both obfuscated and non-obfuscated.
     for (bool obfuscate : {false, true}) {
         fs::path ph = fs::temp_directory_path() / fs::unique_path();
-        CDBWrapper dbw(ph, (1 << 20), true, false, obfuscate);
+		CDBWrapper dbw(ph, (1 << 20), true, false, obfuscate, false, 64, 2 << 20);
         char key = 'k';
         uint256 in = InsecureRand256();
         uint256 res;
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(dbwrapper_compression)
     for (int i = 0; i < 2; i++) {
         bool compression = (bool)i;
         boost::filesystem::path ph = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
-        CDBWrapper dbw(ph, (1 << 20), true, false, false, compression);
+        CDBWrapper dbw(ph, (1 << 20), true, false, false, compression, 64, 2 << 20);
         char key = 'k';
         uint256 in = GetRandHash();
         uint256 res;
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(dbwrapper_compression)
 BOOST_AUTO_TEST_CASE(dbwrapper_maxopenfiles_64)
 {
     boost::filesystem::path ph = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
-    CDBWrapper dbw(ph, (1 << 20), true, false, false, false, 64);
+    CDBWrapper dbw(ph, (1 << 20), true, false, false, false, 64, 2 << 20);
     char key = 'k';
     uint256 in = GetRandHash();
     uint256 res;
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(dbwrapper_maxopenfiles_64)
 BOOST_AUTO_TEST_CASE(dbwrapper_maxopenfiles_1000)
 {
     boost::filesystem::path ph = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
-    CDBWrapper dbw(ph, (1 << 20), true, false, false, false, 1000);
+    CDBWrapper dbw(ph, (1 << 20), true, false, false, false, 1000, 2 << 20);
     char key = 'k';
     uint256 in = GetRandHash();
     uint256 res;
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(dbwrapper_batch)
     // Perform tests both obfuscated and non-obfuscated.
     for (bool obfuscate : {false, true}) {
         fs::path ph = fs::temp_directory_path() / fs::unique_path();
-        CDBWrapper dbw(ph, (1 << 20), true, false, obfuscate);
+        CDBWrapper dbw(ph, (1 << 20), true, false, obfuscate, false, 64, 2 << 20);
 
         char key = 'i';
         uint256 in = InsecureRand256();
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(dbwrapper_iterator)
     // Perform tests both obfuscated and non-obfuscated.
     for (bool obfuscate : {false, true}) {
         fs::path ph = fs::temp_directory_path() / fs::unique_path();
-        CDBWrapper dbw(ph, (1 << 20), true, false, obfuscate);
+        CDBWrapper dbw(ph, (1 << 20), true, false, obfuscate, false, 64, 2 << 20);
 
         // The two keys are intentionally chosen for ordering
         char key = 'j';
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(existing_data_no_obfuscate)
     create_directories(ph);
 
     // Set up a non-obfuscated wrapper to write some initial data.
-    CDBWrapper* dbw = new CDBWrapper(ph, (1 << 10), false, false, false);
+    CDBWrapper* dbw = new CDBWrapper(ph, (1 << 10), false, false, false, false, 64, 2 << 20);
     char key = 'k';
     uint256 in = InsecureRand256();
     uint256 res;
@@ -182,9 +182,9 @@ BOOST_AUTO_TEST_CASE(existing_data_no_obfuscate)
     dbw = nullptr;
 
     // Now, set up another wrapper that wants to obfuscate the same directory
-    CDBWrapper odbw(ph, (1 << 10), false, false, true);
+    CDBWrapper odbw(ph, (1 << 10), false, false, true, false, 64, 2 << 20);
 
-    // Check that the key/val we wrote with unobfuscated wrapper exists and 
+    // Check that the key/val we wrote with unobfuscated wrapper exists and
     // is readable.
     uint256 res2;
     BOOST_CHECK(odbw.Read(key, res2));
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(existing_data_reindex)
     create_directories(ph);
 
     // Set up a non-obfuscated wrapper to write some initial data.
-    CDBWrapper* dbw = new CDBWrapper(ph, (1 << 10), false, false, false);
+    CDBWrapper* dbw = new CDBWrapper(ph, (1 << 10), false, false, false, false, 64, 2 << 20);
     char key = 'k';
     uint256 in = InsecureRand256();
     uint256 res;
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(existing_data_reindex)
     dbw = nullptr;
 
     // Simulate a -reindex by wiping the existing data store
-    CDBWrapper odbw(ph, (1 << 10), false, true, true);
+    CDBWrapper odbw(ph, (1 << 10), false, true, true, false, 64, 2 << 20);
 
     // Check that the key/val we wrote with unobfuscated wrapper doesn't exist
     uint256 res2;
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(existing_data_reindex)
 BOOST_AUTO_TEST_CASE(iterator_ordering)
 {
     fs::path ph = fs::temp_directory_path() / fs::unique_path();
-    CDBWrapper dbw(ph, (1 << 20), true, false, false);
+    CDBWrapper dbw(ph, (1 << 20), true, false, false, false, 64, 2 << 20);
     for (int x=0x00; x<256; ++x) {
         uint8_t key = x;
         uint32_t value = x*x;
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE(iterator_string_ordering)
     char buf[10];
 
     fs::path ph = fs::temp_directory_path() / fs::unique_path();
-    CDBWrapper dbw(ph, (1 << 20), true, false, false);
+    CDBWrapper dbw(ph, (1 << 20), true, false, false, false, 64, 2 << 20);
     for (int x=0x00; x<10; ++x) {
         for (int y = 0; y < 10; y++) {
             snprintf(buf, sizeof(buf), "%d", x);
