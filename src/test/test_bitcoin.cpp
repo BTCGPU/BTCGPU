@@ -22,9 +22,19 @@
 #include "rpc/register.h"
 #include "script/sigcache.h"
 
-#include "test/testutil.h"
-
 #include <memory>
+
+void CConnmanTest::AddNode(CNode& node)
+{
+    LOCK(g_connman->cs_vNodes);
+    g_connman->vNodes.push_back(&node);
+}
+
+void CConnmanTest::ClearNodes()
+{
+    LOCK(g_connman->cs_vNodes);
+    g_connman->vNodes.clear();
+}
 
 uint256 insecure_rand_seed = GetRandHash();
 FastRandomContext insecure_rand_ctx(insecure_rand_seed);
@@ -50,7 +60,6 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName)
 BasicTestingSetup::~BasicTestingSetup()
 {
         ECC_Stop();
-        g_connman.reset();
 }
 
 TestingSetup::TestingSetup(const std::string& chainName) : BasicTestingSetup(chainName)
@@ -61,7 +70,7 @@ TestingSetup::TestingSetup(const std::string& chainName) : BasicTestingSetup(cha
 
         RegisterAllCoreRPCCommands(tableRPC);
         ClearDatadirCache();
-        pathTemp = GetTempPath() / strprintf("test_bitcoin_%lu_%i", (unsigned long)GetTime(), (int)(InsecureRandRange(100000)));
+        pathTemp = fs::temp_directory_path() / strprintf("test_bitcoin_%lu_%i", (unsigned long)GetTime(), (int)(InsecureRandRange(100000)));
         fs::create_directories(pathTemp);
         gArgs.ForceSetArg("-datadir", pathTemp.string());
 
@@ -88,16 +97,17 @@ TestingSetup::TestingSetup(const std::string& chainName) : BasicTestingSetup(cha
             threadGroup.create_thread(&ThreadScriptCheck);
         g_connman = std::unique_ptr<CConnman>(new CConnman(0x1337, 0x1337)); // Deterministic randomness for tests.
         connman = g_connman.get();
-        RegisterNodeSignals(GetNodeSignals());
+        peerLogic.reset(new PeerLogicValidation(connman, scheduler));
 }
 
 TestingSetup::~TestingSetup()
 {
-        UnregisterNodeSignals(GetNodeSignals());
         threadGroup.interrupt_all();
         threadGroup.join_all();
         GetMainSignals().FlushBackgroundCallbacks();
         GetMainSignals().UnregisterBackgroundSignalScheduler();
+        g_connman.reset();
+        peerLogic.reset();
         UnloadBlockIndex();
         delete pcoinsTip;
         delete pcoinsdbview;
