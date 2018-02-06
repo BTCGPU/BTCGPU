@@ -37,9 +37,70 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         // Pow limit start for warm-up period.
         return UintToArith256(params.powLimitStart).GetCompact();
     }
+    else if (nHeight < params.BTGZawyLWMAHeight) {
+        // Regular Digishield v3.
+        return DigishieldGetNextWorkRequired(pindexLast, pblock, params);
+    } else {
+        // Zawy's LWMA.
+        return LwmaGetNextWorkRequired(pindexLast, pblock, params);
+    }
+}
 
-    // Regular Digishield v3.
-    return DigishieldGetNextWorkRequired(pindexLast, pblock, params);
+unsigned int LwmaGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
+{
+    // Special difficulty rule for testnet:
+    // If the new block's timestamp is more than 2 * 10 minutes
+    // then allow mining of a min-difficulty block.
+    if (params.fPowAllowMinDifficultyBlocks &&
+        pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing * 2) {
+        return UintToArith256(params.PowLimit(true)).GetCompact();
+    }
+    return LwmaCalculateNextWorkRequired(pindexLast, params);
+}
+
+unsigned int LwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const Consensus::Params& params)
+{
+    if (params.fPowNoRetargeting) {
+        return pindexLast->nBits;
+    }
+
+    const int T = params.nPowTargetSpacing;
+    const int N = params.nZawyLwmaAveragingWindow;
+    const int k = params.nZawyLwmaAjustedWeight;
+    const int height = pindexLast->nHeight + 1;
+    assert(height > N);
+
+    arith_uint256 sum_target;
+    int t = 0, j = 0;
+
+    // Loop through N most recent blocks.
+    for (int i = height - N; i < height; i++) {
+        const CBlockIndex* block = pindexLast->GetAncestor(i);
+        const CBlockIndex* block_Prev = block->GetAncestor(i - 1);
+        int64_t solvetime = block->GetBlockTime() - block_Prev->GetBlockTime();
+
+        if (solvetime > 6 * T) { solvetime =  6 * T; }
+        if (solvetime < -5 * T) { solvetime = -5 * T; }
+
+        j++;
+        t +=  solvetime * j;
+
+        arith_uint256 target;
+        target.SetCompact(block->nBits);
+        sum_target += target / k;
+    }
+    // Keep t reasonable in case strange solvetimes occurred.
+    if (t < N * k / 3) {
+        t = N * k / 3;
+    }
+
+    const arith_uint256 pow_limit = UintToArith256(params.PowLimit(true));
+    arith_uint256 next_target = t * sum_target;
+    if (next_target > pow_limit) {
+        next_target = pow_limit;
+    }
+
+    return next_target.GetCompact();
 }
 
 unsigned int DigishieldGetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock,

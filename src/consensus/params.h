@@ -48,6 +48,8 @@ struct Params {
     int BIP66Height;
     /** Block height at which Bitcoin GPU hard fork becomes active */
     int BTGHeight;
+    /** Block height at which Zawy's LWMA difficulty algorithm becomes active */
+    int BTGZawyLWMAHeight;
     /** Premining blocks for Bitcoin GPU hard fork **/
     int BTGPremineWindow;
     bool BTGPremineEnforceWhitelist;
@@ -84,7 +86,11 @@ struct Params {
     int64_t DigishieldMaxActualTimespan() const {
         return (DigishieldAveragingWindowTimespan() * (100 + nDigishieldMaxAdjustDown)) / 100;
     }
-    
+
+    // Params for Zawy's LWMA difficulty adjustment algorithm. (Used by testnet and regtest)
+    int64_t nZawyLwmaAveragingWindow;  // N
+    int64_t nZawyLwmaAjustedWeight;  // k = (N+1)/2 * 0.9989^(500/N) * T
+
     
 };
 } // namespace Consensus

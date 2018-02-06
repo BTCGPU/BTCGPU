@@ -24,6 +24,7 @@
 #include "base58.h"
 #include <assert.h>
 #include <boost/assign/list_of.hpp>
+#include <limits>
 
 #include "chainparamsseeds.h"
 
@@ -99,6 +100,7 @@ public:
         consensus.BIP66Height = 363725; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
         consensus.BTGHeight = 491407; // Around 10/25/2017 12:00 UTC
         consensus.BTGPremineWindow = 8000;
+        consensus.BTGZawyLWMAHeight = std::numeric_limits<int>::max(); // Not activated on mainnet
         consensus.BTGPremineEnforceWhitelist = true;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitStart = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -108,6 +110,9 @@ public:
         assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nDigishieldAveragingWindow);
         consensus.nDigishieldMaxAdjustDown = 32;
         consensus.nDigishieldMaxAdjustUp = 16;
+
+        consensus.nZawyLwmaAveragingWindow = 45;
+        consensus.nZawyLwmaAjustedWeight = 13632;
         
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60;; // 10 minutes
         consensus.nPowTargetSpacing = 10 * 60;
@@ -224,6 +229,7 @@ public:
         consensus.BIP65Height = 581885; // 00000000007f6655f22f98e72ed80d8b06dc761d5da09df0fa1dc4be4f861eb6
         consensus.BIP66Height = 330776; // 000000002104c8c45e99a8853285a3b592602a3ccde2b832481da85e9e4ba182
         consensus.BTGHeight = 1210320;
+        consensus.BTGZawyLWMAHeight = -1; // Activated on testnet
         consensus.BTGPremineWindow = 50;
         consensus.BTGPremineEnforceWhitelist = false;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -234,6 +240,9 @@ public:
         assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nDigishieldAveragingWindow);
         consensus.nDigishieldMaxAdjustDown = 32;
         consensus.nDigishieldMaxAdjustUp = 16;
+
+        consensus.nZawyLwmaAveragingWindow = 45;
+        consensus.nZawyLwmaAjustedWeight = 13632;
         
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
@@ -325,6 +334,7 @@ public:
         consensus.BIP65Height = 1351; // BIP65 activated on regtest (Used in rpc activation tests)
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in rpc activation tests)
         consensus.BTGHeight = 3000;
+        consensus.BTGZawyLWMAHeight = -1; // Activated on regtest
         consensus.BTGPremineWindow = 10;
         consensus.BTGPremineEnforceWhitelist = false;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -334,6 +344,10 @@ public:
         consensus.nDigishieldAveragingWindow = 30;
         consensus.nDigishieldMaxAdjustDown = 32;
         consensus.nDigishieldMaxAdjustUp = 16;
+
+        consensus.nZawyLwmaAveragingWindow = 45;
+        consensus.nZawyLwmaAjustedWeight = 13632;
+
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
