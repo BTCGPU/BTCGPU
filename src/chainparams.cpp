@@ -224,11 +224,11 @@ public:
     CTestNetParams() {
         strNetworkID = "test";
         consensus.nSubsidyHalvingInterval = 210000;
-        consensus.BIP34Height = 21111;
-        consensus.BIP34Hash = uint256S("0x0000000023b3a96d3484e5abb3755c413e7d41500f8e2a5c3f0dd01299cd8ef8");
-        consensus.BIP65Height = 581885; // 00000000007f6655f22f98e72ed80d8b06dc761d5da09df0fa1dc4be4f861eb6
-        consensus.BIP66Height = 330776; // 000000002104c8c45e99a8853285a3b592602a3ccde2b832481da85e9e4ba182
-        consensus.BTGHeight = 1210320;
+        consensus.BIP34Height = -1;
+        consensus.BIP34Hash = uint256();
+        consensus.BIP65Height = -1;
+        consensus.BIP66Height = -1;
+        consensus.BTGHeight = 1;
         consensus.BTGZawyLWMAHeight = -1; // Activated on testnet
         consensus.BTGPremineWindow = 50;
         consensus.BTGPremineEnforceWhitelist = false;
@@ -270,7 +270,7 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000000002e9e7b00e1f6dc5123a04aad68dd0f0968d8c7aa45f6640795c37b1"); //1135275
 
-        pchMessageStart[0] = 0xe1;
+        pchMessageStart[0] = 0xe2;
         pchMessageStart[1] = 0x48;
         pchMessageStart[2] = 0x6e;
         pchMessageStart[3] = 0x45;
@@ -308,15 +308,14 @@ public:
 
         checkpointData = (CCheckpointData) {
             {
-                {546, uint256S("000000002a936ca763904c3c35fce2f3556c559c0214345d31b1bcebf76acb70")},
+                {0, uint256S("0x00000000e0781ebe24b91eedc293adfea2f557b53ec379e78959de3853e6f9f6")},
             }
         };
 
         chainTxData = ChainTxData{
-            // Data as of block 00000000000001c200b9790dc637d3bb141fe77d155b966ed775b17e109f7c6c (height 1156179)
-            1501802953,
-            14706531,
-            0.15
+            0,
+            0,
+            0
         };
     }
 };
@@ -333,7 +332,7 @@ public:
         consensus.BIP34Hash = uint256();
         consensus.BIP65Height = 1351; // BIP65 activated on regtest (Used in rpc activation tests)
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in rpc activation tests)
-        consensus.BTGHeight = 3000;
+        consensus.BTGHeight = 2000;
         consensus.BTGZawyLWMAHeight = -1; // Activated on regtest
         consensus.BTGPremineWindow = 10;
         consensus.BTGPremineEnforceWhitelist = false;
