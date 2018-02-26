@@ -83,11 +83,14 @@ unsigned int LwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const 
         if (solvetime < -5 * T) { solvetime = -5 * T; }
 
         j++;
-        t +=  solvetime * j;
+        t += solvetime * j;  // Weighted solvetime sum.
 
+        // Target sum divided by a factor, (k N^2).
+        // The factor is a part of the final equation. However we divide sum_target here to avoid
+        // potential overflow.
         arith_uint256 target;
         target.SetCompact(block->nBits);
-        sum_target += target / k;
+        sum_target += target / (k * N * N);
     }
     // Keep t reasonable in case strange solvetimes occurred.
     if (t < N * k / 3) {
