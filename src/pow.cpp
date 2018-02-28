@@ -46,12 +46,17 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     arith_uint256 bnAvg {bnTot / params.nPowAveragingWindow};
     
 
-    return CalculateNextWorkRequired(bnAvg, pindexLast->GetMedianTimePast(), pindexFirst->GetMedianTimePast(), params);
+    return CalculateNextWorkRequired(bnAvg, pindexLast, pindexFirst, params);
 }
 
-unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg, int64_t nLastBlockTime, int64_t nFirstBlockTime, const Consensus::Params& params)
+unsigned int CalculateNextWorkRequired(arith_uint256 bnAvg, const CBlockIndex* pindexLast, const CBlockIndex* pindexFirst, const Consensus::Params& params)
 {
+    if (params.fPowNoRetargeting)
+        return pindexLast->nBits;
     
+    int64_t nLastBlockTime = pindexLast->GetMedianTimePast();
+    int64_t nFirstBlockTime = pindexFirst->GetMedianTimePast();
+
     // Limit adjustment
     int64_t nActualTimespan = nLastBlockTime - nFirstBlockTime;
     
