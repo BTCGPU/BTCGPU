@@ -113,8 +113,9 @@ public:
 
         consensus.nZawyLwmaAveragingWindow = 45;
         consensus.nZawyLwmaAjustedWeight = 13632;
+        consensus.BTGMaxFutureBlockTime = 12 * 10 * 60; // 120 mins
         
-        consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60;; // 10 minutes
+        consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // 10 minutes
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
@@ -243,6 +244,7 @@ public:
 
         consensus.nZawyLwmaAveragingWindow = 45;
         consensus.nZawyLwmaAjustedWeight = 13632;
+        consensus.BTGMaxFutureBlockTime = 7 * 10 * 60; // 70 mins
         
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
@@ -346,6 +348,7 @@ public:
 
         consensus.nZawyLwmaAveragingWindow = 45;
         consensus.nZawyLwmaAjustedWeight = 13632;
+        consensus.BTGMaxFutureBlockTime = 7 * 10 * 60; // 70 mins
 
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
