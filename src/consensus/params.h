@@ -48,6 +48,10 @@ struct Params {
     int BIP66Height;
     /** Block height at which Bitcoin GPU hard fork becomes active */
     int BTGHeight;
+    /** Block height at which Zawy's LWMA difficulty algorithm becomes active */
+    int BTGZawyLWMAHeight;
+    /** Limit BITCOIN_MAX_FUTURE_BLOCK_TIME **/
+    int64_t BTGMaxFutureBlockTime;
     /** Premining blocks for Bitcoin GPU hard fork **/
     int BTGPremineWindow;
     bool BTGPremineEnforceWhitelist;
@@ -73,14 +77,22 @@ struct Params {
     uint256 nMinimumChainWork;
     uint256 defaultAssumeValid;
     
-    //Zcash logic for diff adjustment
-    int64_t nPowAveragingWindow;
-    int64_t nPowMaxAdjustDown;
-    int64_t nPowMaxAdjustUp;
-    int64_t AveragingWindowTimespan() const { return nPowAveragingWindow * nPowTargetSpacing; }
-    int64_t MinActualTimespan() const { return (AveragingWindowTimespan() * (100 - nPowMaxAdjustUp  )) / 100; }
-    int64_t MaxActualTimespan() const { return (AveragingWindowTimespan() * (100 + nPowMaxAdjustDown)) / 100; }
-    
+    // Params for Digishield difficulty adjustment algorithm. (Used by mainnet currently.)
+    int64_t nDigishieldAveragingWindow;
+    int64_t nDigishieldMaxAdjustDown;
+    int64_t nDigishieldMaxAdjustUp;
+    int64_t DigishieldAveragingWindowTimespan() const { return nDigishieldAveragingWindow * nPowTargetSpacing; }
+    int64_t DigishieldMinActualTimespan() const {
+        return (DigishieldAveragingWindowTimespan() * (100 - nDigishieldMaxAdjustUp)) / 100;
+    }
+    int64_t DigishieldMaxActualTimespan() const {
+        return (DigishieldAveragingWindowTimespan() * (100 + nDigishieldMaxAdjustDown)) / 100;
+    }
+
+    // Params for Zawy's LWMA difficulty adjustment algorithm. (Used by testnet and regtest)
+    int64_t nZawyLwmaAveragingWindow;  // N
+    int64_t nZawyLwmaAjustedWeight;  // k = (N+1)/2 * 0.9989^(500/N) * T
+
     
 };
 } // namespace Consensus
