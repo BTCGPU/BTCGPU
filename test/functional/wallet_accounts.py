@@ -94,7 +94,7 @@ class WalletAccountsTest(BitcoinTestFramework):
             assert_equal(
                 node.getreceivedbyaddress(account.addresses[0]), amount_to_send)
             assert_equal(node.getreceivedbyaccount(account.name), amount_to_send)
-        
+
         # Check that sendfrom account reduces listaccounts balances.
         for i, account in enumerate(accounts):
             to_account = accounts[(i+1) % len(accounts)]
@@ -112,7 +112,7 @@ class WalletAccountsTest(BitcoinTestFramework):
             expected_account_balances[account.name] = 0
         assert_equal(node.listaccounts(), expected_account_balances)
         assert_equal(node.getbalance(""), 5200)
-        
+
         # Check that setaccount can assign an account to a new unused address.
         for account in accounts:
             address = node.getaccountaddress("")
@@ -120,7 +120,7 @@ class WalletAccountsTest(BitcoinTestFramework):
             account.add_address(address)
             account.verify(node)
             assert(address not in node.getaddressesbyaccount(""))
-        
+
         # Check that addmultisigaddress can assign accounts.
         for account in accounts:
             addresses = []

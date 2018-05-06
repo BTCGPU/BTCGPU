@@ -139,7 +139,7 @@ bool DecodeHexTx(CMutableTransaction& tx, const std::string& hex_tx, bool try_no
             // Fall through.
         }
     }
-    
+
     return false;
 }
 
