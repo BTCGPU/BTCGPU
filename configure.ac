@@ -754,12 +754,12 @@ AC_CHECK_LIB(sodium, sodium_init,[],
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 #include <sodium.h>
 ], [
-#if SODIUM_LIBRARY_VERSION_MAJOR < 9 || SODIUM_LIBRARY_VERSION_MAJOR == 9 && SODIUM_LIBRARY_VERSION_MINOR < 5
+#if SODIUM_LIBRARY_VERSION_MAJOR < 9 || SODIUM_LIBRARY_VERSION_MAJOR == 9 && SODIUM_LIBRARY_VERSION_MINOR < 1
 # error
 #endif
 ])],
 [AC_MSG_RESULT([checking for version of libsodium... yes])],
-[AC_MSG_ERROR([Wrong libsodium: version >= 1.0.13 required])])
+[AC_MSG_ERROR([Wrong libsodium: version >= 1.0.8 required])])
 
 BITCOIN_QT_INIT
 
