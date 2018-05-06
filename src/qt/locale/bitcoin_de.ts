@@ -3188,13 +3188,10 @@
     <message>
         <source>Accept relayed transactions received from whitelisted peers even when not relaying transactions (default: %d)</source>
         <translation>Immer übermittelte Transaktionen von freigegebenen Peers akzeptieren, auch wenn keine Transaktionen übermittelt werden (Standard: %d)</translation>
-<<<<<<< HEAD
-=======
     </message>
     <message>
         <source>Add a node to connect to and attempt to keep the connection open (see the `addnode` RPC command help for more info)</source>
         <translation>Mit dem angegebenen Knoten verbinden und versuchen die Verbindung aufrecht zu erhalten (Siehe die "addnode" RPC Kommando Hilfe für mehr Information)</translation>
->>>>>>> bitcoin-core/0.16
     </message>
     <message>
         <source>Bind to given address and always listen on it. Use [host]:port notation for IPv6</source>

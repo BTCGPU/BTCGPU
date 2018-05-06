@@ -2649,10 +2649,6 @@
         <translation>已丢弃</translation>
     </message>
     <message>
-        <source>Abandoned</source>
-        <translation>已丢弃</translation>
-    </message>
-    <message>
         <source>Confirming (%1 of %2 recommended confirmations)</source>
         <translation>确认中 (推荐 %2个确认，已经有 %1个确认)</translation>
     </message>
@@ -3262,10 +3258,6 @@
     <message>
         <source>Invalid amount for -discardfee=&lt;amount&gt;: '%s'</source>
         <translation>无效的金额 -discardfee=&lt;amount&gt;: '%s'</translation>
-    </message>
-    <message>
-        <source>Invalid amount for -%s=&lt;amount&gt;: '%s'</source>
-        <translation>非法金额 -%s=&lt;amount&gt;: '%s'</translation>
     </message>
     <message>
         <source>Invalid amount for -fallbackfee=&lt;amount&gt;: '%s'</source>
