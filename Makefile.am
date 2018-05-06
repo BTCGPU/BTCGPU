@@ -9,7 +9,6 @@ SUBDIRS += doc/man
 endif
 .PHONY: deploy FORCE
 
-GZIP_ENV="-9n"
 export PYTHONPATH
 
 if BUILD_BITCOIN_LIBS
@@ -43,7 +42,11 @@ DIST_CONTRIB = $(top_srcdir)/contrib/bitcoin-cli.bash-completion \
 	       $(top_srcdir)/contrib/bitcoin-tx.bash-completion \
 	       $(top_srcdir)/contrib/bitcoind.bash-completion \
 	       $(top_srcdir)/contrib/init \
+	       $(top_srcdir)/contrib/install_db4.sh \
 	       $(top_srcdir)/contrib/rpm
+DIST_SHARE = \
+  $(top_srcdir)/share/genbuild.sh \
+  $(top_srcdir)/share/rpcauth
 
 BIN_CHECKS=$(top_srcdir)/contrib/devtools/symbol-check.py \
            $(top_srcdir)/contrib/devtools/security-check.py
@@ -213,7 +216,7 @@ endif
 
 dist_noinst_SCRIPTS = autogen.sh
 
-EXTRA_DIST = $(top_srcdir)/share/genbuild.sh test/functional/test_runner.py test/functional $(DIST_CONTRIB) $(DIST_DOCS) $(WINDOWS_PACKAGING) $(OSX_PACKAGING) $(BIN_CHECKS)
+EXTRA_DIST = $(DIST_SHARE) test/functional/test_runner.py test/functional $(DIST_CONTRIB) $(DIST_DOCS) $(WINDOWS_PACKAGING) $(OSX_PACKAGING) $(BIN_CHECKS)
 
 EXTRA_DIST += \
     test/util/bitcoin-util-test.py \
@@ -249,6 +252,7 @@ EXTRA_DIST += \
     test/util/data/txcreatemultisig3.json \
     test/util/data/txcreatemultisig4.hex \
     test/util/data/txcreatemultisig4.json \
+    test/util/data/txcreatemultisig5.json \
     test/util/data/txcreateoutpubkey1.hex \
     test/util/data/txcreateoutpubkey1.json \
     test/util/data/txcreateoutpubkey2.hex \
@@ -275,4 +279,4 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-man
 
 clean-local:
 	rm -rf coverage_percent.txt test_bitcoin.coverage/ total.coverage/ test/tmp/ cache/ $(OSX_APP)
-	rm -rf test/functional/__pycache__
+	rm -rf test/functional/__pycache__ test/functional/test_framework/__pycache__ test/cache

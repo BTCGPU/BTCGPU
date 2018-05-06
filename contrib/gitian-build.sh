@@ -6,7 +6,6 @@
 sign=false
 verify=false
 build=false
-setupenv=false
 
 # Systems to build
 linux=true
@@ -110,7 +109,7 @@ while :; do
 		fi
 		shift
 	    else
-		echo 'Error: "--os" requires an argument containing an l (for linux), w (for windows), or x (for Mac OSX)\n'
+		echo 'Error: "--os" requires an argument containing an l (for linux), w (for windows), or x (for Mac OSX)'
 		exit 1
 	    fi
 	    ;;
@@ -215,7 +214,7 @@ then
 fi
 
 # Get signer
-if [[ -n"$1" ]]
+if [[ -n "$1" ]]
 then
     SIGNER=$1
     shift

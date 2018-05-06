@@ -1,19 +1,21 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_QT_WALLETMODEL_H
 #define BITCOIN_QT_WALLETMODEL_H
 
-#include "paymentrequestplus.h"
-#include "walletmodeltransaction.h"
+#include <qt/paymentrequestplus.h>
+#include <qt/walletmodeltransaction.h>
 
-#include "support/allocators/secure.h"
+#include <support/allocators/secure.h>
 
 #include <map>
 #include <vector>
 
 #include <QObject>
+
+enum OutputType : int;
 
 class AddressTableModel;
 class OptionsModel;
@@ -190,7 +192,7 @@ public:
     UnlockContext requestUnlock();
 
     bool getPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
-    bool havePrivKey(const CKeyID &address) const;
+    bool IsSpendable(const CTxDestination& dest) const;
     bool getPrivKey(const CKeyID &address, CKey& vchPrivKeyOut) const;
     void getOutputs(const std::vector<COutPoint>& vOutpoints, std::vector<COutput>& vOutputs);
     bool isSpent(const COutPoint& outpoint) const;
@@ -214,9 +216,9 @@ public:
 
     bool hdEnabled() const;
 
-    int getDefaultConfirmTarget() const;
+    OutputType getDefaultAddressType() const;
 
-    bool getDefaultWalletRbf() const;
+    int getDefaultConfirmTarget() const;
 
 private:
     CWallet *wallet;

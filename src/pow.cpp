@@ -1,18 +1,18 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "pow.h"
+#include <pow.h>
 
-#include "arith_uint256.h"
-#include "chain.h"
-#include "chainparams.h"
-#include "crypto/equihash.h"
-#include "primitives/block.h"
-#include "streams.h"
-#include "uint256.h"
-#include "util.h"
+#include <arith_uint256.h>
+#include <chain.h>
+#include <chainparams.h>
+#include <crypto/equihash.h>
+#include <primitives/block.h>
+#include <streams.h>
+#include <uint256.h>
+#include <util.h>
 
 #include <algorithm>
 #include <iostream>

@@ -1,12 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_SERIALIZE_H
 #define BITCOIN_SERIALIZE_H
 
-#include "compat/endian.h"
+#include <compat/endian.h>
 
 #include <algorithm>
 #include <assert.h>
@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-#include "prevector.h"
+#include <prevector.h>
 
 static const unsigned int MAX_SIZE = 0x02000000;
 
@@ -402,7 +402,7 @@ class CVarInt
 protected:
     I &n;
 public:
-    CVarInt(I& nIn) : n(nIn) { }
+    explicit CVarInt(I& nIn) : n(nIn) { }
 
     template<typename Stream>
     void Serialize(Stream &s) const {
@@ -420,7 +420,7 @@ class CCompactSize
 protected:
     uint64_t &n;
 public:
-    CCompactSize(uint64_t& nIn) : n(nIn) { }
+    explicit CCompactSize(uint64_t& nIn) : n(nIn) { }
 
     template<typename Stream>
     void Serialize(Stream &s) const {
@@ -439,7 +439,7 @@ class LimitedString
 protected:
     std::string& string;
 public:
-    LimitedString(std::string& _string) : string(_string) {}
+    explicit LimitedString(std::string& _string) : string(_string) {}
 
     template<typename Stream>
     void Unserialize(Stream& s)
@@ -732,8 +732,8 @@ template<typename Stream, typename K, typename T, typename Pred, typename A>
 void Serialize(Stream& os, const std::map<K, T, Pred, A>& m)
 {
     WriteCompactSize(os, m.size());
-    for (typename std::map<K, T, Pred, A>::const_iterator mi = m.begin(); mi != m.end(); ++mi)
-        Serialize(os, (*mi));
+    for (const auto& entry : m)
+        Serialize(os, entry);
 }
 
 template<typename Stream, typename K, typename T, typename Pred, typename A>

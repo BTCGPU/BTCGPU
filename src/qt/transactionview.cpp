@@ -1,24 +1,23 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "transactionview.h"
+#include <qt/transactionview.h>
 
-#include "addresstablemodel.h"
-#include "bitcoinunits.h"
-#include "csvmodelwriter.h"
-#include "editaddressdialog.h"
-#include "guiutil.h"
-#include "optionsmodel.h"
-#include "platformstyle.h"
-#include "sendcoinsdialog.h"
-#include "transactiondescdialog.h"
-#include "transactionfilterproxy.h"
-#include "transactionrecord.h"
-#include "transactiontablemodel.h"
-#include "walletmodel.h"
+#include <qt/addresstablemodel.h>
+#include <qt/bitcoinunits.h>
+#include <qt/csvmodelwriter.h>
+#include <qt/editaddressdialog.h>
+#include <qt/optionsmodel.h>
+#include <qt/platformstyle.h>
+#include <qt/sendcoinsdialog.h>
+#include <qt/transactiondescdialog.h>
+#include <qt/transactionfilterproxy.h>
+#include <qt/transactionrecord.h>
+#include <qt/transactiontablemodel.h>
+#include <qt/walletmodel.h>
 
-#include "ui_interface.h"
+#include <ui_interface.h>
 
 #include <QComboBox>
 #include <QDateTimeEdit>
@@ -33,6 +32,7 @@
 #include <QScrollBar>
 #include <QSignalMapper>
 #include <QTableView>
+#include <QTimer>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -94,11 +94,11 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
 
     hlayout->addWidget(typeWidget);
 
-    addressWidget = new QLineEdit(this);
+    search_widget = new QLineEdit(this);
 #if QT_VERSION >= 0x040700
-    addressWidget->setPlaceholderText(tr("Enter address or label to search"));
+    search_widget->setPlaceholderText(tr("Enter address, transaction id, or label to search"));
 #endif
-    hlayout->addWidget(addressWidget);
+    hlayout->addWidget(search_widget);
 
     amountWidget = new QLineEdit(this);
 #if QT_VERSION >= 0x040700
@@ -111,6 +111,17 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     }
     amountWidget->setValidator(new QDoubleValidator(0, 1e20, 8, this));
     hlayout->addWidget(amountWidget);
+
+    // Delay before filtering transactions in ms
+    static const int input_filter_delay = 200;
+
+    QTimer* amount_typing_delay = new QTimer(this);
+    amount_typing_delay->setSingleShot(true);
+    amount_typing_delay->setInterval(input_filter_delay);
+
+    QTimer* prefix_typing_delay = new QTimer(this);
+    prefix_typing_delay->setSingleShot(true);
+    prefix_typing_delay->setInterval(input_filter_delay);
 
     QVBoxLayout *vlayout = new QVBoxLayout(this);
     vlayout->setContentsMargins(0,0,0,0);
@@ -173,8 +184,10 @@ TransactionView::TransactionView(const PlatformStyle *platformStyle, QWidget *pa
     connect(dateWidget, SIGNAL(activated(int)), this, SLOT(chooseDate(int)));
     connect(typeWidget, SIGNAL(activated(int)), this, SLOT(chooseType(int)));
     connect(watchOnlyWidget, SIGNAL(activated(int)), this, SLOT(chooseWatchonly(int)));
-    connect(addressWidget, SIGNAL(textChanged(QString)), this, SLOT(changedPrefix(QString)));
-    connect(amountWidget, SIGNAL(textChanged(QString)), this, SLOT(changedAmount(QString)));
+    connect(amountWidget, SIGNAL(textChanged(QString)), amount_typing_delay, SLOT(start()));
+    connect(amount_typing_delay, SIGNAL(timeout()), this, SLOT(changedAmount()));
+    connect(search_widget, SIGNAL(textChanged(QString)), prefix_typing_delay, SLOT(start()));
+    connect(prefix_typing_delay, SIGNAL(timeout()), this, SLOT(changedSearch()));
 
     connect(view, SIGNAL(doubleClicked(QModelIndex)), this, SIGNAL(doubleClicked(QModelIndex)));
     connect(view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
@@ -312,20 +325,19 @@ void TransactionView::chooseWatchonly(int idx)
         (TransactionFilterProxy::WatchOnlyFilter)watchOnlyWidget->itemData(idx).toInt());
 }
 
-void TransactionView::changedPrefix(const QString &prefix)
+void TransactionView::changedSearch()
 {
     if(!transactionProxyModel)
         return;
-    transactionProxyModel->setAddressPrefix(prefix);
+    transactionProxyModel->setSearchString(search_widget->text());
 }
 
-void TransactionView::changedAmount(const QString &amount)
+void TransactionView::changedAmount()
 {
     if(!transactionProxyModel)
         return;
     CAmount amount_parsed = 0;
-    if(BitcoinUnits::parse(model->getOptionsModel()->getDisplayUnit(), amount, &amount_parsed))
-    {
+    if (BitcoinUnits::parse(model->getOptionsModel()->getDisplayUnit(), amountWidget->text(), &amount_parsed)) {
         transactionProxyModel->setMinAmount(amount_parsed);
     }
     else
@@ -353,7 +365,7 @@ void TransactionView::exportClicked()
     // name, column, role
     writer.setModel(transactionProxyModel);
     writer.addColumn(tr("Confirmed"), 0, TransactionTableModel::ConfirmedRole);
-    if (model && model->haveWatchOnly())
+    if (model->haveWatchOnly())
         writer.addColumn(tr("Watch-only"), TransactionTableModel::Watchonly);
     writer.addColumn(tr("Date"), 0, TransactionTableModel::DateRole);
     writer.addColumn(tr("Type"), TransactionTableModel::Type, Qt::EditRole);

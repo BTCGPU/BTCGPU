@@ -1,5 +1,5 @@
 ---
-name: "bitcoin-gold-win-0.15"
+name: "bitcoin-gold-win-0.16"
 enable_cache: true
 suites:
 - "trusty"

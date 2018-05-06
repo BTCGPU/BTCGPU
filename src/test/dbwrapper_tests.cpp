@@ -1,11 +1,11 @@
-// Copyright (c) 2012-2016 The Bitcoin Core developers
+// Copyright (c) 2012-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "dbwrapper.h"
-#include "uint256.h"
-#include "random.h"
-#include "test/test_bitcoin.h"
+#include <dbwrapper.h>
+#include <uint256.h>
+#include <random.h>
+#include <test/test_bitcoin.h>
 
 #include <boost/test/unit_test.hpp>
 
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(existing_data_no_obfuscate)
     create_directories(ph);
 
     // Set up a non-obfuscated wrapper to write some initial data.
-    CDBWrapper* dbw = new CDBWrapper(ph, (1 << 10), false, false, false);
+    std::unique_ptr<CDBWrapper> dbw = MakeUnique<CDBWrapper>(ph, (1 << 10), false, false, false);
     char key = 'k';
     uint256 in = InsecureRand256();
     uint256 res;
@@ -135,8 +135,7 @@ BOOST_AUTO_TEST_CASE(existing_data_no_obfuscate)
     BOOST_CHECK_EQUAL(res.ToString(), in.ToString());
 
     // Call the destructor to free leveldb LOCK
-    delete dbw;
-    dbw = nullptr;
+    dbw.reset();
 
     // Now, set up another wrapper that wants to obfuscate the same directory
     CDBWrapper odbw(ph, (1 << 10), false, false, true);
@@ -167,7 +166,7 @@ BOOST_AUTO_TEST_CASE(existing_data_reindex)
     create_directories(ph);
 
     // Set up a non-obfuscated wrapper to write some initial data.
-    CDBWrapper* dbw = new CDBWrapper(ph, (1 << 10), false, false, false);
+    std::unique_ptr<CDBWrapper> dbw = MakeUnique<CDBWrapper>(ph, (1 << 10), false, false, false);
     char key = 'k';
     uint256 in = InsecureRand256();
     uint256 res;
@@ -177,8 +176,7 @@ BOOST_AUTO_TEST_CASE(existing_data_reindex)
     BOOST_CHECK_EQUAL(res.ToString(), in.ToString());
 
     // Call the destructor to free leveldb LOCK
-    delete dbw;
-    dbw = nullptr;
+    dbw.reset();
 
     // Simulate a -reindex by wiping the existing data store
     CDBWrapper odbw(ph, (1 << 10), false, true, true);
@@ -204,19 +202,31 @@ BOOST_AUTO_TEST_CASE(iterator_ordering)
     for (int x=0x00; x<256; ++x) {
         uint8_t key = x;
         uint32_t value = x*x;
-        BOOST_CHECK(dbw.Write(key, value));
+        if (!(x & 1)) BOOST_CHECK(dbw.Write(key, value));
     }
 
+    // Check that creating an iterator creates a snapshot
     std::unique_ptr<CDBIterator> it(const_cast<CDBWrapper&>(dbw).NewIterator());
+
+    for (int x=0x00; x<256; ++x) {
+        uint8_t key = x;
+        uint32_t value = x*x;
+        if (x & 1) BOOST_CHECK(dbw.Write(key, value));
+    }
+
     for (int seek_start : {0x00, 0x80}) {
         it->Seek((uint8_t)seek_start);
-        for (int x=seek_start; x<256; ++x) {
+        for (int x=seek_start; x<255; ++x) {
             uint8_t key;
             uint32_t value;
             BOOST_CHECK(it->Valid());
             if (!it->Valid()) // Avoid spurious errors about invalid iterator's key and value in case of failure
                 break;
             BOOST_CHECK(it->GetKey(key));
+            if (x & 1) {
+                BOOST_CHECK_EQUAL(key, x + 1);
+                continue;
+            }
             BOOST_CHECK(it->GetValue(value));
             BOOST_CHECK_EQUAL(key, x);
             BOOST_CHECK_EQUAL(value, x*x);
@@ -231,7 +241,7 @@ struct StringContentsSerializer {
     // This is a terrible idea
     std::string str;
     StringContentsSerializer() {}
-    StringContentsSerializer(const std::string& inp) : str(inp) {}
+    explicit StringContentsSerializer(const std::string& inp) : str(inp) {}
 
     StringContentsSerializer& operator+=(const std::string& s) {
         str += s;

@@ -2,6 +2,7 @@
 Encoding=UTF-8
 Name=Bitcoin Gold
 Comment=Connect to the Bitcoin Gold P2P Network
+Version=1.0
 Comment[de]=Verbinde mit dem Bitcoin peer-to-peer Netzwerk
 Comment[fr]=Bitcoin, monnaie virtuelle cryptographique pair à pair
 Comment[tr]=Bitcoin, eşten eşe kriptografik sanal para birimi
@@ -11,3 +12,4 @@ Type=Application
 Icon=bitcoin128
 MimeType=x-scheme-handler/bitcoingold;
 Categories=Office;Finance;
+StartupWMClass=Bitcoin-qt

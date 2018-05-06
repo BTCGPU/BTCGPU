@@ -82,18 +82,16 @@ static const FakeChainParam fakeLegacyChainParam;
 
 std::string ConvertToNewAddress(const std::string& old_address)
 {
-    CBitcoinAddress addr(old_address);
-    BOOST_CHECK(addr.IsValid(fakeLegacyChainParam));
-    CBitcoinAddress new_addr(addr.Get(fakeLegacyChainParam));
-    return new_addr.ToString();
+    CTxDestination dest = DecodeDestination(old_address, fakeLegacyChainParam);
+    BOOST_CHECK(IsValidDestination(dest));
+    return EncodeDestination(dest);
 }
 
 std::string ConvertToOldAddress(const std::string& new_address)
 {
-    CBitcoinAddress addr(new_address);
-    BOOST_CHECK(addr.IsValid());
-    CBitcoinAddress old_addr(addr.Get(), fakeLegacyChainParam);
-    return old_addr.ToString();
+    CTxDestination dest = DecodeDestination(new_address);
+    BOOST_CHECK(IsValidDestination(dest));
+    return EncodeDestination(dest, fakeLegacyChainParam);
 }
 
 BOOST_AUTO_TEST_CASE(address_compatible)
