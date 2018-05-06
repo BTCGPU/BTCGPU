@@ -52,7 +52,7 @@ if os.name == 'posix':
 TEST_EXIT_PASSED = 0
 TEST_EXIT_SKIPPED = 77
 
-BASE_SCRIPTS= [
+BASE_SCRIPTS = [
     # Scripts that are run by the travis build process.
     # Longest test should go first, to favor running tests in parallel
     'wallet_hd.py',
@@ -60,7 +60,7 @@ BASE_SCRIPTS= [
     # vv Tests less than 5m vv
     'feature_block.py',
     'rpc_fundrawtransaction.py',
-    # TODO(h4x3rotab): Temporarily disabled: 'p2p-compactblocks.py'
+    # TODO(h4x3rotab): Temporarily disabled: 'p2p_compactblocks.py'
     'feature_segwit.py',
     # vv Tests less than 2m vv
     'wallet_basic.py',
@@ -134,7 +134,7 @@ BASE_SCRIPTS= [
     'p2p_node_network_limited.py',
     'feature_config_args.py',
     'feature_help.py',
-    'btg-timelock.py',
+    'feature_btg_timelock.py',
     # Don't append tests at the end to avoid merge conflicts
     # Put them in a random line within the section that fits their approximate run-time
 ]
@@ -176,8 +176,8 @@ NON_SCRIPTS = [
     "create_cache.py",
     "test_runner.py",
     # TODO(h4x3rotab): Temporarily disabled:
-    "p2p-compactblocks.py",
-    'btg-hardfork.py',
+    "p2p_compactblocks.py",
+    'feature_btg_hardfork.py',
 ]
 
 def main():
