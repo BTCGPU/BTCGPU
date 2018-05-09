@@ -167,9 +167,9 @@ public:
         // This is fine at runtime as we'll fall back to using them as a oneshot if they dont support the
         // service bits we want, but we should get them updated to support all service bits wanted by any
         // release ASAP to avoid it where possible.
-        vSeeds.emplace_back("eu-dnsseed.bitcoingold-official.org", true);
-        vSeeds.emplace_back("dnsseed.bitcoingold.org", true);
-        vSeeds.emplace_back("dnsseed.btcgpu.org", true);
+        vSeeds.emplace_back("eu-dnsseed.bitcoingold-official.org");
+        vSeeds.emplace_back("dnsseed.bitcoingold.org");
+        vSeeds.emplace_back("dnsseed.btcgpu.org");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,38);  // prefix: G
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,23);  // prefix: A
@@ -294,9 +294,9 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
-        vSeeds.emplace_back("test-dnsseed.bitcoingold.org", true);
-        vSeeds.emplace_back("test-dnsseed.btcgpu.org", true);
+        vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org");
+        vSeeds.emplace_back("test-dnsseed.bitcoingold.org");
+        vSeeds.emplace_back("test-dnsseed.btcgpu.org");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
