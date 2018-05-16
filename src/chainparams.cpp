@@ -204,11 +204,11 @@ public:
         };
 
         chainTxData = ChainTxData{
-            // Data as of block 0000000000000000002d6cca6761c99b3c2e936f9a0e304b7c7651a993f461de (height 506081).
-            1516903077, // * UNIX timestamp of last known number of transactions
-            295363220,  // * total number of transactions between genesis and that timestamp
+            // Data as of block 000000002a533c03b7149562e99a2e6ebe2dc5015b0defa8ce87d424f9f73bc2 (height 528588).
+            1526435404, // * UNIX timestamp of last known number of transactions
+            265810489,  // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
-            3.5         // * estimated number of transactions per second after that timestamp
+            0.027       // * estimated number of transactions per second after that timestamp
         };
 
         vPreminePubkeys = {
@@ -320,9 +320,11 @@ public:
         };
 
         chainTxData = ChainTxData{
-            0,
-            0,
-            0
+            // Data as of block 00018495a0c60709faf6ea4edcea78f00b13fd4fefbf51855048e2ed766b2f9e (height 10866).
+            1526468700, // * UNIX timestamp of last known number of transactions
+            21405,      // * total number of transactions between genesis and that timestamp
+                        //   (the tx=... number in the SetBestChain debug.log lines)
+            0.003       // * estimated number of transactions per second after that timestamp
         };
     }
 };
