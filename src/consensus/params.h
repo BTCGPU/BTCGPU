@@ -50,6 +50,8 @@ struct Params {
     int BTGHeight;
     /** Block height at which Zawy's LWMA difficulty algorithm becomes active */
     int BTGZawyLWMAHeight;
+    /** Block height at which Equihash<144,5> becomes active */
+    int BTGEquihashForkHeight;
     /** Limit BITCOIN_MAX_FUTURE_BLOCK_TIME **/
     int64_t BTGMaxFutureBlockTime;
     /** Premining blocks for Bitcoin GPU hard fork **/

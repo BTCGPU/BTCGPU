@@ -1,5 +1,7 @@
 // Copyright (c) 2016 Jack Grigg
 // Copyright (c) 2016 The Zcash developers
+// Copyright (c) 2018 The Bitcoin Private developers
+// Copyright (c) 2017-2018 The Bitcoin Gold developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -198,12 +200,15 @@ static Equihash<96,3> Eh96_3;
 static Equihash<200,9> Eh200_9;
 static Equihash<96,5> Eh96_5;
 static Equihash<48,5> Eh48_5;
+static Equihash<144,5> Eh144_5;
 
 #define EhInitialiseState(n, k, base_state)  \
     if (n == 96 && k == 3) {                 \
         Eh96_3.InitialiseState(base_state);  \
     } else if (n == 200 && k == 9) {         \
         Eh200_9.InitialiseState(base_state); \
+    } else if (n == 144 && k == 5) {         \
+        Eh144_5.InitialiseState(base_state); \
     } else if (n == 96 && k == 5) {          \
         Eh96_5.InitialiseState(base_state);  \
     } else if (n == 48 && k == 5) {          \
@@ -220,6 +225,8 @@ inline bool EhBasicSolve(unsigned int n, unsigned int k, const eh_HashState& bas
         return Eh96_3.BasicSolve(base_state, validBlock, cancelled);
     } else if (n == 200 && k == 9) {
         return Eh200_9.BasicSolve(base_state, validBlock, cancelled);
+    } else if (n == 144 && k == 5) {
+        return Eh144_5.BasicSolve(base_state, validBlock, cancelled);
     } else if (n == 96 && k == 5) {
         return Eh96_5.BasicSolve(base_state, validBlock, cancelled);
     } else if (n == 48 && k == 5) {
@@ -244,6 +251,8 @@ inline bool EhOptimisedSolve(unsigned int n, unsigned int k, const eh_HashState&
         return Eh96_3.OptimisedSolve(base_state, validBlock, cancelled);
     } else if (n == 200 && k == 9) {
         return Eh200_9.OptimisedSolve(base_state, validBlock, cancelled);
+    } else if (n == 144 && k == 5) {
+        return Eh144_5.OptimisedSolve(base_state, validBlock, cancelled);
     } else if (n == 96 && k == 5) {
         return Eh96_5.OptimisedSolve(base_state, validBlock, cancelled);
     } else if (n == 48 && k == 5) {
@@ -265,6 +274,8 @@ inline bool EhOptimisedSolveUncancellable(unsigned int n, unsigned int k, const 
         ret = Eh96_3.IsValidSolution(base_state, soln);  \
     } else if (n == 200 && k == 9) {                     \
         ret = Eh200_9.IsValidSolution(base_state, soln); \
+    } else if (n == 144 && k == 5) {                     \
+        ret = Eh144_5.IsValidSolution(base_state, soln); \
     } else if (n == 96 && k == 5) {                      \
         ret = Eh96_5.IsValidSolution(base_state, soln);  \
     } else if (n == 48 && k == 5) {                      \
@@ -272,5 +283,24 @@ inline bool EhOptimisedSolveUncancellable(unsigned int n, unsigned int k, const 
     } else {                                             \
         throw std::invalid_argument("Unsupported Equihash parameters"); \
     }
+
+inline unsigned int EhSolutionWidth(int n, int k)
+{
+    unsigned int ret;
+    if (n == 96 && k == 3) {
+        ret = Eh96_3.SolutionWidth;
+    } else if (n == 200 && k == 9) {
+        ret = Eh200_9.SolutionWidth;
+    } else if (n == 144 && k == 5) {
+        ret = Eh144_5.SolutionWidth;
+    } else if (n == 96 && k == 5) {
+        ret = Eh96_5.SolutionWidth;
+    } else if (n == 48 && k == 5) {
+        ret = Eh48_5.SolutionWidth;
+    } else {
+        throw std::invalid_argument("Unsupported Equihash parameters");
+    }
+    return ret;
+}
 
 #endif // BITCOIN_EQUIHASH_H

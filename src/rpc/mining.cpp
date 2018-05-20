@@ -1,5 +1,8 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2016-2017 The Zcash developers
+// Copyright (c) 2018 The Bitcoin Private developers
+// Copyright (c) 2017-2018 The Bitcoin Gold developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -127,8 +130,8 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
     unsigned int nExtraNonce = 0;
     UniValue blockHashes(UniValue::VARR);
     const CChainParams& params = Params();
-    unsigned int n = params.EquihashN();
-    unsigned int k = params.EquihashK();
+    unsigned int n;
+    unsigned int k;
     while (nHeight < nHeightEnd)
     {
         std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(Params()).CreateNewBlock(coinbaseScript->reserveScript));
@@ -152,6 +155,8 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             // Solve Equihash.
             nInnerLoopMask = nInnerLoopEquihashMask;
             nInnerLoopCount = nInnerLoopEquihashCount;
+            n = params.EquihashN(pblock->nHeight);
+            k = params.EquihashK(pblock->nHeight);
             crypto_generichash_blake2b_state eh_state;
             EhInitialiseState(n, k, eh_state);
 
