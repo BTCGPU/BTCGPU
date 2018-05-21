@@ -426,6 +426,8 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
             "  \"curtime\" : ttt,                  (numeric) current timestamp in seconds since epoch (Jan 1 1970 GMT)\n"
             "  \"bits\" : \"xxxxxxxx\",              (string) compressed target of next block\n"
             "  \"height\" : n                      (numeric) The height of the next block\n"
+            "  \"equihashn\" : n                   (numeric) Equihash N\n"
+            "  \"equihashk\" : n                   (numeric) Equihash K\n"
             "}\n"
 
             "\nExamples:\n"
@@ -597,7 +599,8 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
         pindexPrev = pindexPrevNew;
     }
     CBlock* pblock = &pblocktemplate->block; // pointer for convenience
-    const Consensus::Params& consensusParams = Params().GetConsensus();
+    const CChainParams& params = Params();
+    const Consensus::Params& consensusParams = params.GetConsensus();
 
     // Update nTime
     UpdateTime(pblock, consensusParams, pindexPrev);
@@ -739,7 +742,10 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     }
     result.push_back(Pair("curtime", pblock->GetBlockTime()));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
-    result.push_back(Pair("height", (int64_t)(pindexPrev->nHeight+1)));
+    int height = pindexPrev->nHeight + 1;
+    result.push_back(Pair("height", (int64_t)height));
+    result.push_back(Pair("equihashn", (int64_t)(params.EquihashN(height))));
+    result.push_back(Pair("equihashk", (int64_t)(params.EquihashK(height))));
 
     if (!pblocktemplate->vchCoinbaseCommitment.empty() && fSupportsSegwit) {
         result.push_back(Pair("default_witness_commitment", HexStr(pblocktemplate->vchCoinbaseCommitment.begin(), pblocktemplate->vchCoinbaseCommitment.end())));

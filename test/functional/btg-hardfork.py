@@ -25,11 +25,15 @@ class BTGForkTest(BitcoinTestFramework):
         node.generate(1799)
         tmpl = node.getblocktemplate()
         assert_equal(tmpl['height'], 2000)
+        assert_equal(tmpl['equihashn'], 48)
+        assert_equal(tmpl['equihashk'], 5)
 
         # Block #2000, Equihash<48,5> enabled.
         node.generate(1)
         tmpl = node.getblocktemplate()
         assert_equal(tmpl['height'], 2001)
+        assert_equal(tmpl['equihashn'], 96)
+        assert_equal(tmpl['equihashk'], 5)
 
         # Block #2001, Equihash<96,5> enabled.
         node.generate(1)
