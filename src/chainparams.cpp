@@ -1,5 +1,8 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2016-2017 The Zcash developers
+// Copyright (c) 2018 The Bitcoin Private developers
+// Copyright (c) 2017-2018 The Bitcoin Gold developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -101,6 +104,7 @@ public:
         consensus.BTGHeight = 491407; // Around 10/25/2017 12:00 UTC
         consensus.BTGPremineWindow = 8000;
         consensus.BTGZawyLWMAHeight = std::numeric_limits<int>::max(); // Not activated on mainnet
+        consensus.BTGEquihashForkHeight = std::numeric_limits<int>::max(); // Not activated on mainnet
         consensus.BTGPremineEnforceWhitelist = true;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitStart = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -153,9 +157,13 @@ public:
         nDefaultPort = 8338; // different port than Bitcoin
         nPruneAfterHeight = 100000;
         const size_t N = 200, K = 9;
+        const size_t N2 = 144, K2 = 5;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
+        BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N2, K2));
         nEquihashN = N;
         nEquihashK = K;
+        nEquihashNnew = N2;
+        nEquihashKnew = K2;
 
         genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash(consensus);
@@ -231,6 +239,7 @@ public:
         consensus.BIP66Height = -1;
         consensus.BTGHeight = 1;
         consensus.BTGZawyLWMAHeight = -1; // Activated on testnet
+        consensus.BTGEquihashForkHeight = std::numeric_limits<int>::max(); // Not activated on testnet
         consensus.BTGPremineWindow = 50;
         consensus.BTGPremineEnforceWhitelist = false;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -278,10 +287,14 @@ public:
         pchMessageStart[3] = 0x45;
         nDefaultPort = 18338;
         nPruneAfterHeight = 1000;
-        const size_t N = 200, K = 9;  // Same as mainnet.
+        const size_t N = 200, K = 9;
+        const size_t N2 = 144, K2 = 5;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
+        BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N2, K2));
         nEquihashN = N;
         nEquihashK = K;
+        nEquihashNnew = N2;
+        nEquihashKnew = K2;
 
         genesis = CreateGenesisBlock(1516123516, 0x56bd5142, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash(consensus);
@@ -336,6 +349,7 @@ public:
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in rpc activation tests)
         consensus.BTGHeight = 2000;
         consensus.BTGZawyLWMAHeight = -1; // Activated on regtest
+        consensus.BTGEquihashForkHeight = 2001;
         consensus.BTGPremineWindow = 10;
         consensus.BTGPremineEnforceWhitelist = false;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -380,9 +394,13 @@ public:
         nDefaultPort = 18444;
         nPruneAfterHeight = 1000;
         const size_t N = 48, K = 5;
+        const size_t N2 = 96, K2 = 5;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
+        BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N2, K2));
         nEquihashN = N;
         nEquihashK = K;
+        nEquihashNnew = N2;
+        nEquihashKnew = K2;
 
         genesis = CreateGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash(consensus);
@@ -476,6 +494,11 @@ static CScript CltvMultiSigScript(const std::vector<std::string>& pubkeys, uint3
     }
     redeem_script << 6 << OP_CHECKMULTISIG;
     return redeem_script;
+}
+
+unsigned int CChainParams::EquihashSolutionWidth(int height) const
+{
+    return EhSolutionWidth(EquihashN(height), EquihashK(height));
 }
 
 bool CChainParams::IsPremineAddressScript(const CScript& scriptPubKey, uint32_t height) const {
