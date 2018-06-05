@@ -217,12 +217,13 @@ unsigned int BitcoinCalculateNextWorkRequired(const CBlockIndex* pindexLast, int
 
 bool CheckEquihashSolution(const CBlockHeader *pblock, const CChainParams& params)
 {
-    unsigned int n = params.EquihashN(pblock->nHeight);
-    unsigned int k = params.EquihashK(pblock->nHeight);
+    int height = pblock->nHeight;
+    unsigned int n = params.EquihashN(height);
+    unsigned int k = params.EquihashK(height);
 
     // Hash state
     crypto_generichash_blake2b_state state;
-    EhInitialiseState(n, k, state);
+    EhInitialiseState(n, k, state, params.EquihashUseBTGSalt(height));
 
     // I = the block header minus nonce and solution.
     CEquihashInput I{*pblock};
