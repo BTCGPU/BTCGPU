@@ -69,6 +69,7 @@ unsigned int LwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const 
 
     const int N = params.nZawyLwmaAveragingWindow;
     const int k = params.nZawyLwmaAjustedWeight;
+    const int dnorm = params.nZawyLwmaMinDenominator;
     const int height = pindexLast->nHeight + 1;
     assert(height > N);
 
@@ -92,8 +93,8 @@ unsigned int LwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const 
         sum_target += target / (k * N * N);
     }
     // Keep t reasonable in case strange solvetimes occurred.
-    if (t < N * k / 3) {
-        t = N * k / 3;
+    if (t < N * k / dnorm) {
+        t = N * k / dnorm;
     }
 
     const arith_uint256 pow_limit = UintToArith256(params.PowLimit(true));
