@@ -96,6 +96,6 @@ BOOST_AUTO_TEST_CASE(LwmaCalculateNextWorkRequired_test)
     }
 
     int bits = LwmaCalculateNextWorkRequired(&blocks.back(), chainParams->GetConsensus());
-    BOOST_CHECK_EQUAL(bits, 0x1d010326);
+    BOOST_CHECK_EQUAL(bits, 0x1d010084);
 }
 BOOST_AUTO_TEST_SUITE_END()

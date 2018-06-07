@@ -96,6 +96,7 @@ struct Params {
     int64_t nZawyLwmaAjustedWeight;  // legacy equation (testnet): k = (N+1)/2 * 0.9989^(500/N) * T
                                      // new equation (mainnet): k = (N+1)/2 * 0.998 *T
     int64_t nZawyLwmaMinDenominator;
+    bool bZawyLwmaSolvetimeLimitation;
 };
 } // namespace Consensus
 
