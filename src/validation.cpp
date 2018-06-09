@@ -2798,7 +2798,7 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
     bool postfork = block.nHeight >= (uint32_t)consensusParams.BTGHeight;
     if (fCheckPOW && postfork) {
         const CChainParams& chainparams = Params();
-        const int sol_size = chainparams.EquihashSolutionWidth(block.nHeight);
+        const size_t sol_size = chainparams.EquihashSolutionWidth(block.nHeight);
         if(block.nSolution.size() != sol_size) {
             return state.DoS(
                 100, error("CheckBlockHeader(): Equihash solution has invalid size have %d need %d",

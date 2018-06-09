@@ -88,6 +88,10 @@ public:
             return nEquihashK;
         }
     }
+    bool EquihashUseBTGSalt(int height) const
+    {
+        return height >= consensus.BTGEquihashForkHeight;
+    }
     unsigned int EquihashSolutionWidth(int height) const;
 
     /** Make miner stop after a block is found. In RPC, don't return until nGenProcLimit blocks are generated */

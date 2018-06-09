@@ -158,7 +158,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             n = params.EquihashN(pblock->nHeight);
             k = params.EquihashK(pblock->nHeight);
             crypto_generichash_blake2b_state eh_state;
-            EhInitialiseState(n, k, eh_state);
+            EhInitialiseState(n, k, eh_state, params.EquihashUseBTGSalt(pblock->nHeight));
 
             // I = the block header minus nonce and solution.
             CEquihashInput I{*pblock};
