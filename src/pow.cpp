@@ -67,12 +67,12 @@ unsigned int LwmaCalculateNextWorkRequired(const CBlockIndex* pindexLast, const 
         return pindexLast->nBits;
     }
 
+    const int height = pindexLast->nHeight + 1;
     const int64_t T = params.nPowTargetSpacing;
     const int N = params.nZawyLwmaAveragingWindow;
-    const int k = params.nZawyLwmaAjustedWeight;
-    const int dnorm = params.nZawyLwmaMinDenominator;
+    const int k = params.ZawyLwmaAdjustedWeight(height);
+    const int dnorm = params.ZawyLwmaMinDenominator(height);
     const bool limit_st = params.bZawyLwmaSolvetimeLimitation;
-    const int height = pindexLast->nHeight + 1;
     assert(height > N);
 
     arith_uint256 sum_target;

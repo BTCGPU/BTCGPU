@@ -116,7 +116,9 @@ public:
         consensus.nDigishieldMaxAdjustUp = 16;
 
         consensus.nZawyLwmaAveragingWindow = 45;
-        consensus.nZawyLwmaAjustedWeight = 13772;
+        consensus.nZawyLwmaAdjustedWeightLegacy = 13772;
+        consensus.nZawyLwmaAdjustedWeight = 13772;
+        consensus.nZawyLwmaMinDenominatorLegacy = 10;
         consensus.nZawyLwmaMinDenominator = 10;
         consensus.bZawyLwmaSolvetimeLimitation = true;
         consensus.BTGMaxFutureBlockTime = 12 * 10 * 60; // 120 mins
@@ -254,8 +256,10 @@ public:
         consensus.nDigishieldMaxAdjustUp = 16;
 
         consensus.nZawyLwmaAveragingWindow = 45;
-        consensus.nZawyLwmaAjustedWeight = 13632;
-        consensus.nZawyLwmaMinDenominator = 3;  // Legacy value. Use 10 in mainnet.
+        consensus.nZawyLwmaAdjustedWeightLegacy = 13632;
+        consensus.nZawyLwmaAdjustedWeight = 13772;
+        consensus.nZawyLwmaMinDenominatorLegacy = 3;
+        consensus.nZawyLwmaMinDenominator = 10;
         consensus.bZawyLwmaSolvetimeLimitation = false;
         consensus.BTGMaxFutureBlockTime = 7 * 10 * 60; // 70 mins
         
@@ -365,7 +369,9 @@ public:
         consensus.nDigishieldMaxAdjustUp = 16;
 
         consensus.nZawyLwmaAveragingWindow = 45;
-        consensus.nZawyLwmaAjustedWeight = 13772;
+        consensus.nZawyLwmaAdjustedWeightLegacy = 13772;
+        consensus.nZawyLwmaAdjustedWeight = 13772;
+        consensus.nZawyLwmaMinDenominatorLegacy = 10;
         consensus.nZawyLwmaMinDenominator = 10;
         consensus.bZawyLwmaSolvetimeLimitation = true;
         consensus.BTGMaxFutureBlockTime = 7 * 10 * 60; // 70 mins
