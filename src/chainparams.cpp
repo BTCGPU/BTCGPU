@@ -243,7 +243,7 @@ public:
         consensus.BIP66Height = -1;
         consensus.BTGHeight = 1;
         consensus.BTGZawyLWMAHeight = -1; // Activated on testnet
-        consensus.BTGEquihashForkHeight = std::numeric_limits<int>::max(); // Not activated on testnet
+        consensus.BTGEquihashForkHeight = 14300;
         consensus.BTGPremineWindow = 50;
         consensus.BTGPremineEnforceWhitelist = false;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
