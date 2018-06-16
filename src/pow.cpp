@@ -43,6 +43,16 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     else if (nHeight < params.BTGZawyLWMAHeight) {
         // Regular Digishield v3.
         return DigishieldGetNextWorkRequired(pindexLast, pblock, params);
+    } else if (nHeight < params.BTGEquihashForkHeight) {
+        // Zawy's LWMA (testnet launch).
+        return LwmaGetNextWorkRequired(pindexLast, pblock, params);
+    } else if (nHeight < params.BTGEquihashForkHeight + params.nZawyLwmaAveragingWindow) {
+        // Reduce the difficulty of the first forked block by 100x and keep it for N blocks.
+        if (nHeight == params.BTGEquihashForkHeight) {
+            return ReduceDifficultyBy(pindexLast, 100, params);
+        } else {
+            return pindexLast->nBits;
+        }
     } else {
         // Zawy's LWMA.
         return LwmaGetNextWorkRequired(pindexLast, pblock, params);
@@ -195,6 +205,17 @@ unsigned int BitcoinGetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
     assert(pindexFirst);
 
     return BitcoinCalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
+}
+
+unsigned int ReduceDifficultyBy(const CBlockIndex* pindexLast, int64_t multiplier, const Consensus::Params& params) {
+    arith_uint256 target;
+    target.SetCompact(pindexLast->nBits);
+    target *= multiplier;
+    const arith_uint256 pow_limit = UintToArith256(params.PowLimit(true));
+    if (target > pow_limit) {
+        target = pow_limit;
+    }
+    return target.GetCompact();
 }
 
 unsigned int BitcoinCalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
