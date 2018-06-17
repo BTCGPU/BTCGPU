@@ -91,12 +91,26 @@ struct Params {
         return (DigishieldAveragingWindowTimespan() * (100 + nDigishieldMaxAdjustDown)) / 100;
     }
 
-    // Params for Zawy's LWMA difficulty adjustment algorithm. (Used by testnet and regtest)
-    int64_t nZawyLwmaAveragingWindow;  // N = 45
-    int64_t nZawyLwmaAjustedWeight;  // legacy equation (testnet): k = (N+1)/2 * 0.9989^(500/N) * T
-                                     // new equation (mainnet): k = (N+1)/2 * 0.998 *T
+    // Params for Zawy's LWMA difficulty adjustment algorithm.
+    int64_t nZawyLwmaAveragingWindow;
+    int64_t nZawyLwmaAdjustedWeight;  // k = (N+1)/2 * 0.998 * T
     int64_t nZawyLwmaMinDenominator;
     bool bZawyLwmaSolvetimeLimitation;
+
+    // Legacy params for Zawy's LWMA before the PoW fork. Only used by testnet
+    int64_t nZawyLwmaAdjustedWeightLegacy;  // k = (N+1)/2 * 0.9989^(500/N) * T
+    int64_t nZawyLwmaMinDenominatorLegacy;
+
+    int64_t ZawyLwmaAdjustedWeight(int height) const {
+        return (height >= BTGEquihashForkHeight)
+            ? nZawyLwmaAdjustedWeight
+            : nZawyLwmaAdjustedWeightLegacy;
+    }
+    int64_t ZawyLwmaMinDenominator(int height) const {
+        return (height >= BTGEquihashForkHeight)
+            ? nZawyLwmaMinDenominator
+            : nZawyLwmaMinDenominatorLegacy;
+    }
 };
 } // namespace Consensus
 

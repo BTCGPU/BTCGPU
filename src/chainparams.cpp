@@ -116,7 +116,9 @@ public:
         consensus.nDigishieldMaxAdjustUp = 16;
 
         consensus.nZawyLwmaAveragingWindow = 45;
-        consensus.nZawyLwmaAjustedWeight = 13772;
+        consensus.nZawyLwmaAdjustedWeightLegacy = 13772;
+        consensus.nZawyLwmaAdjustedWeight = 13772;
+        consensus.nZawyLwmaMinDenominatorLegacy = 10;
         consensus.nZawyLwmaMinDenominator = 10;
         consensus.bZawyLwmaSolvetimeLimitation = true;
         consensus.BTGMaxFutureBlockTime = 12 * 10 * 60; // 120 mins
@@ -241,7 +243,7 @@ public:
         consensus.BIP66Height = -1;
         consensus.BTGHeight = 1;
         consensus.BTGZawyLWMAHeight = -1; // Activated on testnet
-        consensus.BTGEquihashForkHeight = std::numeric_limits<int>::max(); // Not activated on testnet
+        consensus.BTGEquihashForkHeight = 14300;
         consensus.BTGPremineWindow = 50;
         consensus.BTGPremineEnforceWhitelist = false;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -254,8 +256,10 @@ public:
         consensus.nDigishieldMaxAdjustUp = 16;
 
         consensus.nZawyLwmaAveragingWindow = 45;
-        consensus.nZawyLwmaAjustedWeight = 13632;
-        consensus.nZawyLwmaMinDenominator = 3;  // Legacy value. Use 10 in mainnet.
+        consensus.nZawyLwmaAdjustedWeightLegacy = 13632;
+        consensus.nZawyLwmaAdjustedWeight = 13772;
+        consensus.nZawyLwmaMinDenominatorLegacy = 3;
+        consensus.nZawyLwmaMinDenominator = 10;
         consensus.bZawyLwmaSolvetimeLimitation = false;
         consensus.BTGMaxFutureBlockTime = 7 * 10 * 60; // 70 mins
         
@@ -365,7 +369,9 @@ public:
         consensus.nDigishieldMaxAdjustUp = 16;
 
         consensus.nZawyLwmaAveragingWindow = 45;
-        consensus.nZawyLwmaAjustedWeight = 13772;
+        consensus.nZawyLwmaAdjustedWeightLegacy = 13772;
+        consensus.nZawyLwmaAdjustedWeight = 13772;
+        consensus.nZawyLwmaMinDenominatorLegacy = 10;
         consensus.nZawyLwmaMinDenominator = 10;
         consensus.bZawyLwmaSolvetimeLimitation = true;
         consensus.BTGMaxFutureBlockTime = 7 * 10 * 60; // 70 mins
