@@ -103,8 +103,8 @@ public:
         consensus.BIP66Height = 363725; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
         consensus.BTGHeight = 491407; // Around 10/25/2017 12:00 UTC
         consensus.BTGPremineWindow = 8000;
-        consensus.BTGZawyLWMAHeight = std::numeric_limits<int>::max(); // Not activated on mainnet
-        consensus.BTGEquihashForkHeight = std::numeric_limits<int>::max(); // Not activated on mainnet
+        consensus.BTGZawyLWMAHeight = 536200; // Around 07/01/2018
+        consensus.BTGEquihashForkHeight = 536200; // Around 07/01/2018
         consensus.BTGPremineEnforceWhitelist = true;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitStart = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
