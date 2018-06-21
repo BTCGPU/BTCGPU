@@ -2,8 +2,8 @@ dnl require autoconf 2.60 (AS_ECHO/AS_ECHO_N)
 AC_PREREQ([2.60])
 define(_CLIENT_VERSION_MAJOR, 0)
 define(_CLIENT_VERSION_MINOR, 15)
-define(_CLIENT_VERSION_REVISION, 0)
-define(_CLIENT_VERSION_BUILD, 2)
+define(_CLIENT_VERSION_REVISION, 1)
+define(_CLIENT_VERSION_BUILD, 0)
 define(_CLIENT_VERSION_IS_RELEASE, true)
 define(_COPYRIGHT_YEAR, 2018)
 define(_COPYRIGHT_HOLDERS,[The %s developers])
@@ -727,12 +727,12 @@ AC_CHECK_LIB(sodium, sodium_init,[],
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 #include <sodium.h>
 ], [
-#if SODIUM_LIBRARY_VERSION_MAJOR < 9 || SODIUM_LIBRARY_VERSION_MAJOR == 9 && SODIUM_LIBRARY_VERSION_MINOR < 5
+#if SODIUM_LIBRARY_VERSION_MAJOR < 9 || SODIUM_LIBRARY_VERSION_MAJOR == 9 && SODIUM_LIBRARY_VERSION_MINOR < 1
 # error
 #endif
 ])],
 [AC_MSG_RESULT([checking for version of libsodium... yes])],
-[AC_MSG_ERROR([Wrong libsodium: version >= 1.0.13 required])])
+[AC_MSG_ERROR([Wrong libsodium: version >= 1.0.8 required])])
 
 BITCOIN_QT_INIT
 

@@ -2,12 +2,22 @@
 
 [![Build Status](https://travis-ci.org/BTCGPU/BTCGPU.svg?branch=master)](https://travis-ci.org/BTCGPU/BTCGPU)
 
-Bitcoin Gold (codename BTCGPU) is a fork of the Bitcoin blockchain that will occur at block height 491407, at roughly 12:00:00 UTC October 25, 2017.
+Bitcoin Gold (codename BTCGPU) began as a fork of Bitcoin after block height 491406 on Tue, 24 Oct 2017 01:17:35 GMT and began being mined as a separate chain at block height 491407 on Sun, 12 Nov 2017 13:34:01 GMT.
 
-At the predetermined block height, Bitcoin Gold miners will begin creating blocks with a new proof-of-work algorithm, and this will cause a bifurcation of the Bitcoin blockchain. The original Bitcoin blockchain will continue on unaltered, but a new branch of the blockchain will split off from the original chain. The new branch is a distinct blockchain with the same transaction history as Bitcoin up until the fork, but then diverges from it. As a result of this process, a new cryptocurrency will be born.
+The primary goal is to maintain a variant of Bitcoin that is more decentralized by using an ASIC-resistant Proof of Work algorithm, removing barriers to entry for new miners around the world and reducing the concentration of power in the hands of massive-scale mining operations.
+
+Bitcoin Gold preserves and implements Bitcoin features such as SegWit. Significant differences at launch time included:
+
+- ASIC-resistant GPU-minable PoW algorithm (Equihash)
+- Per-block difficulty adjustment algorithm
+- Replay protection (SIGHASH_FORK_ID)
+- Unique wallet addresses (prefixes of G and A)
+
+Although BTG was bootstrapped on 12 Nov to create an entirely new network, it contains the entire Bitcoin blockchain until block 491406. As a result, Bitcoin Gold became a full fork with all Bitcoin transaction history since 2009. Any Bitcoin wallet address which held Bitcoin in BTC block 491406 before the fork held an equal number of Bitcoin Gold in BTG block 491407 after the fork.
 
 ## Links
 
 * Website: https://bitcoingold.org
 * Tech Spec: https://github.com/BTCGPU/BTCGPU/wiki/Technical-Spec
-* Slack: [invitation](https://join.slack.com/t/bitcoin-gold/shared_invite/enQtMjY1MzkzMzUxNjY4LWM1YmQ4MjZhZTQxMWE1ZDQyNjA4N2QwZTkyZjYzMjhiMzdlMmVkNjQ3NzZlZDdmMDE4NWIyY2JmYzdjYmE2MzA)
+* Forum: https://forum.bitcoingold.org
+* Discord: [invitation](https://discord.gg/HmVUU6S)

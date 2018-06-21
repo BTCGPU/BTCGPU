@@ -1,5 +1,8 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2016-2017 The Zcash developers
+// Copyright (c) 2018 The Bitcoin Private developers
+// Copyright (c) 2017-2018 The Bitcoin Gold developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -24,6 +27,7 @@
 #include "base58.h"
 #include <assert.h>
 #include <boost/assign/list_of.hpp>
+#include <limits>
 
 #include "chainparamsseeds.h"
 
@@ -46,6 +50,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     genesis.hashPrevBlock.SetNull();
     genesis.nHeight  = 0;
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
+
     return genesis;
 }
 
@@ -98,18 +103,27 @@ public:
         consensus.BIP66Height = 363725; // 00000000000000000379eaa19dce8c9b722d46ae6a57c2f1a988119488b50931
         consensus.BTGHeight = 491407; // Around 10/25/2017 12:00 UTC
         consensus.BTGPremineWindow = 8000;
+        consensus.BTGZawyLWMAHeight = 536200; // Around 07/01/2018
+        consensus.BTGEquihashForkHeight = 536200; // Around 07/01/2018
         consensus.BTGPremineEnforceWhitelist = true;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitStart = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+
+        consensus.nDigishieldAveragingWindow = 30;
+        assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nDigishieldAveragingWindow);
+        consensus.nDigishieldMaxAdjustDown = 32;
+        consensus.nDigishieldMaxAdjustUp = 16;
+
+        consensus.nZawyLwmaAveragingWindow = 45;
+        consensus.nZawyLwmaAdjustedWeightLegacy = 13772;
+        consensus.nZawyLwmaAdjustedWeight = 13772;
+        consensus.nZawyLwmaMinDenominatorLegacy = 10;
+        consensus.nZawyLwmaMinDenominator = 10;
+        consensus.bZawyLwmaSolvetimeLimitation = true;
+        consensus.BTGMaxFutureBlockTime = 12 * 10 * 60; // 120 mins
         
-        //based on https://github.com/BTCGPU/BTCGPU/issues/78
-        consensus.nPowAveragingWindow = 30;
-        assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
-        consensus.nPowMaxAdjustDown = 32;
-        consensus.nPowMaxAdjustUp = 16;
-        
-        consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60;; // 10 minutes
+        consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // 10 minutes
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
@@ -147,9 +161,13 @@ public:
         nDefaultPort = 8338; // different port than Bitcoin
         nPruneAfterHeight = 100000;
         const size_t N = 200, K = 9;
+        const size_t N2 = 144, K2 = 5;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
+        BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N2, K2));
         nEquihashN = N;
         nEquihashK = K;
+        nEquihashNnew = N2;
+        nEquihashKnew = K2;
 
         genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash(consensus);
@@ -219,22 +237,31 @@ public:
     CTestNetParams() {
         strNetworkID = "test";
         consensus.nSubsidyHalvingInterval = 210000;
-        consensus.BIP34Height = 21111;
-        consensus.BIP34Hash = uint256S("0x0000000023b3a96d3484e5abb3755c413e7d41500f8e2a5c3f0dd01299cd8ef8");
-        consensus.BIP65Height = 581885; // 00000000007f6655f22f98e72ed80d8b06dc761d5da09df0fa1dc4be4f861eb6
-        consensus.BIP66Height = 330776; // 000000002104c8c45e99a8853285a3b592602a3ccde2b832481da85e9e4ba182
-        consensus.BTGHeight = 1210320;
+        consensus.BIP34Height = -1;
+        consensus.BIP34Hash = uint256();
+        consensus.BIP65Height = -1;
+        consensus.BIP66Height = -1;
+        consensus.BTGHeight = 1;
+        consensus.BTGZawyLWMAHeight = -1; // Activated on testnet
+        consensus.BTGEquihashForkHeight = 14300;
         consensus.BTGPremineWindow = 50;
         consensus.BTGPremineEnforceWhitelist = false;
         consensus.powLimit = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.powLimitStart = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.powLimitStart = uint256S("0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
-        //based on https://github.com/BTCGPU/BTCGPU/issues/78
-        consensus.nPowAveragingWindow = 30;
-        assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
-        consensus.nPowMaxAdjustDown = 32;
-        consensus.nPowMaxAdjustUp = 16;
+        consensus.nDigishieldAveragingWindow = 30;
+        assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nDigishieldAveragingWindow);
+        consensus.nDigishieldMaxAdjustDown = 32;
+        consensus.nDigishieldMaxAdjustUp = 16;
+
+        consensus.nZawyLwmaAveragingWindow = 45;
+        consensus.nZawyLwmaAdjustedWeightLegacy = 13632;
+        consensus.nZawyLwmaAdjustedWeight = 13772;
+        consensus.nZawyLwmaMinDenominatorLegacy = 3;
+        consensus.nZawyLwmaMinDenominator = 10;
+        consensus.bZawyLwmaSolvetimeLimitation = false;
+        consensus.BTGMaxFutureBlockTime = 7 * 10 * 60; // 70 mins
         
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
@@ -248,36 +275,39 @@ public:
 
         // Deployment of BIP68, BIP112, and BIP113.
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].bit = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 1456790400; // March 1st, 2016
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 1493596800; // May 1st, 2017
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 1514764800; // January 1st, 2018
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 1546300800; // January 1st, 2019
 
         // Deployment of SegWit (BIP141, BIP143, and BIP147)
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].bit = 1;
-        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nStartTime = 1462060800; // May 1st 2016
-        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1493596800; // May 1st 2017
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nStartTime = 1514764800; // January 1st 2018
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1546300800; // January 1st 2019
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000000000002830dab7f76dbb7d63");
+        consensus.nMinimumChainWork = uint256S("0x00");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x0000000002e9e7b00e1f6dc5123a04aad68dd0f0968d8c7aa45f6640795c37b1"); //1135275
+        consensus.defaultAssumeValid = uint256S("0x00");
 
-        pchMessageStart[0] = 0xe1;
+        pchMessageStart[0] = 0xe2;
         pchMessageStart[1] = 0x48;
         pchMessageStart[2] = 0x6e;
         pchMessageStart[3] = 0x45;
         nDefaultPort = 18338;
         nPruneAfterHeight = 1000;
-        const size_t N = 200, K = 9;  // Same as mainchain.
+        const size_t N = 200, K = 9;
+        const size_t N2 = 144, K2 = 5;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
+        BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N2, K2));
         nEquihashN = N;
         nEquihashK = K;
+        nEquihashNnew = N2;
+        nEquihashKnew = K2;
 
-        genesis = CreateGenesisBlock(1296688602, 414098458, 0x1d00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1516123516, 0x56bd5142, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash(consensus);
-        assert(consensus.hashGenesisBlock == uint256S("0x000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00000000e0781ebe24b91eedc293adfea2f557b53ec379e78959de3853e6f9f6"));
         assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
-
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
@@ -285,7 +315,6 @@ public:
         vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("test-dnsseed.bitcoingold.org", true);
         vSeeds.emplace_back("test-dnsseed.btcgpu.org", true);
-        vSeeds.emplace_back("btg.dnsseed.minertopia.org", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
@@ -302,15 +331,14 @@ public:
 
         checkpointData = (CCheckpointData) {
             {
-                {546, uint256S("000000002a936ca763904c3c35fce2f3556c559c0214345d31b1bcebf76acb70")},
+                {0, uint256S("0x00000000e0781ebe24b91eedc293adfea2f557b53ec379e78959de3853e6f9f6")},
             }
         };
 
         chainTxData = ChainTxData{
-            // Data as of block 00000000000001c200b9790dc637d3bb141fe77d155b966ed775b17e109f7c6c (height 1156179)
-            1501802953,
-            14706531,
-            0.15
+            0,
+            0,
+            0
         };
     }
 };
@@ -327,16 +355,27 @@ public:
         consensus.BIP34Hash = uint256();
         consensus.BIP65Height = 1351; // BIP65 activated on regtest (Used in rpc activation tests)
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in rpc activation tests)
-        consensus.BTGHeight = 3000;
+        consensus.BTGHeight = 2000;
+        consensus.BTGZawyLWMAHeight = -1; // Activated on regtest
+        consensus.BTGEquihashForkHeight = 2001;
         consensus.BTGPremineWindow = 10;
         consensus.BTGPremineEnforceWhitelist = false;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitStart = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.powLimitLegacy = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        //based on https://github.com/BTCGPU/BTCGPU/issues/78
-        consensus.nPowAveragingWindow = 30;
-        consensus.nPowMaxAdjustDown = 16;
-        consensus.nPowMaxAdjustUp = 32;
+
+        consensus.nDigishieldAveragingWindow = 30;
+        consensus.nDigishieldMaxAdjustDown = 32;
+        consensus.nDigishieldMaxAdjustUp = 16;
+
+        consensus.nZawyLwmaAveragingWindow = 45;
+        consensus.nZawyLwmaAdjustedWeightLegacy = 13772;
+        consensus.nZawyLwmaAdjustedWeight = 13772;
+        consensus.nZawyLwmaMinDenominatorLegacy = 10;
+        consensus.nZawyLwmaMinDenominator = 10;
+        consensus.bZawyLwmaSolvetimeLimitation = true;
+        consensus.BTGMaxFutureBlockTime = 7 * 10 * 60; // 70 mins
+
         consensus.nPowTargetTimespanLegacy = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
@@ -367,9 +406,13 @@ public:
         nDefaultPort = 18444;
         nPruneAfterHeight = 1000;
         const size_t N = 48, K = 5;
+        const size_t N2 = 96, K2 = 5;
         BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
+        BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N2, K2));
         nEquihashN = N;
         nEquihashK = K;
+        nEquihashNnew = N2;
+        nEquihashKnew = K2;
 
         genesis = CreateGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash(consensus);
@@ -463,6 +506,11 @@ static CScript CltvMultiSigScript(const std::vector<std::string>& pubkeys, uint3
     }
     redeem_script << 6 << OP_CHECKMULTISIG;
     return redeem_script;
+}
+
+unsigned int CChainParams::EquihashSolutionWidth(int height) const
+{
+    return EhSolutionWidth(EquihashN(height), EquihashK(height));
 }
 
 bool CChainParams::IsPremineAddressScript(const CScript& scriptPubKey, uint32_t height) const {

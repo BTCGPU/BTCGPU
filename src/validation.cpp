@@ -42,6 +42,7 @@
 #include "versionbits.h"
 #include "warnings.h"
 
+#include <algorithm>
 #include <atomic>
 #include <sstream>
 
@@ -2795,10 +2796,20 @@ static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state,
 {
     // Check Equihash solution is valid
     bool postfork = block.nHeight >= (uint32_t)consensusParams.BTGHeight;
-    if (fCheckPOW && postfork && !CheckEquihashSolution(&block, Params())) {
-        LogPrintf("CheckBlockHeader(): Equihash solution invalid at height %d\n", block.nHeight);
-        return state.DoS(100, error("CheckBlockHeader(): Equihash solution invalid"),
-                         REJECT_INVALID, "invalid-solution");
+    if (fCheckPOW && postfork) {
+        const CChainParams& chainparams = Params();
+        const size_t sol_size = chainparams.EquihashSolutionWidth(block.nHeight);
+        if(block.nSolution.size() != sol_size) {
+            return state.DoS(
+                100, error("CheckBlockHeader(): Equihash solution has invalid size have %d need %d",
+                           block.nSolution.size(), sol_size),
+                REJECT_INVALID, "invalid-solution-size");
+        }
+        if (!CheckEquihashSolution(&block, Params())) {
+            LogPrintf("CheckBlockHeader(): Equihash solution invalid at height %d\n", block.nHeight);
+            return state.DoS(100, error("CheckBlockHeader(): Equihash solution invalid"),
+                            REJECT_INVALID, "invalid-solution");
+        }
     }
 
     // Check proof of work matches claimed amount
@@ -2969,7 +2980,8 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         return state.Invalid(false, REJECT_INVALID, "time-too-old", "block's timestamp is too early");
 
     // Check timestamp
-    if (block.GetBlockTime() > nAdjustedTime + MAX_FUTURE_BLOCK_TIME)
+    if (block.GetBlockTime() > nAdjustedTime + std::min(consensusParams.BTGMaxFutureBlockTime,
+                                                        BITCOIN_MAX_FUTURE_BLOCK_TIME))
         return state.Invalid(false, REJECT_INVALID, "time-too-new", "block timestamp too far in the future");
 
     // Reject outdated version blocks when 95% (75% on testnet) of the network has upgraded:

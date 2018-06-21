@@ -307,7 +307,7 @@ then
 	# Linux
 	if [[ $linux = true ]]
 	then
-            echo ""
+	    echo ""
 	    echo "Compiling ${VERSION} Linux"
 	    echo ""
 	    ./bin/gbuild -j ${proc} -m ${mem} --commit BTCGPU=${COMMIT} --url BTCGPU=${url} ../BTCGPU/contrib/gitian-descriptors/gitian-linux.yml
@@ -317,6 +317,26 @@ then
 	# Windows
 	if [[ $windows = true ]]
 	then
+	    if [ ! -f inputs/nsis-win32-utils.zip ];
+	    then
+        	echo ""
+        	echo "Starting Utilities build for Windows"
+        	echo ""
+        	./bin/gbuild -j ${proc} -m ${mem} --allow-sudo ../BTCGPU/contrib/gitian-descriptors/gitian-win-utils.yml
+        	if [ $? -ne 0 ];
+        	then
+        	    echo ""
+        	    echo "FAILED to build Utilities for Windows"
+        	    echo ""
+        	    exit 1
+        	fi
+
+        	cd inputs
+        	cp -a ../build/out/*-utils.zip .
+        	mv nsis-*-win32-utils.zip nsis-win32-utils.zip
+        	cd ..
+	    fi
+
 	    echo ""
 	    echo "Compiling ${VERSION} Windows"
 	    echo ""
