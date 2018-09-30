@@ -4,19 +4,19 @@ define(_CLIENT_VERSION_MAJOR, 0)
 define(_CLIENT_VERSION_MINOR, 15)
 define(_CLIENT_VERSION_REVISION, 2)
 define(_CLIENT_VERSION_BUILD, 0)
-define(_CLIENT_VERSION_IS_RELEASE, false)
+define(_CLIENT_VERSION_IS_RELEASE, true)
 define(_COPYRIGHT_YEAR, 2018)
 define(_COPYRIGHT_HOLDERS,[The %s developers])
 define(_COPYRIGHT_HOLDERS_SUBSTITUTION,[[Bitcoin Gold]])
-AC_INIT([Bitcoin Gold],[_CLIENT_VERSION_MAJOR._CLIENT_VERSION_MINOR._CLIENT_VERSION_REVISION],[https://github.com/BTCGPU/BTCGPU/issues],[bitcoin-gold],[https://bitcoingold.org/])
+AC_INIT([Bitcoin Gold],[_CLIENT_VERSION_MAJOR._CLIENT_VERSION_MINOR._CLIENT_VERSION_REVISION],[https://github.com/KHOGPU/KHOGPU/issues],[bitcoin-gold],[https://khorium.org/])
 AC_CONFIG_SRCDIR([src/validation.cpp])
 AC_CONFIG_HEADERS([src/config/bitcoin-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 
-BITCOIN_DAEMON_NAME=bgoldd
+BITCOIN_DAEMON_NAME=khoriumd
 BITCOIN_GUI_NAME=bitcoin-qt
-BITCOIN_CLI_NAME=bgold-cli
+BITCOIN_CLI_NAME=khorium-cli
 BITCOIN_TX_NAME=bitcoin-tx
 
 dnl Unless the user specified ARFLAGS, force it to be cr

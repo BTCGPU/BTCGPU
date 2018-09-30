@@ -240,11 +240,11 @@ UniValue stop(const JSONRPCRequest& jsonRequest)
     if (jsonRequest.fHelp || jsonRequest.params.size() > 1)
         throw std::runtime_error(
             "stop\n"
-            "\nStop BitcoinGold server.");
+            "\nStop Khorium server.");
     // Event loop will exit after current HTTP requests have been handled, so
     // this reply will get back to the client.
     StartShutdown();
-    return "BitcoinGold server stopping";
+    return "Khorium server stopping";
 }
 
 UniValue uptime(const JSONRPCRequest& jsonRequest)
