@@ -27,12 +27,12 @@ NOTE: Building with Qt4 is still supported, however, could result in a broken UI
 Build Bitcoin Gold
 ------------------------
 
-1. Clone the Bitcoin Gold source code and cd into `BTCGPU`
+1. Clone the Khorium source code and cd into `KHOGPU`
 
-        git clone https://github.com/BTCGPU/BTCGPU
-        cd BTCGPU
+        git clone https://github.com/KHOGPU/KHOGPU
+        cd KHOGPU
 
-2.  Build BTCGPU:
+2.  Build KHOGPU:
 
     Configure and build the headless bitcoin binaries as well as the GUI (if Qt is found).
 
@@ -53,26 +53,26 @@ Build Bitcoin Gold
 Running
 -------
 
-Bitcoin Gold is now available at `./src/bgoldd`
+Khorium is now available at `./src/khoriumd`
 
 Before running, it's recommended you create an RPC configuration file.
 
-    echo -e "rpcuser=bitcoinrpc\nrpcpassword=$(xxd -l 16 -p /dev/urandom)" > "$HOME/Library/Application Support/BitcoinGold/bitcoingold.conf"
+    echo -e "rpcuser=bitcoinrpc\nrpcpassword=$(xxd -l 16 -p /dev/urandom)" > "$HOME/Library/Application Support/Khorium/khorium.conf"
 
-    chmod 600 "$HOME/Library/Application Support/BitcoinGold/bitcoingold.conf"
+    chmod 600 "$HOME/Library/Application Support/Khorium/khorium.conf"
 
-The first time you run bgoldd, it will start downloading the blockchain. This process could take several hours.
+The first time you run khoriumd, it will start downloading the blockchain. This process could take several hours.
 
 You can monitor the download process by looking at the debug.log file:
 
-    tail -f $HOME/Library/Application\ Support/BitcoinGold/debug.log
+    tail -f $HOME/Library/Application\ Support/Khorium/debug.log
 
 Other commands:
 -------
 
-    ./src/bgoldd -daemon # Starts the bitcoin daemon.
-    ./src/bgold-cli --help # Outputs a list of command-line options.
-    ./src/bgold-cli help # Outputs a list of RPC commands when the daemon is running.
+    ./src/khoriumd -daemon # Starts the bitcoin daemon.
+    ./src/khorium-cli --help # Outputs a list of command-line options.
+    ./src/khorium-cli help # Outputs a list of RPC commands when the daemon is running.
 
 Using Qt Creator as IDE
 ------------------------

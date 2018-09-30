@@ -1,11 +1,11 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Bitcoin Gold
+Upstream-Name: Khorium
 Upstream-Contact: Satoshi Nakamoto <satoshin@gmx.com>
  irc://#bitcoin@freenode.net
-Source: https://github.com/BTCGPU/BTCGPU
+Source: https://github.com/KHOGPU/KHOGPU
 
 Files: *
-Copyright: 2009-2017, Bitcoin Core Developers, 2017-2018 Bitcoin Gold Developers
+Copyright: 2009-2017, Bitcoin Core Developers, 2017-2018 Khorium Developers
 License: Expat
 Comment: The Bitcoin Core Developers encompasses the current developers listed on bitcoin.org,
          as well as the numerous contributors to the project.
