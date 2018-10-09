@@ -19,6 +19,14 @@ Although BTG was bootstrapped on 12 Nov to create an entirely new network, it co
 
 This is the staging tree of Bitcoin Gold. If you don’t understand what you are doing, please don’t compile and run your own client from the staging tree. For release version, please switch to [0.15 branch](https://github.com/BTCGPU/BTCGPU/tree/0.15) or [release page](https://github.com/BTCGPU/BTCGPU/releases).
 
+## Responsible Disclosure
+
+At the Bitcoin Gold, we consider the security of our systems a top priority. But no matter how much effort we put into system security, there can still be vulnerabilities present.
+
+If you discover a vulnerability, we would like to know about it so we can take steps to address it as quickly as possible. We would like to ask you to help us better protect our users and our systems.
+
+Please check our [Responsible Disclosure](https://bitcoingold.org/responsible-disclosure/) page for more details.
+
 ## Links
 
 * Website: https://bitcoingold.org
