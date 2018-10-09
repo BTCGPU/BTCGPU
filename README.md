@@ -31,5 +31,8 @@ Please check our [Responsible Disclosure](https://bitcoingold.org/responsible-di
 
 * Website: https://bitcoingold.org
 * Tech Spec: https://github.com/BTCGPU/BTCGPU/wiki/Technical-Spec
+* Twitter: https://twitter.com/bitcoingold
+* Facebook: https://www.facebook.com/bitcoingoldofficial/
 * Forum: https://forum.bitcoingold.org
 * Discord: [invitation](https://discord.gg/HmVUU6S)
+* Telegram (Global): https://t.me/BitcoinGoldHQ
