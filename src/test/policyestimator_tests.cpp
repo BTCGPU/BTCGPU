@@ -1,14 +1,14 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "policy/policy.h"
-#include "policy/fees.h"
-#include "txmempool.h"
-#include "uint256.h"
-#include "util.h"
+#include <policy/policy.h>
+#include <policy/fees.h>
+#include <txmempool.h>
+#include <uint256.h>
+#include <util.h>
 
-#include "test/test_bitcoin.h"
+#include <test/test_bitcoin.h>
 
 #include <boost/test/unit_test.hpp>
 
@@ -18,6 +18,7 @@ BOOST_AUTO_TEST_CASE(BlockPolicyEstimates)
 {
     CBlockPolicyEstimator feeEst;
     CTxMemPool mpool(&feeEst);
+    LOCK(mpool.cs);
     TestMemPoolEntryHelper entry;
     CAmount basefee(2000);
     CAmount deltaFee(100);

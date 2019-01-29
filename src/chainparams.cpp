@@ -1,35 +1,37 @@
 // Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2018 The Bitcoin Core developers
 // Copyright (c) 2016-2017 The Zcash developers
 // Copyright (c) 2018 The Bitcoin Private developers
 // Copyright (c) 2017-2018 The Bitcoin Gold developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "chainparams.h"
-#include "consensus/merkle.h"
+#include <chainparams.h>
+#include <consensus/merkle.h>
 
-#include "uint256.h"
-#include "arith_uint256.h"
-
-#include "tinyformat.h"
-#include "util.h"
-#include "utilstrencodings.h"
+#include <uint256.h>
+#include <arith_uint256.h>
+#include <base58.h>
+#include <tinyformat.h>
+#include <util.h>
+#include <utilstrencodings.h>
+#include <pubkey.h>
+#include <script/standard.h>
 
 // For equihash_parameters_acceptable.
-#include "crypto/equihash.h"
-#include "net.h"
-#include "validation.h"
+#include <crypto/equihash.h>
+#include <net.h>
+#include <validation.h>
 #define equihash_parameters_acceptable(N, K) \
     ((CBlockHeader::HEADER_SIZE + equihash_solution_size(N, K))*MAX_HEADERS_RESULTS < \
      MAX_PROTOCOL_MESSAGE_LENGTH-1000)
 
-#include "base58.h"
+
 #include <assert.h>
 #include <boost/assign/list_of.hpp>
 #include <limits>
 
-#include "chainparamsseeds.h"
+#include <chainparamsseeds.h>
 
 static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
@@ -97,6 +99,7 @@ public:
     CMainParams() {
         strNetworkID = "main";
         consensus.nSubsidyHalvingInterval = 210000;
+        consensus.BIP16Exception = uint256S("0x00000000000002dc756eebf4f49723ed8d30cc28a5f108eb94b1ba88ac4f9c22");
         consensus.BIP34Height = 227931;
         consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
         consensus.BIP65Height = 388381; // 000000000000000004c2b624ed5d7756c508d90fd0da2c7c679febfa6c4735f0
@@ -144,10 +147,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1510704000; // November 15th, 2017.
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000723d3581fe1bd55373540a");
+        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000028822fef1c230963535a90d");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x0000000000000000003b9ce759c2a087d52abc4266f8f4ebd6d768b89defa50a"); //477890
+        consensus.defaultAssumeValid = uint256S("0x0000000000000000002e63058c023a9a1de233554f28c7b21380b6c9003f36a8"); //534292
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -174,13 +177,13 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"));
         assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
 
-        vFixedSeeds.clear();
-        vSeeds.clear();
-        // nodes with support for servicebits filtering should be at the top
-
+        // Note that of those which support the service bits prefix, most only support a subset of
+        // possible options.
+        // This is fine at runtime as we'll fall back to using them as a oneshot if they don't support the
+        // service bits we want, but we should get them updated to support all service bits wanted by any
+        // release ASAP to avoid it where possible.
         vSeeds.emplace_back("eu-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("dnsseed.bitcoingold.org", true);
-        vSeeds.emplace_back("dnsseed.btcgpu.org", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,38);  // prefix: G
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,23);  // prefix: A
@@ -188,13 +191,15 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
 
+        bech32_hrp = "btg";
+
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
 
-        checkpointData = (CCheckpointData) {
+        checkpointData = {
             {
                 { 11111, uint256S("0x0000000069e244f73d78e8fd29ba2fd2ed618bd6fa2ee92559f542fdb26e7c1d")},
                 { 33333, uint256S("0x000000002dd5588a74784eaa7ab0507a18ad16a236e7b1ce69f00d7ddfb5d0a6")},
@@ -213,11 +218,10 @@ public:
         };
 
         chainTxData = ChainTxData{
-            // Data as of block 000000000000000000d97e53664d17967bd4ee50b23abb92e54a34eb222d15ae (height 478913).
-            1501801925, // * UNIX timestamp of last known number of transactions
-            243756039,  // * total number of transactions between genesis and that timestamp
-                        //   (the tx=... number in the SetBestChain debug.log lines)
-            3.1         // * estimated number of transactions per second after that timestamp
+            // Data from rpc: getchaintxstats 4096 0000000000000000002e63058c023a9a1de233554f28c7b21380b6c9003f36a8
+            /* nTime    */ 1532884444,
+            /* nTxCount */ 331282217,
+            /* dTxRate  */ 2.4
         };
 
         vPreminePubkeys = {
@@ -226,6 +230,8 @@ public:
             { "0328571bff52ab95267ca51d7fe2689599cb73300a3847d6440ecd9882166e1ed7", "0301411004164e5798db00227c1a8e87c4e0a0e3425057b1c650a5e88252b08035", "0399e7477f01d40af05a417cfbf98c179e0c92778fb731e7f6422036c4918cb0d1", "02f136e4181d63ec1d3f587513a21427c6ec5d5c36364f20abdf4f751ce21e485f", "02fd5c856002b77384599ea9cd6ceae515223809e6f1b63d45be5456b409d2be8e", "02bf748f7e7291e9061f32bc72ea52a325154dadddb98348307838565fc8855f4c" },
             { "03d1198ed4659a53bbc5fd945893545ee5efda9c20d014b87c138f658ed61d9cd2", "03d558f9dd313bf6a4ebbc4f3c9209f758e21e99c1d3fb3a2fc40517f4de01d55c", "03e185dd9289d6f72ed579b2db9474e033361902cb5c60817f757652fd86910677", "023c4975dbb840e91a0047496412a8f69eaf61571d24a552713d585337bed26101", "032c8735d320b6219cb398999345fea9e6b234e5f7d9f96c6a2758658d261acd6d", "029860998228d746ec5ccdc47b451b3143c05f9e26b7b1a491d64429dcac3feb0e" },
         };
+        /* disable fallback fee on mainnet */
+        m_fallback_fee_enabled = false;
     }
 };
 
@@ -314,13 +320,14 @@ public:
 
         vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("test-dnsseed.bitcoingold.org", true);
-        vSeeds.emplace_back("test-dnsseed.btcgpu.org", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
+
+        bech32_hrp = "tbtg";
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
 
@@ -329,7 +336,7 @@ public:
         fMineBlocksOnDemand = false;
 
 
-        checkpointData = (CCheckpointData) {
+        checkpointData = {
             {
                 {0, uint256S("0x00000000e0781ebe24b91eedc293adfea2f557b53ec379e78959de3853e6f9f6")},
             }
@@ -340,6 +347,9 @@ public:
             0,
             0
         };
+
+        /* enable fallback fee on testnet */
+        m_fallback_fee_enabled = true;
     }
 };
 
@@ -351,6 +361,7 @@ public:
     CRegTestParams() {
         strNetworkID = "regtest";
         consensus.nSubsidyHalvingInterval = 150;
+        consensus.BIP16Exception = uint256();
         consensus.BIP34Height = 100000000; // BIP34 has not activated on regtest (far in the future so block v1 are not rejected in tests)
         consensus.BIP34Hash = uint256();
         consensus.BIP65Height = 1351; // BIP65 activated on regtest (Used in rpc activation tests)
@@ -384,13 +395,13 @@ public:
         consensus.nMinerConfirmationWindow = 144; // Faster than normal for regtest (144 instead of 2016)
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].bit = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nStartTime = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_CSV].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].bit = 1;
-        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nStartTime = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nStartTime = Consensus::BIP9Deployment::ALWAYS_ACTIVE;
+        consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = Consensus::BIP9Deployment::NO_TIMEOUT;
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = uint256S("0x00");
@@ -426,7 +437,7 @@ public:
         fRequireStandard = false;
         fMineBlocksOnDemand = true;
 
-        checkpointData = (CCheckpointData) {
+        checkpointData = {
             {
                 {0, uint256S("0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206")},
             }
@@ -443,32 +454,19 @@ public:
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
-    }
-    
-};
 
-class BitcoinAddressChainParam : public CMainParams
-{
-public:
-    BitcoinAddressChainParam()
-    {
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
+        bech32_hrp = "btgrt";
+
+        /* enable fallback fee on regtest */
+        m_fallback_fee_enabled = true;
     }
 };
 
 static std::unique_ptr<CChainParams> globalChainParams;
-static BitcoinAddressChainParam chainParamsForAddressConversion;
 
-const CChainParams &Params()
-{
+const CChainParams &Params() {
     assert(globalChainParams);
     return *globalChainParams;
-}
-
-const CChainParams &BitcoinAddressFormatParams()
-{
-    return chainParamsForAddressConversion;
 }
 
 std::unique_ptr<CChainParams> CreateChainParams(const std::string& chain)
@@ -533,6 +531,7 @@ bool CChainParams::IsPremineAddressScript(const CScript& scriptPubKey, uint32_t 
         int lock_time = consensus.BTGHeight + stage_lock_time * (1 + stage);
         redeem_script = CltvMultiSigScript(pubkeys, lock_time);
     }
-    CScript target_scriptPubkey = GetScriptForDestination(CScriptID(redeem_script));
+    CScriptID redeem_script_id(redeem_script);
+    CScript target_scriptPubkey = GetScriptForDestination(redeem_script_id);
     return scriptPubKey == target_scriptPubkey;
 }

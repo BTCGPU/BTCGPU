@@ -1,25 +1,25 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "data/tx_invalid.json.h"
-#include "data/tx_valid.json.h"
-#include "test/test_bitcoin.h"
+#include <test/data/tx_invalid.json.h>
+#include <test/data/tx_valid.json.h>
+#include <test/test_bitcoin.h>
 
-#include "clientversion.h"
-#include "checkqueue.h"
-#include "consensus/tx_verify.h"
-#include "consensus/validation.h"
-#include "core_io.h"
-#include "key.h"
-#include "keystore.h"
-#include "validation.h"
-#include "policy/policy.h"
-#include "script/script.h"
-#include "script/sign.h"
-#include "script/script_error.h"
-#include "script/standard.h"
-#include "utilstrencodings.h"
+#include <clientversion.h>
+#include <checkqueue.h>
+#include <consensus/tx_verify.h>
+#include <consensus/validation.h>
+#include <core_io.h>
+#include <key.h>
+#include <keystore.h>
+#include <validation.h>
+#include <policy/policy.h>
+#include <script/script.h>
+#include <script/sign.h>
+#include <script/script_error.h>
+#include <script/standard.h>
+#include <utilstrencodings.h>
 
 #include <map>
 #include <string>
@@ -53,6 +53,7 @@ static std::map<std::string, unsigned int> mapFlagNames = {
     {std::string("WITNESS"), (unsigned int)SCRIPT_VERIFY_WITNESS},
     {std::string("DISCOURAGE_UPGRADABLE_WITNESS_PROGRAM"), (unsigned int)SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_WITNESS_PROGRAM},
     {std::string("WITNESS_PUBKEYTYPE"), (unsigned int)SCRIPT_VERIFY_WITNESS_PUBKEYTYPE},
+    {std::string("CONST_SCRIPTCODE"), (unsigned int)SCRIPT_VERIFY_CONST_SCRIPTCODE},
 };
 
 unsigned int ParseScriptFlags(std::string strFlags)
@@ -343,7 +344,7 @@ BOOST_AUTO_TEST_CASE(test_Get)
     BOOST_CHECK_EQUAL(coins.GetValueIn(t1), (50+21+22)*CENT);
 }
 
-void CreateCreditAndSpend(const CKeyStore& keystore, const CScript& outscript, CTransactionRef& output, CMutableTransaction& input, bool success = true)
+static void CreateCreditAndSpend(const CKeyStore& keystore, const CScript& outscript, CTransactionRef& output, CMutableTransaction& input, bool success = true)
 {
     CMutableTransaction outputm;
     outputm.nVersion = 1;
@@ -381,7 +382,7 @@ void CreateCreditAndSpend(const CKeyStore& keystore, const CScript& outscript, C
     assert(input.vin[0].scriptWitness.stack == inputm.vin[0].scriptWitness.stack);
 }
 
-void CheckWithFlag(const CTransactionRef& output, const CMutableTransaction& input, int flags, bool success)
+static void CheckWithFlag(const CTransactionRef& output, const CMutableTransaction& input, int flags, bool success)
 {
     ScriptError error;
     CTransaction inputi(input);
@@ -404,10 +405,10 @@ static CScript PushAll(const std::vector<valtype>& values)
     return result;
 }
 
-void ReplaceRedeemScript(CScript& script, const CScript& redeemScript)
+static void ReplaceRedeemScript(CScript& script, const CScript& redeemScript)
 {
     std::vector<valtype> stack;
-    EvalScript(stack, script, SCRIPT_VERIFY_STRICTENC, BaseSignatureChecker(), SIGVERSION_BASE);
+    EvalScript(stack, script, SCRIPT_VERIFY_STRICTENC, BaseSignatureChecker(), SigVersion::BASE);
     assert(stack.size() > 0);
     stack.back() = std::vector<unsigned char>(redeemScript.begin(), redeemScript.end());
     script = PushAll(stack);
@@ -480,8 +481,7 @@ BOOST_AUTO_TEST_CASE(test_big_witness_transaction) {
 
     for(uint32_t i = 0; i < mtx.vin.size(); i++) {
         std::vector<CScriptCheck> vChecks;
-        const CTxOut& output = coins[tx.vin[i].prevout.n].out;
-        CScriptCheck check(output.scriptPubKey, output.nValue, tx, i, SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_WITNESS, false, &txdata);
+        CScriptCheck check(coins[tx.vin[i].prevout.n].out, tx, i, SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_WITNESS, false, &txdata);
         vChecks.push_back(CScriptCheck());
         check.swap(vChecks.back());
         control.Add(vChecks);
@@ -492,6 +492,15 @@ BOOST_AUTO_TEST_CASE(test_big_witness_transaction) {
 
     threadGroup.interrupt_all();
     threadGroup.join_all();
+}
+
+SignatureData CombineSignatures(const CMutableTransaction& input1, const CMutableTransaction& input2, const CTransactionRef tx)
+{
+    SignatureData sigdata;
+    sigdata = DataFromTransaction(input1, 0, tx->vout[0]);
+    sigdata.MergeSignatureData(DataFromTransaction(input2, 0, tx->vout[0]));
+    ProduceSignature(DUMMY_SIGNING_PROVIDER, MutableTransactionSignatureCreator(&input1, 0, tx->vout[0].nValue), tx->vout[0].scriptPubKey, sigdata);
+    return sigdata;
 }
 
 BOOST_AUTO_TEST_CASE(test_witness)
@@ -538,7 +547,6 @@ BOOST_AUTO_TEST_CASE(test_witness)
 
     CTransactionRef output1, output2;
     CMutableTransaction input1, input2;
-    SignatureData sigdata;
 
     // Normal pay-to-compressed-pubkey.
     CreateCreditAndSpend(keystore, scriptPubkey1, output1, input1);
@@ -629,7 +637,7 @@ BOOST_AUTO_TEST_CASE(test_witness)
     CreateCreditAndSpend(keystore2, scriptMulti, output2, input2, false);
     CheckWithFlag(output2, input2, 0, false);
     BOOST_CHECK(*output1 == *output2);
-    UpdateTransaction(input1, 0, CombineSignatures(output1->vout[0].scriptPubKey, MutableTransactionSignatureChecker(&input1, 0, output1->vout[0].nValue), DataFromTransaction(input1, 0), DataFromTransaction(input2, 0)));
+    UpdateInput(input1.vin[0], CombineSignatures(input1, input2, output1));
     CheckWithFlag(output1, input1, STANDARD_SCRIPT_VERIFY_FLAGS, true);
 
     // P2SH 2-of-2 multisig
@@ -640,7 +648,7 @@ BOOST_AUTO_TEST_CASE(test_witness)
     CheckWithFlag(output2, input2, 0, true);
     CheckWithFlag(output2, input2, SCRIPT_VERIFY_P2SH, false);
     BOOST_CHECK(*output1 == *output2);
-    UpdateTransaction(input1, 0, CombineSignatures(output1->vout[0].scriptPubKey, MutableTransactionSignatureChecker(&input1, 0, output1->vout[0].nValue), DataFromTransaction(input1, 0), DataFromTransaction(input2, 0)));
+    UpdateInput(input1.vin[0], CombineSignatures(input1, input2, output1));
     CheckWithFlag(output1, input1, SCRIPT_VERIFY_P2SH, true);
     CheckWithFlag(output1, input1, STANDARD_SCRIPT_VERIFY_FLAGS, true);
 
@@ -652,7 +660,7 @@ BOOST_AUTO_TEST_CASE(test_witness)
     CheckWithFlag(output2, input2, 0, true);
     CheckWithFlag(output2, input2, SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_WITNESS, false);
     BOOST_CHECK(*output1 == *output2);
-    UpdateTransaction(input1, 0, CombineSignatures(output1->vout[0].scriptPubKey, MutableTransactionSignatureChecker(&input1, 0, output1->vout[0].nValue), DataFromTransaction(input1, 0), DataFromTransaction(input2, 0)));
+    UpdateInput(input1.vin[0], CombineSignatures(input1, input2, output1));
     CheckWithFlag(output1, input1, SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_WITNESS, true);
     CheckWithFlag(output1, input1, STANDARD_SCRIPT_VERIFY_FLAGS, true);
 
@@ -664,7 +672,7 @@ BOOST_AUTO_TEST_CASE(test_witness)
     CheckWithFlag(output2, input2, SCRIPT_VERIFY_P2SH, true);
     CheckWithFlag(output2, input2, SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_WITNESS, false);
     BOOST_CHECK(*output1 == *output2);
-    UpdateTransaction(input1, 0, CombineSignatures(output1->vout[0].scriptPubKey, MutableTransactionSignatureChecker(&input1, 0, output1->vout[0].nValue), DataFromTransaction(input1, 0), DataFromTransaction(input2, 0)));
+    UpdateInput(input1.vin[0], CombineSignatures(input1, input2, output1));
     CheckWithFlag(output1, input1, SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_WITNESS, true);
     CheckWithFlag(output1, input1, STANDARD_SCRIPT_VERIFY_FLAGS, true);
 }

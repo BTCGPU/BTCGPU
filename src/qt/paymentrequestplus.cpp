@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,9 +7,9 @@
 // with some extra methods
 //
 
-#include "paymentrequestplus.h"
+#include <qt/paymentrequestplus.h>
 
-#include "util.h"
+#include <util.h>
 
 #include <stdexcept>
 
@@ -22,7 +22,7 @@
 class SSLVerifyError : public std::runtime_error
 {
 public:
-    SSLVerifyError(std::string err) : std::runtime_error(err) { }
+    explicit SSLVerifyError(std::string err) : std::runtime_error(err) { }
 };
 
 bool PaymentRequestPlus::parse(const QByteArray& data)
@@ -97,12 +97,10 @@ bool PaymentRequestPlus::getMerchant(X509_STORE* certStore, QString& merchant) c
             qWarning() << "PaymentRequestPlus::getMerchant: Payment request: certificate expired or not yet active: " << qCert;
             return false;
         }
-#if QT_VERSION >= 0x050000
         if (qCert.isBlacklisted()) {
             qWarning() << "PaymentRequestPlus::getMerchant: Payment request: certificate blacklisted: " << qCert;
             return false;
         }
-#endif
         const unsigned char *data = (const unsigned char *)certChain.certificate(i).data();
         X509 *cert = d2i_X509(nullptr, &data, certChain.certificate(i).size());
         if (cert)
@@ -194,8 +192,7 @@ bool PaymentRequestPlus::getMerchant(X509_STORE* certStore, QString& merchant) c
         qWarning() << "PaymentRequestPlus::getMerchant: SSL error: " << err.what();
     }
 
-    if (website)
-        delete[] website;
+    delete[] website;
     X509_STORE_CTX_free(store_ctx);
     for (unsigned int i = 0; i < certs.size(); i++)
         X509_free(certs[i]);

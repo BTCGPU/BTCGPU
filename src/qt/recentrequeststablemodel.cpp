@@ -1,21 +1,20 @@
-// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2011-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "recentrequeststablemodel.h"
+#include <qt/recentrequeststablemodel.h>
 
-#include "bitcoinunits.h"
-#include "guiutil.h"
-#include "optionsmodel.h"
+#include <qt/bitcoinunits.h>
+#include <qt/guiutil.h>
+#include <qt/optionsmodel.h>
 
-#include "clientversion.h"
-#include "streams.h"
+#include <clientversion.h>
+#include <streams.h>
 
 
-RecentRequestsTableModel::RecentRequestsTableModel(CWallet *wallet, WalletModel *parent) :
+RecentRequestsTableModel::RecentRequestsTableModel(WalletModel *parent) :
     QAbstractTableModel(parent), walletModel(parent)
 {
-    Q_UNUSED(wallet);
     nReceiveRequestsMaxId = 0;
 
     // Load entries from wallet
@@ -123,7 +122,7 @@ void RecentRequestsTableModel::updateAmountColumnTitle()
 /** Gets title for amount column including current display unit if optionsModel reference available. */
 QString RecentRequestsTableModel::getAmountTitle()
 {
-    return (this->walletModel->getOptionsModel() != nullptr) ? tr("Requested") + " ("+BitcoinUnits::name(this->walletModel->getOptionsModel()->getDisplayUnit()) + ")" : "";
+    return (this->walletModel->getOptionsModel() != nullptr) ? tr("Requested") + " ("+BitcoinUnits::shortName(this->walletModel->getOptionsModel()->getDisplayUnit()) + ")" : "";
 }
 
 QModelIndex RecentRequestsTableModel::index(int row, int column, const QModelIndex &parent) const
@@ -139,10 +138,9 @@ bool RecentRequestsTableModel::removeRows(int row, int count, const QModelIndex 
 
     if(count > 0 && row >= 0 && (row+count) <= list.size())
     {
-        const RecentRequestEntry *rec;
         for (int i = 0; i < count; ++i)
         {
-            rec = &list[row+i];
+            const RecentRequestEntry* rec = &list[row+i];
             if (!walletModel->saveReceiveRequest(rec->recipient.address.toStdString(), rec->id, ""))
                 return false;
         }
