@@ -948,9 +948,6 @@ bool ArgsManager::ReadConfigFiles(std::string& error, bool ignore_invalid_keys)
                 fprintf(stderr, "warning: -includeconf cannot be used from included files; ignoring -includeconf=%s\n", to_include.c_str());
             }
         }
-
-        // If datadir is changed in .conf file:
-        ClearDatadirCache();
     }
 
     // If datadir is changed in .conf file:
