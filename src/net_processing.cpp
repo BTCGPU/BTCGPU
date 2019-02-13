@@ -1686,9 +1686,9 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         if (cleanSubVer.find("Bitcoin NewYork") != std::string::npos ||
             cleanSubVer.find("Bitcoin Gold:0.15.0.2") != std::string::npos ||
             cleanSubVer.find("Bitcoin Gold:0.15.0.1") != std::string::npos) {
-            LogPrint(BCLog::NET, "peer=%d is in User Agent blacklist; disconnecting\n", pfrom->GetId());
+            LogPrint(BCLog::NET, "peer=%d is in client version blacklist; disconnecting\n", pfrom->GetId());
             connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::REJECT, strCommand, REJECT_NONSTANDARD,
-                                 strprintf("Bad User Agent")));
+                                 strprintf("Bad client version")));
             pfrom->fDisconnect = true;
             return false;
         }
