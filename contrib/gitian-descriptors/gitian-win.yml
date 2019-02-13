@@ -25,8 +25,7 @@ packages:
 remotes:
 - "url": "https://github.com/BTCGPU/BTCGPU.git"
   "dir": "BTCGPU"
-files:
-- "nsis-win32-utils.zip"
+files: []
 script: |
   WRAP_DIR=$HOME/wrapped
   HOSTS="i686-w64-mingw32 x86_64-w64-mingw32"
