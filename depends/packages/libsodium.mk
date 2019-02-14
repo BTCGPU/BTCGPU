@@ -5,7 +5,7 @@
 
 package=libsodium
 $(package)_version=1.0.15
-$(package)_download_path=https://download.libsodium.org/libsodium/releases
+$(package)_download_path=https://download.libsodium.org/libsodium/releases/old
 $(package)_file_name=$(package)-$($(package)_version).tar.gz
 $(package)_sha256_hash=FB6A9E879A2F674592E4328C5D9F79F082405EE4BB05CB6E679B90AFE9E178F4
 $(package)_dependencies=
