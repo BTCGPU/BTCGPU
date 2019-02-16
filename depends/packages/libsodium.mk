@@ -11,6 +11,7 @@ $(package)_sha256_hash=FB6A9E879A2F674592E4328C5D9F79F082405EE4BB05CB6E679B90AFE
 $(package)_dependencies=
 $(package)_config_opts=
 $(package)_config_opts_linux=--with-pic
+$(package)_build_opts= CFLAGS="$($(package)_cflags) $($(package)_cppflags) -fPIC -UHAVE_EXPLICIT_BZERO"
 
 define $(package)_preprocess_cmds
   cd $($(package)_build_subdir); ./autogen.sh
@@ -21,7 +22,7 @@ define $(package)_config_cmds
 endef
 
 define $(package)_build_cmds
-  $(MAKE)
+  $(MAKE) $($(package)_build_opts)
 endef
 
 define $(package)_stage_cmds
