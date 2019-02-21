@@ -16,7 +16,7 @@ Then install [Homebrew](https://brew.sh).
 Dependencies
 ----------------------
 
-    brew install automake berkeley-db4 libtool boost --c++11 miniupnpc openssl pkg-config protobuf qt libevent libsodium
+    brew install automake berkeley-db4 libtool boost --c++11 miniupnpc openssl pkg-config protobuf qt libevent libb2
 
 If you want to build the disk image with `make deploy` (.dmg / optional), you need RSVG
 

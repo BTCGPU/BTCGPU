@@ -13,7 +13,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "sodium.h"
 #include "compat/endian.h"
 
 uint16_t static inline ReadLE16(const unsigned char* ptr)
@@ -100,25 +99,6 @@ uint64_t static inline CountBits(uint64_t x)
         ++ret;
     }
     return ret;
-}
-
-int inline init_and_check_sodium()
-{
-    if (sodium_init() == -1) {
-        return -1;
-    }
-
-    const unsigned char message[1] = { 0 };
-
-    unsigned char pk[crypto_sign_PUBLICKEYBYTES];
-    unsigned char sk[crypto_sign_SECRETKEYBYTES];
-    unsigned char sig[crypto_sign_BYTES];
-
-    crypto_sign_keypair(pk, sk);
-    crypto_sign_detached(sig, NULL, message, sizeof(message), sk);
-
-    assert(crypto_sign_verify_detached(sig, message, sizeof(message), pk) == 0);
-    return 0;
 }
 
 #endif // BITCOIN_CRYPTO_COMMON_H
