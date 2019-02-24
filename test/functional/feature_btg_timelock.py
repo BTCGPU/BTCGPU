@@ -26,10 +26,13 @@ def sig(x):
 
 class BTGTimeLockTest(BitcoinTestFramework):
 
-    def __init__(self):
-        super().__init__()
-        self.num_nodes = 2
+    def set_test_params(self):
+        self.num_nodes = 1
         self.setup_clean_chain = False
+        self.extra_args = [[]]
+
+    def skip_test_if_missing_module(self):
+        self.skip_if_no_wallet()
 
     def sign_tx(self, tx, spend_tx, spend_n, redeem_script, in_n, keys):
         """Sign a P2SH transaction by privkeys."""
