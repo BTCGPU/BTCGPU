@@ -870,20 +870,10 @@ if test x$use_upnp != xno; then
   )
 fi
 
-dnl Check to find the libsodium headers/libraries
-AC_CHECK_LIB(sodium, sodium_init,[],
-[AC_MSG_ERROR([The Sodium crypto library libraries not found.])]
+dnl Check to find the libb2 headers/libraries
+AC_CHECK_LIB(b2, blake2b_init_param, [],
+[AC_MSG_ERROR([The BLAKE2 crypto library not found.])]
 )
-
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
-#include <sodium.h>
-], [
-#if SODIUM_LIBRARY_VERSION_MAJOR < 9 || SODIUM_LIBRARY_VERSION_MAJOR == 9 && SODIUM_LIBRARY_VERSION_MINOR < 1
-# error
-#endif
-])],
-[AC_MSG_RESULT([checking for version of libsodium... yes])],
-[AC_MSG_ERROR([Wrong libsodium: version >= 1.0.8 required])])
 
 BITCOIN_QT_INIT
 
@@ -1198,7 +1188,7 @@ AC_SUBST(UNIVALUE_LIBS)
 
 BITCOIN_QT_PATH_PROGS([PROTOC], [protoc],$protoc_bin_path)
 
-LIBEQUIHASH_LIBS="-lcrypto -lsodium"
+LIBEQUIHASH_LIBS="-lcrypto -lb2"
 
 AC_MSG_CHECKING([whether to build bitcoind])
 AM_CONDITIONAL([BUILD_BITCOIND], [test x$build_bitcoind = xyes])

@@ -15,10 +15,6 @@ Copyright: 2010-2011, Jonas Smedegaard <dr@jones.dk>
            2011, Matt Corallo <matt@bluematt.me>
 License: GPL-2+
 
-Files: depends/sources/libsodium-*.tar.gz
-Copyright: 2013-2016 Frank Denis
-License: ISC
-
 Files: src/secp256k1/build-aux/m4/ax_jni_include_dir.m4
 Copyright: 2008 Don Anderson <dda@sleepycat.com>
 License: GNU-All-permissive-License
