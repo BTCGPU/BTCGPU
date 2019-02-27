@@ -10,6 +10,10 @@ $(package)_file_name=$(package)-$($(package)_version).tar.gz
 $(package)_sha256_hash=e869e0c3a93bc56d1052eccbe9cd925b8a8c7308b417532829a700cf374b036f
 $(package)_patches=cross_compile.patch
 
+define $(package)_set_vars
+  $(package)_config_opts=--disable-shared --enable-static
+endef
+
 define $(package)_preprocess_cmds
   patch ./configure < $($(package)_patch_dir)/cross_compile.patch
 endef
