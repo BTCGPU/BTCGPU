@@ -184,6 +184,7 @@ public:
         // release ASAP to avoid it where possible.
         vSeeds.emplace_back("eu-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("dnsseed.bitcoingold.org", true);
+        vSeeds.emplace_back("dnsseed.bitcoingold.dev", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,38);  // prefix: G
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,23);  // prefix: A
@@ -320,6 +321,7 @@ public:
 
         vSeeds.emplace_back("eu-test-dnsseed.bitcoingold-official.org", true);
         vSeeds.emplace_back("test-dnsseed.bitcoingold.org", true);
+        vSeeds.emplace_back("test-dnsseed.bitcoingold.dev", true);
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
