@@ -11,7 +11,7 @@ $(package)_sha256_hash=e869e0c3a93bc56d1052eccbe9cd925b8a8c7308b417532829a700cf3
 $(package)_patches=cross_compile.patch
 
 define $(package)_set_vars
-  $(package)_config_opts=--disable-shared --enable-static
+  $(package)_config_opts=--disable-shared --enable-static --enable-native=no
 endef
 
 define $(package)_preprocess_cmds
