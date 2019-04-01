@@ -8,11 +8,11 @@
 #ifndef BITCOIN_CRYPTO_EQUIHASH_H
 #define BITCOIN_CRYPTO_EQUIHASH_H
 
-#include "compat/endian.h"
-#include "crypto/sha256.h"
-#include "utilstrencodings.h"
+#include <compat/endian.h>
+#include <crypto/sha256.h>
+#include <utilstrencodings.h>
 
-#include "blake2.h"
+#include <blake2.h>
 
 #include <cstring>
 #include <exception>
@@ -194,7 +194,7 @@ public:
     bool IsValidSolution(const eh_HashState& base_state, std::vector<unsigned char> soln);
 };
 
-#include "equihash.tcc"
+#include <crypto/equihash.tcc>
 
 static Equihash<96,3> Eh96_3;
 static Equihash<200,9> Eh200_9;

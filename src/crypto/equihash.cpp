@@ -15,13 +15,13 @@
 // https://www.internetsociety.org/sites/default/files/blogs-media/equihash-asymmetric-proof-of-work-based-generalized-birthday-problem.pdf
 
 #if defined(HAVE_CONFIG_H)
-#include "config/bitcoin-config.h"
+#include <config/bitcoin-config.h>
 #endif
 
-#include "crypto/equihash.h"
+#include <crypto/equihash.h>
 
 #ifndef NO_UTIL_LOG
-#include "util.h"
+#include <util.h>
 #else
 #define LogPrint(...)
 #endif
