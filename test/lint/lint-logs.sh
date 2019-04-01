@@ -17,7 +17,8 @@ UNTERMINATED_LOGS=$(git grep --extended-regexp "LogPrintf?\(" -- "*.cpp" | \
     grep -v '\\n"' | \
     grep -v "/\* Continued \*/" | \
     grep -v "LogPrint()" | \
-    grep -v "LogPrintf()")
+    grep -v "LogPrintf()" | \
+    grep -v "LogPrint(...)")
 if [[ ${UNTERMINATED_LOGS} != "" ]]; then
     echo "All calls to LogPrintf() and LogPrint() should be terminated with \\n"
     echo
