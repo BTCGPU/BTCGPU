@@ -28,7 +28,6 @@ const unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 4 * 1000 * 1000;
 
 
 #include <assert.h>
-#include <boost/assign/list_of.hpp>
 #include <limits>
 
 #include <chainparamsseeds.h>
