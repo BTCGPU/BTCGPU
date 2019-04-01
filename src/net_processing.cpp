@@ -1684,12 +1684,14 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             cleanSubVer = SanitizeString(strSubVer);
         }
         if (cleanSubVer.find("Bitcoin NewYork") != std::string::npos ||
+            cleanSubVer.find("microBitcoin") != std::string::npos ||
             cleanSubVer.find("Bitcoin Gold:0.15.0.2") != std::string::npos ||
             cleanSubVer.find("Bitcoin Gold:0.15.0.1") != std::string::npos) {
-            LogPrint(BCLog::NET, "peer=%d is in client version blacklist; disconnecting\n", pfrom->GetId());
+            LogPrint(BCLog::NET, "peer=%d is in client version blacklist; banning\n", pfrom->GetId());
             connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::REJECT, strCommand, REJECT_NONSTANDARD,
                                  strprintf("Bad client version")));
-            pfrom->fDisconnect = true;
+            LOCK(cs_main);
+            Misbehaving(pfrom->GetId(), 100);
             return false;
         }
         if (!vRecv.empty()) {
