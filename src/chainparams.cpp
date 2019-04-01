@@ -20,8 +20,8 @@
 
 // For equihash_parameters_acceptable.
 #include <crypto/equihash.h>
-#include <net.h>
-#include <validation.h>
+const unsigned int MAX_HEADERS_RESULTS = 2000;
+const unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 4 * 1000 * 1000;
 #define equihash_parameters_acceptable(N, K) \
     ((CBlockHeader::HEADER_SIZE + equihash_solution_size(N, K))*MAX_HEADERS_RESULTS < \
      MAX_PROTOCOL_MESSAGE_LENGTH-1000)

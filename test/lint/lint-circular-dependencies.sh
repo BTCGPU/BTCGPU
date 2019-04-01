@@ -9,6 +9,7 @@
 export LC_ALL=C
 
 EXPECTED_CIRCULAR_DEPENDENCIES=(
+    "chainparams -> primitives/block -> chainparams"
     "chainparamsbase -> util -> chainparamsbase"
     "checkpoints -> validation -> checkpoints"
     "index/txindex -> validation -> index/txindex"
