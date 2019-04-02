@@ -58,8 +58,8 @@ class BTGTimeLockTest(BitcoinTestFramework):
         # Create a 4-of-6 multi-sig wallet with CLTV.
         height = 210
         redeem_script = CScript(
-            [CScriptNum(height), OP_CHECKLOCKTIMEVERIFY, OP_DROP] +  # CLTV (lock_time >= 210)
-            [OP_4] + pubkeys +  [OP_6, OP_CHECKMULTISIG])  # multi-sig
+            [CScriptNum(height), OP_CHECKLOCKTIMEVERIFY, OP_DROP]  # CLTV (lock_time >= 210)
+            + [OP_4] + pubkeys +  [OP_6, OP_CHECKMULTISIG])  # multi-sig
         hex_redeem_script = bytes_to_hex_str(redeem_script)
         p2sh_address = script_to_p2sh(redeem_script, main=False)
 
@@ -68,7 +68,7 @@ class BTGTimeLockTest(BitcoinTestFramework):
         raw_tx = node.getrawtransaction(txid, True)
         try:
             node.importaddress(hex_redeem_script, 'cltv', True, True)
-        except Exception as err:
+        except Exception:
             pass
         assert_equal(sig(node.getreceivedbyaddress(p2sh_address, 0) - Decimal(1.0)), 0)
 
