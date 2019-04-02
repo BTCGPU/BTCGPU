@@ -35,6 +35,7 @@ KNOWN_VIOLATIONS=(
     "src/utilstrencodings.cpp:.*strtoull"
     "src/utilstrencodings.h:.*atoi"
     "src/crypto/equihash.cpp:.*trim"
+    "src/crypto/equihash.h:.*trim"
 )
 
 REGEXP_IGNORE_EXTERNAL_DEPENDENCIES="^src/(crypto/ctaes/|leveldb/|secp256k1/|tinyformat.h|univalue/)"
