@@ -53,11 +53,11 @@ Paths
 
 All three configurations assume several paths that might need to be adjusted.
 
-Binary:              `/usr/bin/bgold`  
-Configuration file:  `/etc/bitcoingold/bitcoingold.conf`  
-Data directory:      `/var/lib/bgoldd`  
-PID file:            `/var/run/bgoldd/bgoldd.pid` (OpenRC and Upstart) or `/var/lib/bgoldd/bgoldd.pid` (systemd)  
-Lock file:           `/var/lock/subsys/bgoldd` (CentOS)  
+Binary:              `/usr/bin/bgold`
+Configuration file:  `/etc/bitcoingold/bitcoingold.conf`
+Data directory:      `/var/lib/bgoldd`
+PID file:            `/var/run/bgoldd/bgoldd.pid` (OpenRC and Upstart) or `/var/lib/bgoldd/bgoldd.pid` (systemd)
+Lock file:           `/var/lock/subsys/bgoldd` (CentOS)
 
 The configuration file, PID directory (if applicable) and data directory
 should all be owned by the bitcoin user and group.  It is advised for security
@@ -67,10 +67,10 @@ can then be controlled by group membership.
 
 ### macOS
 
-Binary:              `/usr/local/bin/bitcoind`  
-Configuration file:  `~/Library/Application Support/BitcoinGold/bitcoingold.conf`  
-Data directory:      `~/Library/Application Support/BitcoinGold`  
-Lock file:           `~/Library/Application Support/BitcoinGold/.lock`  
+Binary:              `/usr/local/bin/bitcoind`
+Configuration file:  `~/Library/Application Support/BitcoinGold/bitcoingold.conf`
+Data directory:      `~/Library/Application Support/BitcoinGold`
+Lock file:           `~/Library/Application Support/BitcoinGold/.lock`
 
 Installing Service Configuration
 -----------------------------------

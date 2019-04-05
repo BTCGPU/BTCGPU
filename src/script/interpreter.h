@@ -121,7 +121,7 @@ enum
     // Public keys in segregated witness scripts must be compressed
     //
     SCRIPT_VERIFY_WITNESS_PUBKEYTYPE = (1U << 15),
-    
+
     // Making OP_CODESEPARATOR and FindAndDelete fail any non-segwit scripts
     //
     SCRIPT_VERIFY_CONST_SCRIPTCODE = (1U << 16),
