@@ -5,12 +5,26 @@
 """Test cases for Bitcoin Gold CLTV wallet."""
 
 import io
+from decimal import Decimal
 
-from test_framework.address import *
+from test_framework.address import script_to_p2sh
 from test_framework.key import CECKey, CPubKey
-from test_framework.script import *
+from test_framework.messages import CTransaction
+from test_framework.script import (
+    CScript,
+    CScriptNum,
+    OP_0,
+    OP_4,
+    OP_6,
+    OP_CHECKLOCKTIMEVERIFY,
+    OP_CHECKMULTISIG,
+    OP_DROP,
+    SIGHASH_ALL,
+    SIGHASH_FORKID,
+    SegwitVersion1SignatureHash,
+)
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import *
+from test_framework.util import assert_equal, bytes_to_hex_str, hex_str_to_bytes
 
 
 EPS = 1e-6

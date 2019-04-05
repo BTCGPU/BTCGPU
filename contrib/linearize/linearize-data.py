@@ -34,7 +34,6 @@ settings = {}
 140   -           self.nSolution = deser_byte_vector(f)
 """
 
-##### Switch endian-ness #####
 def hex_switchEndian(s):
     """ Switches the endianness of a hex string (in pairs of hex chars) """
     pairList = [s[i:i+2].encode() for i in range(0, len(s), 2)]
