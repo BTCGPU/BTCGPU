@@ -4,17 +4,17 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/bitcoin-config.h"
+#include <config/bitcoin-config.h>
 #endif
 
-#include "arith_uint256.h"
-#include "crypto/sha256.h"
-#include "crypto/equihash.h"
-#include "test/test_bitcoin.h"
-#include "uint256.h"
-#include "utilstrencodings.h"
+#include <arith_uint256.h>
+#include <crypto/sha256.h>
+#include <crypto/equihash.h>
+#include <test/test_bitcoin.h>
+#include <uint256.h>
+#include <utilstrencodings.h>
 
-#include "blake2.h"
+#include <blake2.h>
 
 #include <sstream>
 #include <set>

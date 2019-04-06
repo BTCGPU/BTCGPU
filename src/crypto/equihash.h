@@ -5,14 +5,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_EQUIHASH_H
-#define BITCOIN_EQUIHASH_H
+#ifndef BITCOIN_CRYPTO_EQUIHASH_H
+#define BITCOIN_CRYPTO_EQUIHASH_H
 
-#include "compat/endian.h"
-#include "crypto/sha256.h"
-#include "utilstrencodings.h"
+#include <compat/endian.h>
+#include <crypto/sha256.h>
+#include <utilstrencodings.h>
 
-#include "blake2.h"
+#include <blake2.h>
 
 #include <cstring>
 #include <exception>
@@ -21,7 +21,7 @@
 #include <set>
 #include <vector>
 
-#include <boost/static_assert.hpp>
+#include <assert.h>
 
 typedef blake2b_state eh_HashState;
 typedef uint32_t eh_index;
@@ -166,9 +166,9 @@ template<unsigned int N, unsigned int K>
 class Equihash
 {
 private:
-    BOOST_STATIC_ASSERT(K < N);
-    BOOST_STATIC_ASSERT(N % 8 == 0);
-    BOOST_STATIC_ASSERT((N/(K+1)) + 1 < 8*sizeof(eh_index));
+    static_assert(K < N, "K < N");
+    static_assert(N % 8 == 0, "N % 8 == 0");
+    static_assert((N/(K+1)) + 1 < 8*sizeof(eh_index), "(N/(K+1)) + 1 < 8*sizeof(eh_index)");
 
 public:
     enum : size_t { IndicesPerHashOutput=512/N };
@@ -194,7 +194,7 @@ public:
     bool IsValidSolution(const eh_HashState& base_state, std::vector<unsigned char> soln);
 };
 
-#include "equihash.tcc"
+#include <crypto/equihash.tcc>
 
 static Equihash<96,3> Eh96_3;
 static Equihash<200,9> Eh200_9;
@@ -333,4 +333,4 @@ static inline void store64(void *dst, uint64_t w)
 #endif
 }
 
-#endif // BITCOIN_EQUIHASH_H
+#endif // BITCOIN_CRYPTO_EQUIHASH_H

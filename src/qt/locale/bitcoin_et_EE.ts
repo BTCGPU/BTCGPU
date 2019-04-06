@@ -257,20 +257,16 @@
         <source>Command-line options</source>
         <translation>Käsurea valikud</translation>
     </message>
-    <message>
-        <source>Usage:</source>
-        <translation>Kasutus:</translation>
-    </message>
-    <message>
-        <source>command-line options</source>
-        <translation>käsurea valikud</translation>
-    </message>
-    </context>
+</context>
 <context>
     <name>Intro</name>
     <message>
         <source>Welcome</source>
         <translation>Tere tulemast</translation>
+    </message>
+    <message>
+        <source>Bitcoin</source>
+        <translation>Bitcoin</translation>
     </message>
     <message>
         <source>Error</source>
@@ -313,6 +309,10 @@
         <source>&amp;OK</source>
         <translation>&amp;OK</translation>
     </message>
+    <message>
+        <source>Error</source>
+        <translation>Viga</translation>
+    </message>
     </context>
 <context>
     <name>OverviewPage</name>
@@ -334,7 +334,15 @@
     </context>
 <context>
     <name>PeerTableModel</name>
-    </context>
+    <message>
+        <source>Sent</source>
+        <translation>Saadetud</translation>
+    </message>
+    <message>
+        <source>Received</source>
+        <translation>Vastu võetud</translation>
+    </message>
+</context>
 <context>
     <name>QObject</name>
     <message>
@@ -492,6 +500,10 @@
         <source>Message</source>
         <translation>Sõnum</translation>
     </message>
+    <message>
+        <source>Wallet</source>
+        <translation>Rahakott</translation>
+    </message>
     </context>
 <context>
     <name>RecentRequestsTableModel</name>
@@ -521,14 +533,6 @@
     <message>
         <source>Choose...</source>
         <translation>Vali...</translation>
-    </message>
-    <message>
-        <source>normal</source>
-        <translation>normaalne</translation>
-    </message>
-    <message>
-        <source>fast</source>
-        <translation>kiire</translation>
     </message>
     <message>
         <source>Copy amount</source>
@@ -755,10 +759,6 @@
     </context>
 <context>
     <name>bitcoin-core</name>
-    <message>
-        <source>Options:</source>
-        <translation>Valikud:</translation>
-    </message>
     <message>
         <source>Bitcoin Core</source>
         <translation>Bitcoin Core</translation>

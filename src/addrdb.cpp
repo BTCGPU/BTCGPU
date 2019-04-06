@@ -1,19 +1,18 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "addrdb.h"
+#include <addrdb.h>
 
-#include "addrman.h"
-#include "chainparams.h"
-#include "clientversion.h"
-#include "fs.h"
-#include "hash.h"
-#include "random.h"
-#include "streams.h"
-#include "tinyformat.h"
-#include "util.h"
+#include <addrman.h>
+#include <chainparams.h>
+#include <clientversion.h>
+#include <hash.h>
+#include <random.h>
+#include <streams.h>
+#include <tinyformat.h>
+#include <util.h>
 
 namespace {
 
@@ -23,8 +22,8 @@ bool SerializeDB(Stream& stream, const Data& data)
     // Write and commit header, data
     try {
         CHashWriter hasher(SER_DISK, CLIENT_VERSION);
-        stream << FLATDATA(Params().MessageStart()) << data;
-        hasher << FLATDATA(Params().MessageStart()) << data;
+        stream << Params().MessageStart() << data;
+        hasher << Params().MessageStart() << data;
         stream << hasher.GetHash();
     } catch (const std::exception& e) {
         return error("%s: Serialize or I/O error - %s", __func__, e.what());
@@ -50,7 +49,8 @@ bool SerializeFileDB(const std::string& prefix, const fs::path& path, const Data
 
     // Serialize
     if (!SerializeDB(fileout, data)) return false;
-    FileCommit(fileout.Get());
+    if (!FileCommit(fileout.Get()))
+        return error("%s: Failed to flush file %s", __func__, pathTmp.string());
     fileout.fclose();
 
     // replace existing file, if any, with new file
@@ -67,7 +67,7 @@ bool DeserializeDB(Stream& stream, Data& data, bool fCheckSum = true)
         CHashVerifier<Stream> verifier(&stream);
         // de-serialize file header (network specific magic number) and ..
         unsigned char pchMsgTmp[4];
-        verifier >> FLATDATA(pchMsgTmp);
+        verifier >> pchMsgTmp;
         // ... verify the network matches ours
         if (memcmp(pchMsgTmp, Params().MessageStart(), sizeof(pchMsgTmp)))
             return error("%s: Invalid network magic number", __func__);
