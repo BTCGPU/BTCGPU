@@ -14,6 +14,8 @@ class CBlock;
 class CBlockIndex;
 class UniValue;
 
+extern CCriticalSection cs_main;
+
 static constexpr int NUM_GETBLOCKSTATS_PERCENTILES = 5;
 
 /**
