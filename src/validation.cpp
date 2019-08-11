@@ -911,7 +911,11 @@ static bool AcceptToMemoryPoolWorker(const CChainParams& chainparams, CTxMemPool
             }
         }
 
-        constexpr unsigned int scriptVerifyFlags = STANDARD_SCRIPT_VERIFY_FLAGS;
+        unsigned int scriptVerifyFlags = STANDARD_SCRIPT_VERIFY_FLAGS;
+        if (!IsBTGHardForkEnabled(chainActive.Tip()->nHeight + 1, Params().GetConsensus())) {
+            // The pending block is not BTG block
+            scriptVerifyFlags |= SCRIPT_FORKID_DISABLED;
+        }
 
         // Check against previous transactions
         // This is done last to help prevent CPU exhaustion denial-of-service attacks.
@@ -1811,7 +1815,7 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
     if (IsBTGHardForkEnabled(pindex->pprev, consensusparams)) {
         flags |= SCRIPT_VERIFY_STRICTENC;
     } else {
-        flags |= SCRIPT_ALLOW_NON_FORKID;
+        flags |= SCRIPT_FORKID_DISABLED;
     }
 
     return flags;
