@@ -53,7 +53,7 @@ static CMutableTransaction BuildSpendingTransaction(const CScript& scriptSig, co
 // modified to measure performance of other types of scripts.
 static void VerifyScriptBench(benchmark::State& state)
 {
-    const int flags = SCRIPT_VERIFY_WITNESS | SCRIPT_VERIFY_P2SH | SCRIPT_FORKID_DISABLED;
+    const int flags = SCRIPT_VERIFY_WITNESS | SCRIPT_VERIFY_P2SH;
     const int witnessversion = 0;
 
     // Keypair.
