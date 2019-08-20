@@ -49,7 +49,6 @@ class BTGTimeLockTest(BitcoinTestFramework):
 
     def sign_tx(self, tx, spend_tx, spend_n, redeem_script, in_n, keys):
         """Sign a P2SH transaction by privkeys."""
-        vout = spend_tx.vout[spend_n]
         sighash, _ = SignatureHash(redeem_script, tx, in_n, SIGHASH_ALL)
         sigs = [key.sign(sighash) + bytes(bytearray([SIGHASH_ALL])) for key in keys]
         tx.vin[0].scriptSig = CScript([OP_0] + sigs + [redeem_script])
