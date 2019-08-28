@@ -135,6 +135,7 @@ public:
     virtual std::unique_ptr<PendingWalletTx> createTransaction(const std::vector<CRecipient>& recipients,
         const CCoinControl& coin_control,
         bool sign,
+        bool no_forkid,
         int& change_pos,
         CAmount& fee,
         std::string& fail_reason) = 0;

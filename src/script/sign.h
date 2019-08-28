@@ -70,12 +70,13 @@ public:
 class MutableTransactionSignatureCreator : public BaseSignatureCreator {
     const CMutableTransaction* txTo;
     unsigned int nIn;
+    bool no_forkid;
     int nHashType;
     CAmount amount;
     const MutableTransactionSignatureChecker checker;
 
 public:
-    MutableTransactionSignatureCreator(const CMutableTransaction* txToIn, unsigned int nInIn, const CAmount& amountIn, int nHashTypeIn = SIGHASH_ALL | SIGHASH_FORKID);
+    MutableTransactionSignatureCreator(const CMutableTransaction* txToIn, unsigned int nInIn, const CAmount& amountIn, bool no_forkid, int nHashTypeIn = SIGHASH_ALL | SIGHASH_FORKID);
     const BaseSignatureChecker& Checker() const override { return checker; }
     bool CreateSig(const SigningProvider& provider, std::vector<unsigned char>& vchSig, const CKeyID& keyid, const CScript& scriptCode, SigVersion sigversion) const override;
 };
@@ -708,7 +709,7 @@ struct PartiallySignedTransaction
 };
 
 /** Produce a script signature using a generic signature creator. */
-bool ProduceSignature(const SigningProvider& provider, const BaseSignatureCreator& creator, const CScript& scriptPubKey, SignatureData& sigdata);
+bool ProduceSignature(const SigningProvider& provider, const BaseSignatureCreator& creator, const CScript& scriptPubKey, SignatureData& sigdata, bool no_forkid);
 
 /** Produce a script signature for a transaction. */
 bool SignSignature(const SigningProvider &provider, const CScript& fromPubKey, CMutableTransaction& txTo, unsigned int nIn, const CAmount& amount, int nHashType);
@@ -718,10 +719,10 @@ bool SignSignature(const SigningProvider &provider, const CTransaction& txFrom, 
 bool PSBTInputSigned(PSBTInput& input);
 
 /** Signs a PSBTInput, verifying that all provided data matches what is being signed. */
-bool SignPSBTInput(const SigningProvider& provider, PartiallySignedTransaction& psbt, SignatureData& sigdata, int index, int sighash = SIGHASH_ALL | SIGHASH_FORKID);
+bool SignPSBTInput(const SigningProvider& provider, PartiallySignedTransaction& psbt, SignatureData& sigdata, int index, bool no_forkid, int sighash = SIGHASH_ALL | SIGHASH_FORKID);
 
 /** Extract signature data from a transaction input, and insert it. */
-SignatureData DataFromTransaction(const CMutableTransaction& tx, unsigned int nIn, const CTxOut& txout);
+SignatureData DataFromTransaction(const CMutableTransaction& tx, unsigned int nIn, const CTxOut& txout, bool no_forkid);
 void UpdateInput(CTxIn& input, const SignatureData& data);
 
 /* Check whether we know how to sign for an output like this, assuming we

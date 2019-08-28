@@ -489,7 +489,8 @@ static CTransactionRef SendMoney(CWallet * const pwallet, const CTxDestination &
     CRecipient recipient = {scriptPubKey, nValue, fSubtractFeeFromAmount};
     vecSend.push_back(recipient);
     CTransactionRef tx;
-    if (!pwallet->CreateTransaction(vecSend, tx, reservekey, nFeeRequired, nChangePosRet, strError, coin_control)) {
+    bool no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
+    if (!pwallet->CreateTransaction(vecSend, tx, reservekey, nFeeRequired, nChangePosRet, no_forkid, strError, coin_control)) {
         if (!fSubtractFeeFromAmount && nValue + nFeeRequired > curBalance)
             strError = strprintf("Error: This transaction requires a transaction fee of at least %s", FormatMoney(nFeeRequired));
         throw JSONRPCError(RPC_WALLET_ERROR, strError);
@@ -1297,7 +1298,8 @@ static UniValue sendmany(const JSONRPCRequest& request)
     int nChangePosRet = -1;
     std::string strFailReason;
     CTransactionRef tx;
-    bool fCreated = pwallet->CreateTransaction(vecSend, tx, keyChange, nFeeRequired, nChangePosRet, strFailReason, coin_control);
+    bool no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
+    bool fCreated = pwallet->CreateTransaction(vecSend, tx, keyChange, nFeeRequired, nChangePosRet, no_forkid, strFailReason, coin_control);
     if (!fCreated)
         throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, strFailReason);
     CValidationState state;
@@ -4512,7 +4514,7 @@ void AddKeypathToMap(const CWallet* pwallet, const CKeyID& keyID, std::map<CPubK
     hd_keypaths.emplace(vchPubKey, keypath);
 }
 
-bool FillPSBT(const CWallet* pwallet, PartiallySignedTransaction& psbtx, int sighash_type, bool sign, bool bip32derivs)
+bool FillPSBT(const CWallet* pwallet, PartiallySignedTransaction& psbtx, bool no_forkid, int sighash_type, bool sign, bool bip32derivs)
 {
     LOCK(pwallet->cs_wallet);
     // Get all of the previous transactions
@@ -4549,9 +4551,9 @@ bool FillPSBT(const CWallet* pwallet, PartiallySignedTransaction& psbtx, int sig
 
         SignatureData sigdata;
         if (sign) {
-            complete &= SignPSBTInput(*pwallet, psbtx, sigdata, i, sighash_type);
+            complete &= SignPSBTInput(*pwallet, psbtx, sigdata, i, no_forkid, sighash_type);
         } else {
-            complete &= SignPSBTInput(PublicOnlySigningProvider(pwallet), psbtx, sigdata, i, sighash_type);
+            complete &= SignPSBTInput(PublicOnlySigningProvider(pwallet), psbtx, sigdata, i, no_forkid, sighash_type);
         }
 
         if (sigdata.witness) {
@@ -4583,8 +4585,8 @@ bool FillPSBT(const CWallet* pwallet, PartiallySignedTransaction& psbtx, int sig
         SignatureData sigdata;
         psbt_out.FillSignatureData(sigdata);
 
-        MutableTransactionSignatureCreator creator(psbtx.tx.get_ptr(), 0, out.nValue, 1);
-        ProduceSignature(*pwallet, creator, out.scriptPubKey, sigdata);
+        MutableTransactionSignatureCreator creator(psbtx.tx.get_ptr(), 0, out.nValue, no_forkid, 1);
+        ProduceSignature(*pwallet, creator, out.scriptPubKey, sigdata, no_forkid);
         psbt_out.FromSignatureData(sigdata);
 
         // Get public key paths
@@ -4651,13 +4653,19 @@ UniValue walletprocesspsbt(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, strprintf("TX decode failed %s", error));
     }
 
+    bool no_forkid;
+    {
+        LOCK(cs_main);
+        no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
+    }
+
     // Get the sighash type
-    int nHashType = ParseSighashString(request.params[2], false);
+    int nHashType = ParseSighashString(request.params[2], !no_forkid);
 
     // Fill transaction with our data and also sign
     bool sign = request.params[1].isNull() ? true : request.params[1].get_bool();
     bool bip32derivs = request.params[3].isNull() ? false : request.params[3].get_bool();
-    bool complete = FillPSBT(pwallet, psbtx, nHashType, sign, bip32derivs);
+    bool complete = FillPSBT(pwallet, psbtx, no_forkid, nHashType, sign, bip32derivs);
 
     UniValue result(UniValue::VOBJ);
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
@@ -4756,9 +4764,15 @@ UniValue walletcreatefundedpsbt(const JSONRPCRequest& request)
     // Make a blank psbt
     PartiallySignedTransaction psbtx(rawTx);
 
+    bool no_forkid;
+    {
+        LOCK(cs_main);
+        no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
+    }
+
     // Fill transaction with out data but don't sign
     bool bip32derivs = request.params[4].isNull() ? false : request.params[4].get_bool();
-    FillPSBT(pwallet, psbtx, 1, false, bip32derivs);
+    FillPSBT(pwallet, psbtx, no_forkid, 1, false, bip32derivs);
 
     // Serialize the PSBT
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);

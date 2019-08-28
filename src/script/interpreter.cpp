@@ -213,8 +213,8 @@ bool static UsesForkId(const valtype &vchSig) {
     return UsesForkId(nHashType);
 }
 
-bool static AllowsNonForkId(unsigned int flags) {
-    return flags & SCRIPT_ALLOW_NON_FORKID;
+bool static ForkIdDisabled(unsigned int flags) {
+    return flags & SCRIPT_FORKID_DISABLED;
 }
 
 bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned int flags, ScriptError* serror) {
@@ -233,7 +233,7 @@ bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned i
             return set_error(serror, SCRIPT_ERR_SIG_HASHTYPE);
         }
 
-        bool requiresForkId = !AllowsNonForkId(flags);
+        bool requiresForkId = !ForkIdDisabled(flags);
         bool usesForkId = UsesForkId(vchSig);
         if (requiresForkId && !usesForkId) {
             return set_error(serror, SCRIPT_ERR_SIG_HASHTYPE);
@@ -963,7 +963,8 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                         //serror is set
                         return false;
                     }
-                    bool fSuccess = checker.CheckSig(vchSig, vchPubKey, scriptCode, sigversion);
+                    bool no_forkid = ForkIdDisabled(flags);
+                    bool fSuccess = checker.CheckSig(vchSig, vchPubKey, scriptCode, sigversion, no_forkid);
 
                     if (!fSuccess && (flags & SCRIPT_VERIFY_NULLFAIL) && vchSig.size())
                         return set_error(serror, SCRIPT_ERR_SIG_NULLFAIL);
@@ -1041,7 +1042,8 @@ bool EvalScript(std::vector<std::vector<unsigned char> >& stack, const CScript& 
                         }
 
                         // Check signature
-                        bool fOk = checker.CheckSig(vchSig, vchPubKey, scriptCode, sigversion);
+                        bool no_forkid = ForkIdDisabled(flags);
+                        bool fOk = checker.CheckSig(vchSig, vchPubKey, scriptCode, sigversion, no_forkid);
 
                         if (fOk) {
                             isig++;
@@ -1261,17 +1263,22 @@ template PrecomputedTransactionData::PrecomputedTransactionData(const CTransacti
 template PrecomputedTransactionData::PrecomputedTransactionData(const CMutableTransaction& txTo);
 
 template <class T>
-uint256 SignatureHash(const CScript& scriptCode, const T& txTo, unsigned int nIn, int nHashType, const CAmount& amount, SigVersion sigversion, const PrecomputedTransactionData* cache,  int forkid)
+uint256 SignatureHash(const CScript& scriptCode, const T& txTo, unsigned int nIn, int nHashType, const CAmount& amount, SigVersion sigversion, bool no_forkid, const PrecomputedTransactionData* cache, int forkid)
 {
     assert(nIn < txTo.vin.size());
 
+    bool use_forkid = false;
     int nForkHashType = nHashType;
-    if (UsesForkId(nHashType))
-        nForkHashType |= forkid << 8;
+    if (!no_forkid) {
+        use_forkid = UsesForkId(nHashType);
+        if (use_forkid) {
+            nForkHashType |= forkid << 8;
+        }
+    }
 
     // force new tx with FORKID to use bip143 transaction digest algorithm
     // see https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
-    if (sigversion == SigVersion::WITNESS_V0 || UsesForkId(nHashType)) {
+    if (sigversion == SigVersion::WITNESS_V0 || use_forkid) {
         uint256 hashPrevouts;
         uint256 hashSequence;
         uint256 hashOutputs;
@@ -1343,7 +1350,7 @@ bool GenericTransactionSignatureChecker<T>::VerifySignature(const std::vector<un
 }
 
 template <class T>
-bool GenericTransactionSignatureChecker<T>::CheckSig(const std::vector<unsigned char>& vchSigIn, const std::vector<unsigned char>& vchPubKey, const CScript& scriptCode, SigVersion sigversion) const
+bool GenericTransactionSignatureChecker<T>::CheckSig(const std::vector<unsigned char>& vchSigIn, const std::vector<unsigned char>& vchPubKey, const CScript& scriptCode, SigVersion sigversion, bool no_forkid) const
 {
     CPubKey pubkey(vchPubKey);
     if (!pubkey.IsValid())
@@ -1356,7 +1363,7 @@ bool GenericTransactionSignatureChecker<T>::CheckSig(const std::vector<unsigned 
     int nHashType = GetHashType(vchSig);
     vchSig.pop_back();
 
-    uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, nHashType, amount, sigversion, this->txdata);
+    uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, nHashType, amount, sigversion, no_forkid, this->txdata);
 
     if (!VerifySignature(vchSig, pubkey, sighash))
         return false;

@@ -12,11 +12,13 @@
 #include <qt/sendcoinsdialog.h>
 #include <qt/transactiontablemodel.h>
 
+#include <chainparams.h>
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
 #include <key_io.h>
 #include <ui_interface.h>
 #include <util.h> // for GetBoolArg
+#include <validation.h>
 #include <wallet/coincontrol.h>
 #include <wallet/wallet.h>
 
@@ -195,13 +197,19 @@ WalletModel::SendCoinsReturn WalletModel::prepareTransaction(WalletModelTransact
         return AmountExceedsBalance;
     }
 
+    bool no_forkid;
+    {
+        LOCK(cs_main);
+        no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
+    }
+
     {
         CAmount nFeeRequired = 0;
         int nChangePosRet = -1;
         std::string strFailReason;
 
         auto& newTx = transaction.getWtx();
-        newTx = m_wallet->createTransaction(vecSend, coinControl, true /* sign */, nChangePosRet, nFeeRequired, strFailReason);
+        newTx = m_wallet->createTransaction(vecSend, coinControl, true /* sign */, no_forkid, nChangePosRet, nFeeRequired, strFailReason);
         transaction.setTransactionFee(nFeeRequired);
         if (fSubtractFeeFromAmount && newTx)
             transaction.reassignAmounts(nChangePosRet);

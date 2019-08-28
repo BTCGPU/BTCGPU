@@ -735,6 +735,12 @@ static UniValue combinerawtransaction(const JSONRPCRequest& request)
         view.SetBackend(viewDummy); // switch back to avoid locking mempool for too long
     }
 
+    bool no_forkid;
+    {
+        LOCK(cs_main);
+        no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
+    }
+
     // Use CTransaction for the constant parts of the
     // transaction to avoid rehashing.
     const CTransaction txConst(mergedTx);
@@ -750,10 +756,10 @@ static UniValue combinerawtransaction(const JSONRPCRequest& request)
         // ... and merge in other signatures:
         for (const CMutableTransaction& txv : txVariants) {
             if (txv.vin.size() > i) {
-                sigdata.MergeSignatureData(DataFromTransaction(txv, i, coin.out));
+                sigdata.MergeSignatureData(DataFromTransaction(txv, i, coin.out, no_forkid));
             }
         }
-        ProduceSignature(DUMMY_SIGNING_PROVIDER, MutableTransactionSignatureCreator(&mergedTx, i, coin.out.nValue, 1), coin.out.scriptPubKey, sigdata);
+        ProduceSignature(DUMMY_SIGNING_PROVIDER, MutableTransactionSignatureCreator(&mergedTx, i, coin.out.nValue, no_forkid, 1), coin.out.scriptPubKey, sigdata, no_forkid);
 
         UpdateInput(txin, sigdata);
     }
@@ -845,7 +851,13 @@ UniValue SignTransaction(CMutableTransaction& mtx, const UniValue& prevTxsUnival
         }
     }
 
-    int nHashType = ParseSighashString(hashType);
+    bool no_forkid;
+    {
+        LOCK(cs_main);
+        no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
+    }
+
+    int nHashType = ParseSighashString(hashType, !no_forkid);
 
     bool fHashSingle = ((nHashType & ~(SIGHASH_ANYONECANPAY | SIGHASH_FORKID)) == SIGHASH_SINGLE);
 
@@ -866,10 +878,10 @@ UniValue SignTransaction(CMutableTransaction& mtx, const UniValue& prevTxsUnival
         const CScript& prevPubKey = coin.out.scriptPubKey;
         const CAmount& amount = coin.out.nValue;
 
-        SignatureData sigdata = DataFromTransaction(mtx, i, coin.out);
+        SignatureData sigdata = DataFromTransaction(mtx, i, coin.out, no_forkid);
         // Only sign SIGHASH_SINGLE if there's a corresponding output:
         if (!fHashSingle || (i < mtx.vout.size())) {
-            ProduceSignature(*keystore, MutableTransactionSignatureCreator(&mtx, i, amount, nHashType), prevPubKey, sigdata);
+            ProduceSignature(*keystore, MutableTransactionSignatureCreator(&mtx, i, amount, no_forkid, nHashType), prevPubKey, sigdata, no_forkid);
         }
 
         UpdateInput(txin, sigdata);
@@ -880,7 +892,8 @@ UniValue SignTransaction(CMutableTransaction& mtx, const UniValue& prevTxsUnival
         }
 
         ScriptError serror = SCRIPT_ERR_OK;
-        if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&txConst, i, amount), &serror)) {
+        int verify_flags = no_forkid ? STANDARD_SCRIPT_VERIFY_FLAGS | SCRIPT_FORKID_DISABLED : STANDARD_SCRIPT_VERIFY_FLAGS;
+        if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, verify_flags, TransactionSignatureChecker(&txConst, i, amount), &serror)) {
             if (serror == SCRIPT_ERR_INVALID_STACK_OPERATION) {
                 // Unable to sign input and verification failed (possible attempt to partially sign).
                 TxInErrorToJSON(txin, vErrors, "Unable to sign input, invalid stack size (possibly missing key)");
@@ -1655,6 +1668,12 @@ UniValue finalizepsbt(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, strprintf("TX decode failed %s", error));
     }
 
+    bool no_forkid;
+    {
+        LOCK(cs_main);
+        no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
+    }
+
     // Finalize input signatures -- in case we have partial signatures that add up to a complete
     //   signature, but have not combined them yet (e.g. because the combiner that created this
     //   PartiallySignedTransaction did not understand them), this will combine them into a final
@@ -1662,7 +1681,8 @@ UniValue finalizepsbt(const JSONRPCRequest& request)
     bool complete = true;
     for (unsigned int i = 0; i < psbtx.tx->vin.size(); ++i) {
         SignatureData sigdata;
-        complete &= SignPSBTInput(DUMMY_SIGNING_PROVIDER, psbtx, sigdata, i, SIGHASH_ALL | SIGHASH_FORKID);
+        complete &= SignPSBTInput(DUMMY_SIGNING_PROVIDER, psbtx, sigdata, i, no_forkid,
+                                  no_forkid ? SIGHASH_ALL : SIGHASH_ALL | SIGHASH_FORKID);
     }
 
     UniValue result(UniValue::VOBJ);

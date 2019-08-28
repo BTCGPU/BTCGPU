@@ -219,6 +219,7 @@ public:
     std::unique_ptr<PendingWalletTx> createTransaction(const std::vector<CRecipient>& recipients,
         const CCoinControl& coin_control,
         bool sign,
+        bool no_forkid,
         int& change_pos,
         CAmount& fee,
         std::string& fail_reason) override
@@ -226,7 +227,7 @@ public:
         LOCK2(cs_main, m_wallet.cs_wallet);
         auto pending = MakeUnique<PendingWalletTxImpl>(m_wallet);
         if (!m_wallet.CreateTransaction(recipients, pending->m_tx, pending->m_key, fee, change_pos,
-                fail_reason, coin_control, sign)) {
+                no_forkid, fail_reason, coin_control, sign)) {
             return {};
         }
         return std::move(pending);

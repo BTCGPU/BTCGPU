@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <chainparams.h>
 #include <consensus/validation.h>
 #include <wallet/coincontrol.h>
 #include <wallet/feebumper.h>
@@ -213,7 +214,8 @@ Result CreateTransaction(const CWallet* wallet, const uint256& txid, const CCoin
 
 bool SignTransaction(CWallet* wallet, CMutableTransaction& mtx) {
     LOCK2(cs_main, wallet->cs_wallet);
-    return wallet->SignTransaction(mtx);
+    bool no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
+    return wallet->SignTransaction(mtx, no_forkid);
 }
 
 Result CommitTransaction(CWallet* wallet, const uint256& txid, CMutableTransaction&& mtx, std::vector<std::string>& errors, uint256& bumped_txid)

@@ -20,8 +20,7 @@ from test_framework.script import (
     OP_CHECKMULTISIG,
     OP_DROP,
     SIGHASH_ALL,
-    SIGHASH_FORKID,
-    SegwitVersion1SignatureHash,
+    SignatureHash,
 )
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, bytes_to_hex_str, hex_str_to_bytes
@@ -50,10 +49,8 @@ class BTGTimeLockTest(BitcoinTestFramework):
 
     def sign_tx(self, tx, spend_tx, spend_n, redeem_script, in_n, keys):
         """Sign a P2SH transaction by privkeys."""
-        vout = spend_tx.vout[spend_n]
-        sighash = SegwitVersion1SignatureHash(
-            redeem_script, tx, in_n, SIGHASH_ALL|SIGHASH_FORKID, vout.nValue)
-        sigs = [key.sign(sighash) + bytes(bytearray([SIGHASH_ALL|SIGHASH_FORKID])) for key in keys]
+        sighash, _ = SignatureHash(redeem_script, tx, in_n, SIGHASH_ALL)
+        sigs = [key.sign(sighash) + bytes(bytearray([SIGHASH_ALL])) for key in keys]
         tx.vin[0].scriptSig = CScript([OP_0] + sigs + [redeem_script])
         tx.rehash()
 
