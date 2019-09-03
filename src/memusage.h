@@ -1,15 +1,16 @@
-// Copyright (c) 2015-2016 The Bitcoin Core developers
+// Copyright (c) 2015-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_MEMUSAGE_H
 #define BITCOIN_MEMUSAGE_H
 
-#include "indirectmap.h"
+#include <indirectmap.h>
 
 #include <stdlib.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 #include <unordered_map>

@@ -1,21 +1,20 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2018 The Bitcoin Core developers
 // Copyright (c) 2016-2017 The Zcash developers
 // Copyright (c) 2018 The Bitcoin Private developers
 // Copyright (c) 2017-2018 The Bitcoin Gold developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "pow.h"
+#include <pow.h>
 
-#include "arith_uint256.h"
-#include "chain.h"
-#include "chainparams.h"
-#include "crypto/equihash.h"
-#include "primitives/block.h"
-#include "streams.h"
-#include "uint256.h"
-#include "util.h"
+#include <arith_uint256.h>
+#include <chain.h>
+#include <chainparams.h>
+#include <crypto/equihash.h>
+#include <primitives/block.h>
+#include <uint256.h>
+#include <streams.h>
 
 #include <algorithm>
 #include <iostream>
@@ -28,7 +27,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     bool postfork = nHeight >= params.BTGHeight;
 
     if (postfork == false) {
-        // Original Bitcion PoW.
+        // Original Bitcoin PoW.
         return BitcoinGetNextWorkRequired(pindexLast, pblock, params);
     }
     else if (nHeight < params.BTGHeight + params.BTGPremineWindow) {
@@ -250,7 +249,7 @@ bool CheckEquihashSolution(const CBlockHeader *pblock, const CChainParams& param
     unsigned int k = params.EquihashK(height);
 
     // Hash state
-    crypto_generichash_blake2b_state state;
+    blake2b_state state;
     EhInitialiseState(n, k, state, params.EquihashUseBTGSalt(height));
 
     // I = the block header minus nonce and solution.
@@ -261,14 +260,11 @@ bool CheckEquihashSolution(const CBlockHeader *pblock, const CChainParams& param
     ss << pblock->nNonce;
 
     // H(I||V||...
-    crypto_generichash_blake2b_update(&state, (unsigned char*)&ss[0], ss.size());
+    blake2b_update(&state, (unsigned char*)&ss[0], ss.size());
 
     bool isValid;
     EhIsValidSolution(n, k, state, pblock->nSolution, isValid);
-    if (!isValid)
-        return error("CheckEquihashSolution(): invalid solution");
-
-    return true;
+    return isValid;
 }
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, bool postfork, const Consensus::Params& params)

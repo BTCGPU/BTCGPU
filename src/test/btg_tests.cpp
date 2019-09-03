@@ -2,13 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "base58.h"
-#include "serialize.h"
-#include "streams.h"
-#include "version.h"
-#include "primitives/block.h"
-#include "test/btg_cltv_multisig_data.h"
-#include "test/test_bitcoin.h"
+#include <base58.h>
+#include <chainparams.h>
+#include <serialize.h>
+#include <streams.h>
+#include <version.h>
+#include <primitives/block.h>
+#include <script/standard.h>
+#include <test/btg_cltv_multisig_data.h>
+#include <test/test_bitcoin.h>
 
 #include <stdint.h>
 
@@ -68,32 +70,23 @@ BOOST_AUTO_TEST_CASE(zcash_header_compatible)
     BOOST_CHECK_EQUAL(btg_header.nSolution[2], zcash_header.nSolution[2]);
 }
 
-// For address conversion.
-class FakeChainParam : public CChainParams
+static std::string ConvertAddressFormat(const std::string& addr, const std::map<uint8_t, uint8_t>& ver_map)
 {
-public:
-    FakeChainParam()
-    {
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
-    }
-};
-static const FakeChainParam fakeLegacyChainParam;
+    std::vector<unsigned char> addr_data;
+    BOOST_CHECK(DecodeBase58Check(addr, addr_data));
+    BOOST_CHECK(ver_map.count(addr_data[0]) > 0);
+    addr_data[0] = ver_map.at(addr_data[0]);
+    return EncodeBase58Check(addr_data);
+}
 
 std::string ConvertToNewAddress(const std::string& old_address)
 {
-    CBitcoinAddress addr(old_address);
-    BOOST_CHECK(addr.IsValid(fakeLegacyChainParam));
-    CBitcoinAddress new_addr(addr.Get(fakeLegacyChainParam));
-    return new_addr.ToString();
+    return ConvertAddressFormat(old_address, {{0, 38},{5, 23}});
 }
 
 std::string ConvertToOldAddress(const std::string& new_address)
 {
-    CBitcoinAddress addr(new_address);
-    BOOST_CHECK(addr.IsValid());
-    CBitcoinAddress old_addr(addr.Get(), fakeLegacyChainParam);
-    return old_addr.ToString();
+    return ConvertAddressFormat(new_address, {{38, 0},{23, 5}});
 }
 
 BOOST_AUTO_TEST_CASE(address_compatible)

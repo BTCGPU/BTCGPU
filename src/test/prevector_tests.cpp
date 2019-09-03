@@ -1,19 +1,19 @@
-// Copyright (c) 2015-2016 The Bitcoin Core developers
+// Copyright (c) 2015-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <vector>
-#include "prevector.h"
+#include <prevector.h>
 
-#include "reverse_iterator.h"
-#include "serialize.h"
-#include "streams.h"
+#include <reverse_iterator.h>
+#include <serialize.h>
+#include <streams.h>
 
-#include "test/test_bitcoin.h"
+#include <test/test_bitcoin.h>
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_SUITE(PrevectorTests, TestingSetup)
+BOOST_FIXTURE_TEST_SUITE(prevector_tests, TestingSetup)
 
 template<unsigned int N, typename T>
 class prevector_tester {
@@ -36,7 +36,7 @@ class prevector_tester {
         {
             local_check(a == b);
         }
-    void local_check(bool b) 
+    void local_check(bool b)
     {
         passed &= b;
     }
@@ -152,11 +152,11 @@ public:
         pre_vector.assign(n, value);
     }
 
-    Size size() {
+    Size size() const {
         return real_vector.size();
     }
 
-    Size capacity() {
+    Size capacity() const {
         return pre_vector.capacity();
     }
 
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE(PrevectorTestInt)
                 test.erase(InsecureRandRange(test.size()));
             }
             if (InsecureRandBits(3) == 2) {
-                int new_size = std::max<int>(0, std::min<int>(30, test.size() + (InsecureRandRange(5)) - 2));
+                int new_size = std::max(0, std::min(30, (int)test.size() + (int)InsecureRandRange(5) - 2));
                 test.resize(new_size);
             }
             if (InsecureRandBits(3) == 3) {

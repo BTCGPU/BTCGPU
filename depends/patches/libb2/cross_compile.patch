@@ -1,0 +1,13 @@
+13164,13166c13164,13171
+< 
+<       ecx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 3`
+<       edx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 4`
+---
+>       ecx=0
+>       edx=0
+>       ax_cv_gcc_x86_cpuid_0x00000001=${ax_cv_gcc_x86_cpuid_0x00000001//[ $'\r' ]}
+>       if test "$ax_cv_gcc_x86_cpuid_0x00000001" != "unknown";
+>       then
+>          ecx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 3`
+>          edx=`echo $ax_cv_gcc_x86_cpuid_0x00000001 | cut -d ":" -f 4`
+>       fi

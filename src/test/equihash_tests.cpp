@@ -4,17 +4,17 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/bitcoin-config.h"
+#include <config/bitcoin-config.h>
 #endif
 
-#include "arith_uint256.h"
-#include "crypto/sha256.h"
-#include "crypto/equihash.h"
-#include "test/test_bitcoin.h"
-#include "uint256.h"
-#include "utilstrencodings.h"
+#include <arith_uint256.h>
+#include <crypto/sha256.h>
+#include <crypto/equihash.h>
+#include <test/test_bitcoin.h>
+#include <uint256.h>
+#include <utilstrencodings.h>
 
-#include "sodium.h"
+#include <blake2.h>
 
 #include <sstream>
 #include <set>
@@ -47,12 +47,12 @@ void PrintSolutions(std::stringstream &strm, std::set<std::vector<uint32_t>> sol
 
 void TestEquihashSolvers(unsigned int n, unsigned int k, const std::string &I, const arith_uint256 &nonce, const std::set<std::vector<uint32_t>> &solns) {
     size_t cBitLen { n/(k+1) };
-    crypto_generichash_blake2b_state state;
+    blake2b_state state;
     EhInitialiseState(n, k, state, false);
     uint256 V = ArithToUint256(nonce);
     BOOST_TEST_MESSAGE("Running solver: n = " << n << ", k = " << k << ", I = " << I << ", V = " << V.GetHex());
-    crypto_generichash_blake2b_update(&state, (unsigned char*)&I[0], I.size());
-    crypto_generichash_blake2b_update(&state, V.begin(), V.size());
+    blake2b_update(&state, (unsigned char*)&I[0], I.size());
+    blake2b_update(&state, V.begin(), V.size());
 
     // First test the basic solver
     std::set<std::vector<uint32_t>> ret;
@@ -86,11 +86,11 @@ void TestEquihashSolvers(unsigned int n, unsigned int k, const std::string &I, c
 
 void TestEquihashValidator(unsigned int n, unsigned int k, const std::string &I, const arith_uint256 &nonce, std::vector<uint32_t> soln, bool expected) {
     size_t cBitLen { n/(k+1) };
-    crypto_generichash_blake2b_state state;
+    blake2b_state state;
     EhInitialiseState(n, k, state, false);
     uint256 V = ArithToUint256(nonce);
-    crypto_generichash_blake2b_update(&state, (unsigned char*)&I[0], I.size());
-    crypto_generichash_blake2b_update(&state, V.begin(), V.size());
+    blake2b_update(&state, (unsigned char*)&I[0], I.size());
+    blake2b_update(&state, V.begin(), V.size());
     BOOST_TEST_MESSAGE("Running validator: n = " << n << ", k = " << k << ", I = " << I << ", V = " << V.GetHex() << ", expected = " << expected << ", soln =");
     std::stringstream strm;
     PrintSolution(strm, soln);
@@ -201,9 +201,9 @@ BOOST_AUTO_TEST_CASE(validator_144_5_btg_salt) {
     unsigned int k = 5;
     std::vector<unsigned char> IV = ParseHex("0400000008e9694cc2120ec1b5733cc12687b609058eec4f7046a521ad1d1e3049b400003e7420ed6f40659de0305ef9b7ec037f4380ed9848bc1c015691c90aa16ff3930000000000000000000000000000000000000000000000000000000000000000c9310d5874e0001f000000000000000000000000000000010b000000000000000000000000666666");
     std::vector<unsigned char> soln = ParseHex("01629b3779fd498defb2b0a551f7e111a8a003711acfe129622eb80bc98df66b9d8178b9670bacdc972b250fcb6715f437eb0addf858f9419c03f93a1be742e6377d4dcc4b9196afd811592ee4589cecfa321e7a9d5675338e7834923fe12b49f743a8d4");
-    crypto_generichash_blake2b_state state;
+    blake2b_state state;
     EhInitialiseState(n, k, state, true);
-    crypto_generichash_blake2b_update(&state, (unsigned char*)&IV[0], IV.size());
+    blake2b_update(&state, (unsigned char*)&IV[0], IV.size());
     bool is_valid;
     EhIsValidSolution(n, k, state, soln, is_valid);
     BOOST_CHECK(is_valid);
