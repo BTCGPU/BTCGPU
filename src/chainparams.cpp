@@ -214,14 +214,15 @@ public:
                 {250000, uint256S("0x000000000000003887df1f29024b06fc2200b55f8af8f35453d7be294df2d214")},
                 {279000, uint256S("0x0000000000000001ae8c72a0b0c301f67e3afca10e819efa9041e458e9bd7e40")},
                 {295000, uint256S("0x00000000000000004d9b4ef50f0f9d686fd69db2e03af35a100370c64632a983")},
+                {640650, uint256S("0x000000059ec8884fa4fbbdbe46c09cfb4ecba281dfa2351a05084e817c1200ae")},
             }
         };
 
         chainTxData = ChainTxData{
-            // Data from rpc: getchaintxstats 4096 0000000000000000002e63058c023a9a1de233554f28c7b21380b6c9003f36a8
-            /* nTime    */ 1532884444,
-            /* nTxCount */ 331282217,
-            /* dTxRate  */ 2.4
+            // Data from rpc: getchaintxstats 4096 000000000c5dddd832b53e78d72f9f0d656d006bdf71a3de396e946e0799f197
+            /* nTime    */ 1593660032,
+            /* nTxCount */ 266775998,
+            /* dTxRate  */ 0.0072359
         };
 
         vPreminePubkeys = {
