@@ -17,9 +17,16 @@ Although BTG was bootstrapped on 12 Nov to create an entirely new network, it co
 
 ## Releases
 
-This is the staging tree of Bitcoin Gold. For release version, please switch to [0.15 branch](https://github.com/BTCGPU/BTCGPU/tree/0.15) or [release page](https://github.com/BTCGPU/BTCGPU/releases).
+This is the staging tree of Bitcoin Gold. For release version, please switch to [0.17 branch](https://github.com/BTCGPU/BTCGPU/tree/0.17) or [release page](https://github.com/BTCGPU/BTCGPU/releases).
 
 To compile from source, please check the build documentations under [doc](https://github.com/BTCGPU/BTCGPU/tree/master/doc).
+
+## Documentation
+
+- [Usage](doc/README.md)
+    - [macOS](doc/README_osx.md)
+    - [Windows](doc/README_windows.txt)
+- [Configuration and system service](doc/init.md)
 
 ## Responsible Disclosure
 
