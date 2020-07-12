@@ -160,7 +160,15 @@ enum BlockStatus: uint32_t {
     BLOCK_FAILED_CHILD       =   64, //!< descends from failed block
     BLOCK_FAILED_MASK        =   BLOCK_FAILED_VALID | BLOCK_FAILED_CHILD,
 
-    BLOCK_OPT_WITNESS       =   128, //!< block data in blk*.data was received with a witness-enforcing client
+    BLOCK_OPT_WITNESS        =   128, //!< block data in blk*.data was received with a witness-enforcing client
+
+    // The block is being parked for some reason. It will be reconsidered if its
+    // chains grows.
+    PARKED_FLAG              =  0x800000,
+    // One of the block's parent is parked.
+    PARKED_PARENT_FLAG       = 0x1000000,
+    // Mask used to check for parked blocks.
+    PARKED_MASK              = PARKED_FLAG | PARKED_PARENT_FLAG,
 };
 
 /** The block chain is a tree shaped structure starting with the
@@ -219,6 +227,9 @@ public:
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     int32_t nSequenceId;
 
+    //! (memory only) block header metadata
+    uint64_t nTimeReceived = 0;
+
     //! (memory only) Maximum nTime in the chain up to and including this block.
     unsigned int nTimeMax;
 
@@ -236,6 +247,7 @@ public:
         nChainTx = 0;
         nStatus = 0;
         nSequenceId = 0;
+        nTimeReceived = 0;
         nTimeMax = 0;
 
         nVersion       = 0;
@@ -262,6 +274,7 @@ public:
         nHeight        = block.nHeight;
         memcpy(nReserved, block.nReserved, sizeof(nReserved));
         nTime          = block.nTime;
+        nTimeReceived  = 0;
         nBits          = block.nBits;
         nNonce         = block.nNonce;
         nSolution      = block.nSolution;
@@ -314,6 +327,16 @@ public:
     int64_t GetBlockTimeMax() const
     {
         return (int64_t)nTimeMax;
+    }
+
+    int64_t GetHeaderReceivedTime() const
+    {
+        return nTimeReceived;
+    }
+
+    int64_t GetReceivedTimeDiff() const
+    {
+        return GetHeaderReceivedTime() - GetBlockTime();
     }
 
     static constexpr int nMedianTimeSpan = 11;
@@ -376,6 +399,8 @@ arith_uint256 GetBlockProof(const CBlockIndex& block);
 int64_t GetBlockProofEquivalentTime(const CBlockIndex& to, const CBlockIndex& from, const CBlockIndex& tip, const Consensus::Params&);
 /** Find the forking point between two chain tips. */
 const CBlockIndex* LastCommonAncestor(const CBlockIndex* pa, const CBlockIndex* pb);
+/** Check if two block index are on the same fork. */
+bool AreOnTheSameFork(const CBlockIndex *pa, const CBlockIndex *pb);
 
 
 /** Used to marshal pointers into hashes for db storage. */

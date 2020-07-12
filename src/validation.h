@@ -135,6 +135,15 @@ static const bool DEFAULT_PEERBLOOMFILTERS = true;
 
 /** Default for -stopatheight */
 static const int DEFAULT_STOPATHEIGHT = 0;
+/** Default for -maxreorgdepth */
+static const int DEFAULT_MAX_REORG_DEPTH = 10;
+/**
+ * Default for -finalizationdelay
+ * This is the minimum time between a block header reception and the block
+ * finalization.
+ * This value should be >> block propagation and validation time
+ */
+static const int64_t DEFAULT_MIN_FINALIZATION_DELAY = 2 * 60 * 60;
 
 struct BlockHasher
 {
@@ -444,6 +453,11 @@ CBlockIndex* FindForkInGlobalIndex(const CChain& chain, const CBlockLocator& loc
  * validationinterface callback.
  */
 bool PreciousBlock(CValidationState& state, const CChainParams& params, CBlockIndex *pindex) LOCKS_EXCLUDED(cs_main);
+/**
+ * Mark a block as finalized.
+ * A finalized block can not be reorged in any way.
+ */
+bool FinalizeBlockAndInvalidate(CValidationState &state, CBlockIndex *pindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /** Mark a block as invalid. */
 bool InvalidateBlock(CValidationState& state, const CChainParams& chainparams, CBlockIndex* pindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
@@ -484,6 +498,14 @@ int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Para
 static const unsigned int REJECT_INTERNAL = 0x100;
 /** Too high fee. Can not be triggered by P2P transactions */
 static const unsigned int REJECT_HIGHFEE = 0x100;
+
+/**
+ * Reject codes greater or equal to this can be returned by AcceptToMemPool or   // !!! ???
+ * AcceptBlock for blocks/transactions, to signal internal conditions. They
+ * cannot and should not be sent over the P2P network.
+ */
+/** Block conflicts with a transaction already known */
+static const unsigned int REJECT_AGAINST_FINALIZED = 0x103;
 
 /** Get block file info entry for one block file */
 CBlockFileInfo* GetBlockFileInfo(size_t n);

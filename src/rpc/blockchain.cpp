@@ -1505,6 +1505,47 @@ static UniValue preciousblock(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
+UniValue finalizeblock(const JSONRPCRequest& request) {
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "finalizeblock \"blockhash\"\n"
+            "\nTreats a block as final. It cannot be reorged. Any chain\n"
+            "that does not contain this block is invalid. Used on a less\n"
+            "work chain, it can effectively PUTS YOU OUT OF CONSENSUS.\n"
+            "USE WITH CAUTION!\n"
+            "\nArguments:\n"
+            "1. \"blockhash\"   (string, required) the hash of the block to mark as finalized\n"
+            "\nResult:\n"
+            "\nExamples:\n"
+            + HelpExampleCli("finalizeblock", "\"blockhash\"")
+            + HelpExampleRpc("finalizeblock", "\"blockhash\"")
+        );
+
+    std::string strHash = request.params[0].get_str();
+    uint256 hash(uint256S(strHash));
+    CValidationState state;
+
+    {
+        LOCK(cs_main);
+        CBlockIndex *pblockindex = LookupBlockIndex(hash);
+        if (!pblockindex) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+        }
+
+        FinalizeBlockAndInvalidate(state, pblockindex);
+    }
+
+    if (state.IsValid()) {
+        ActivateBestChain(state, Params());
+    }
+
+    if (!state.IsValid()) {
+        throw JSONRPCError(RPC_DATABASE_ERROR, FormatStateMessage(state));
+    }
+
+    return NullUniValue;
+}
+
 static UniValue invalidateblock(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
