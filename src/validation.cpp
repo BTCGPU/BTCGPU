@@ -155,6 +155,7 @@ public:
     BlockMap mapBlockIndex;
     std::multimap<CBlockIndex*, CBlockIndex*> mapBlocksUnlinked;
     CBlockIndex *pindexBestInvalid = nullptr;
+    CBlockIndex const *pindexFinalized = nullptr;
 
     bool LoadBlockIndex(const Consensus::Params& consensus_params, CBlockTreeDB& blocktree) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
@@ -252,6 +253,13 @@ const std::string strMessageMagic = "Bitcoin Gold Signed Message:\n";
 // Internal stuff
 namespace {
     CBlockIndex *&pindexBestInvalid = g_chainstate.pindexBestInvalid;
+
+
+    /**
+     * The best finalized block.
+     * This block cannot be reorged in any way, shape or form.
+     */
+    CBlockIndex const *&pindexFinalized = g_chainstate.pindexFinalized;
 
     /** All pairs A->B, where A (or one of its ancestors) misses transactions, but B has transactions.
      * Pruned nodes may have entries where B is missing data.
@@ -1321,6 +1329,12 @@ void static InvalidChainFound(CBlockIndex* pindexNew)
     if (!pindexBestInvalid || pindexNew->nChainWork > pindexBestInvalid->nChainWork)
         pindexBestInvalid = pindexNew;
 
+    // If the invalid chain found is supposed to be finalized, we need to move
+    // back the finalization point.
+    if (IsBlockFinalized(pindexNew)) {
+        pindexFinalized = pindexNew->pprev;
+    }
+
     LogPrintf("%s: invalid block=%s  height=%d  log2_work=%.8g  date=%s\n", __func__,
       pindexNew->GetBlockHash().ToString(), pindexNew->nHeight,
       log(pindexNew->nChainWork.getdouble())/log(2.0), FormatISO8601DateTime(pindexNew->GetBlockTime()));
@@ -2369,6 +2383,11 @@ bool CChainState::DisconnectTip(CValidationState& state, const CChainParams& cha
         }
     }
 
+    // If the tip is finalized, then undo it.
+    if (pindexFinalized == pindexDelete) {
+        pindexFinalized = pindexDelete->pprev;
+    }
+
     chainActive.SetTip(pindexDelete->pprev);
 
     UpdateTip(pindexDelete->pprev, chainparams);
@@ -2449,6 +2468,84 @@ public:
     }
 };
 
+static bool FinalizeBlockInternal(CValidationState &state, const CBlockIndex *pindex)
+    EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
+    AssertLockHeld(cs_main);
+    if (pindex->nStatus & BLOCK_FAILED_MASK) {
+        // We try to finalize an invalid block.
+        return state.Invalid(error("%s: Trying to finalize invalid block %s",
+                                   __func__, pindex->GetBlockHash().ToString()),
+                             REJECT_INVALID, "finalize-invalid-block",
+                             "", ValidationInvalidReason::CACHED_INVALID);
+    }
+
+    // Check that the request is consistent with current finalization.
+    if (pindexFinalized && !AreOnTheSameFork(pindex, pindexFinalized)) {
+        return state.Invalid(
+            error("%s: Trying to finalize block %s which conflicts "
+                  "with already finalized block",
+                  __func__, pindex->GetBlockHash().ToString()),
+            REJECT_AGAINST_FINALIZED, "bad-fork-prior-finalized",
+            "", ValidationInvalidReason::BLOCK_FINALIZATION);
+    }
+
+    if (IsBlockFinalized(pindex)) {
+        // The block is already finalized.
+        return true;
+    }
+
+    // We have a new block to finalize.
+    pindexFinalized = pindex;
+    return true;
+}
+
+static const CBlockIndex *FindBlockToFinalize(CBlockIndex *pindexNew)
+    EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
+    AssertLockHeld(cs_main);
+
+    const int32_t maxreorgdepth =
+        gArgs.GetArg("-maxreorgdepth", DEFAULT_MAX_REORG_DEPTH);
+
+    const int64_t finalizationdelay =
+        gArgs.GetArg("-finalizationdelay", DEFAULT_MIN_FINALIZATION_DELAY);
+
+    // Find our candidate.
+    // If maxreorgdepth is < 0 pindex will be null and auto finalization
+    // disabled
+    const CBlockIndex *pindex =
+        pindexNew->GetAncestor(pindexNew->nHeight - maxreorgdepth);
+
+    int64_t now = GetTime();
+
+    // If the finalization delay is not expired since the startup time,
+    // finalization should be avoided. Header receive time is not saved to disk
+    // and so cannot be anterior to startup time.
+    if (now < (GetStartupTime() + finalizationdelay)) {
+        return nullptr;
+    }
+
+    // While our candidate is not eligible (finalization delay not expired), try
+    // the previous one.
+    while (pindex && (pindex != pindexFinalized)) {
+        // Check that the block to finalize is known for a long enough time.
+        // This test will ensure that an attacker could not cause a block to
+        // finalize by forking the chain with a depth > maxreorgdepth.
+        // If the block is loaded from disk, header receive time is 0 and the
+        // block will be finalized. This is safe because the delay since the
+        // node startup is already expired.
+        auto headerReceivedTime = pindex->GetHeaderReceivedTime();
+
+        // If finalization delay is <= 0, finalization always occurs immediately
+        if (now >= (headerReceivedTime + finalizationdelay)) {
+            return pindex;
+        }
+
+        pindex = pindex->pprev;
+    }
+
+    return nullptr;
+}
+
 /**
  * Connect a new block to chainActive. pblock is either nullptr or a pointer to a CBlock
  * corresponding to pindexNew, to bypass loading it again from disk.
@@ -2483,6 +2580,17 @@ bool CChainState::ConnectTip(CValidationState& state, const CChainParams& chainp
                 InvalidBlockFound(pindexNew, state);
             return error("ConnectTip(): ConnectBlock %s failed", pindexNew->GetBlockHash().ToString());
         }
+
+        // Update the finalized block.
+        const CBlockIndex *pindexToFinalize =
+            FindBlockToFinalize(pindexNew);
+        if (pindexToFinalize &&
+            !FinalizeBlockInternal(state, pindexToFinalize)) {
+            return error("ConnectTip(): FinalizeBlock %s failed (%s)",
+                         pindexNew->GetBlockHash().ToString(),
+                         FormatStateMessage(state));
+        }
+
         nTime3 = GetTimeMicros(); nTimeConnectTotal += nTime3 - nTime2;
         LogPrint(BCLog::BENCH, "  - Connect total: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime3 - nTime2) * MILLI, nTimeConnectTotal * MICRO, nTimeConnectTotal * MILLI / nBlocksTotal);
         bool flushed = view.Flush();
@@ -2526,6 +2634,17 @@ CBlockIndex* CChainState::FindMostWorkChain() {
             pindexNew = *it;
         }
 
+        // If this block will cause a finalized block to be reorged, then we
+        // mark it as invalid.
+        if (pindexFinalized && !AreOnTheSameFork(pindexNew, pindexFinalized)) {
+            LogPrintf("Mark block %s invalid because it forks prior to the "
+                      "finalization point %d.\n",
+                      pindexNew->GetBlockHash().ToString(),
+                      pindexFinalized->nHeight);
+            pindexNew->nStatus |= BLOCK_FAILED_VALID;
+            InvalidChainFound(pindexNew);
+        }
+
         // Check whether all blocks on the path between the currently active chain and the candidate are valid.
         // Just going until the active chain is an optimization, as we know all blocks in it are valid already.
         CBlockIndex *pindexTest = pindexNew;
@@ -2557,6 +2676,13 @@ CBlockIndex* CChainState::FindMostWorkChain() {
                     setBlockIndexCandidates.erase(pindexFailed);
                     pindexFailed = pindexFailed->pprev;
                 }
+
+                if (fFailedChain) {
+                    // We discovered a new chain tip that is either parked or
+                    // invalid, we may want to warn.
+                    CheckForkWarningConditionsOnNewFork(pindexNew);
+                }
+
                 setBlockIndexCandidates.erase(pindexTest);
                 fInvalidAncestor = true;
                 break;
@@ -2896,12 +3022,37 @@ bool CChainState::InvalidateBlock(CValidationState& state, const CChainParams& c
     }
     return true;
 }
+bool FinalizeBlockAndInvalidate(CValidationState &state, CBlockIndex *pindex) {
+    AssertLockHeld(cs_main);
+    if (!FinalizeBlockInternal(state, pindex)) {
+        // state is set by FinalizeBlockInternal.
+        return false;
+    }
+
+    // If the finalized block is not on the active chain, we may need to rewind.
+    if (!chainActive.Contains(pindex)) {
+        const CBlockIndex *pindexFork = chainActive.FindFork(pindex);
+        CBlockIndex *pindexToInvalidate = chainActive.Next(pindexFork);
+        if (pindexToInvalidate) {
+            return InvalidateBlock(state, Params(), pindexToInvalidate);
+        }
+    }
+
+    return true;
+}
+
 bool InvalidateBlock(CValidationState& state, const CChainParams& chainparams, CBlockIndex *pindex) {
     return g_chainstate.InvalidateBlock(state, chainparams, pindex);
 }
 
 void CChainState::ResetBlockFailureFlags(CBlockIndex *pindex) {
     AssertLockHeld(cs_main);
+
+    // In case we are reconsidering something before the finalization point,
+    // move the finalization point to the last common ancestor.
+    if (pindexFinalized) {
+        pindexFinalized = LastCommonAncestor(pindex, pindexFinalized);
+    }
 
     int nHeight = pindex->nHeight;
 
@@ -2938,6 +3089,17 @@ void ResetBlockFailureFlags(CBlockIndex *pindex) {
     return g_chainstate.ResetBlockFailureFlags(pindex);
 }
 
+const CBlockIndex *GetFinalizedBlock() {
+    AssertLockHeld(cs_main);
+    return pindexFinalized;
+}
+
+bool IsBlockFinalized(const CBlockIndex *pindex) {
+    AssertLockHeld(cs_main);
+    return pindexFinalized &&
+           pindexFinalized->GetAncestor(pindex->nHeight) == pindex;
+}
+
 CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
 {
     AssertLockHeld(cs_main);
@@ -2963,6 +3125,7 @@ CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
         pindexNew->nHeight = pindexNew->pprev->nHeight + 1;
         pindexNew->BuildSkip();
     }
+    pindexNew->nTimeReceived = GetTime();
     pindexNew->nTimeMax = (pindexNew->pprev ? std::max(pindexNew->pprev->nTimeMax, pindexNew->nTime) : pindexNew->nTime);
     pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + GetBlockProof(*pindexNew);
     pindexNew->RaiseValidity(BLOCK_VALID_TREE);
@@ -3549,6 +3712,25 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
     // process an unrequested block if it's new and has enough work to
     // advance our tip, and isn't too many blocks ahead.
     bool fAlreadyHave = pindex->nStatus & BLOCK_HAVE_DATA;
+
+    // Compare block header timestamps and received times of the block and the
+    // chaintip.  If they have the same chain height, use these diffs as a
+    // tie-breaker, attempting to pick the more honestly-mined block.
+    int64_t newBlockTimeDiff = std::llabs(pindex->GetReceivedTimeDiff());
+    int64_t chainTipTimeDiff =
+        chainActive.Tip() ? std::llabs(chainActive.Tip()->GetReceivedTimeDiff()) : 0;
+
+    bool isSameHeight =
+        chainActive.Tip() && (pindex->nChainWork == chainActive.Tip()->nChainWork);
+    if (isSameHeight) {
+        LogPrintf("Chain tip timestamp-to-received-time difference: hash=%s, "
+                  "diff=%d\n",
+                  chainActive.Tip()->GetBlockHash().ToString(), chainTipTimeDiff);
+        LogPrintf("New block timestamp-to-received-time difference: hash=%s, "
+                  "diff=%d\n",
+                  pindex->GetBlockHash().ToString(), newBlockTimeDiff);
+    }
+
     bool fHasMoreOrSameWork = (chainActive.Tip() ? pindex->nChainWork >= chainActive.Tip()->nChainWork : true);
     // Blocks that are too out-of-order needlessly limit the effectiveness of
     // pruning, because pruning will not delete block files that contain any
@@ -4356,8 +4538,11 @@ void UnloadBlockIndex()
 {
     LOCK(cs_main);
     chainActive.SetTip(nullptr);
+    pindexFinalized = nullptr;
     pindexBestInvalid = nullptr;
     pindexBestHeader = nullptr;
+    pindexBestForkTip = nullptr;
+    pindexBestForkBase = nullptr;
     mempool.clear();
     mapBlocksUnlinked.clear();
     vinfoBlockFile.clear();
