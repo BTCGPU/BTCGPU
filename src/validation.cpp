@@ -2637,8 +2637,7 @@ CBlockIndex* CChainState::FindMostWorkChain() {
         // If this block will cause a finalized block to be reorged, then we
         // mark it as invalid.
         if (pindexFinalized && !AreOnTheSameFork(pindexNew, pindexFinalized)) {
-            LogPrintf("Mark block %s invalid because it forks prior to the "
-                      "finalization point %d.\n",
+            LogPrintf("Mark block %s invalid because it forks prior to the finalization point %d.\n",
                       pindexNew->GetBlockHash().ToString(),
                       pindexFinalized->nHeight);
             pindexNew->nStatus |= BLOCK_FAILED_VALID;
@@ -3723,11 +3722,9 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
     bool isSameHeight =
         chainActive.Tip() && (pindex->nChainWork == chainActive.Tip()->nChainWork);
     if (isSameHeight) {
-        LogPrintf("Chain tip timestamp-to-received-time difference: hash=%s, "
-                  "diff=%d\n",
+        LogPrintf("Chain tip timestamp-to-received-time difference: hash=%s, diff=%d\n",
                   chainActive.Tip()->GetBlockHash().ToString(), chainTipTimeDiff);
-        LogPrintf("New block timestamp-to-received-time difference: hash=%s, "
-                  "diff=%d\n",
+        LogPrintf("New block timestamp-to-received-time difference: hash=%s, diff=%d\n",
                   pindex->GetBlockHash().ToString(), newBlockTimeDiff);
     }
 
