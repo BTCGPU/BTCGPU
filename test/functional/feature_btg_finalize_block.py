@@ -28,7 +28,7 @@ class FinalizeBlockTest(BitcoinTestFramework):
                            ["-maxreorgdepth=10"],
                            ["-maxreorgdepth=10"]]
         self.finalization_delay = 2 * 60 * 60
-    
+
     def run_test(self):
         node = self.nodes[0]
 
@@ -339,7 +339,7 @@ class FinalizeBlockTest(BitcoinTestFramework):
         self.log.info("Check block delay edge cases")
         self.print_block_stats()
         wait_for_tip(alt_delay_node, new_tip)
-        
+
         '''
         Test plan:
             n2 mine 1 block
