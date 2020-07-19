@@ -12,6 +12,7 @@ from test_framework.util import (
     assert_raises_rpc_error,
     set_node_times,
     wait_until,
+    connect_nodes_bi,
 )
 
 RPC_FINALIZE_INVALID_BLOCK_ERROR = 'finalize-invalid-block'
@@ -21,13 +22,13 @@ RPC_BLOCK_NOT_FOUND_ERROR = 'Block not found'
 
 class FinalizeBlockTest(BitcoinTestFramework):
     def set_test_params(self):
-        self.num_nodes = 3
+        self.num_nodes = 4
         self.extra_args = [["-maxreorgdepth=10", "-finalizationdelay=0", "-whitelist=127.0.0.1"],
                            ["-maxreorgdepth=10", "-finalizationdelay=0"],
-                           ["-maxreorgdepth=10",]]
-        self.setup_clean_chain = True
+                           ["-maxreorgdepth=10"],
+                           ["-maxreorgdepth=10"]]
         self.finalization_delay = 2 * 60 * 60
-
+    
     def run_test(self):
         node = self.nodes[0]
 
@@ -253,6 +254,8 @@ class FinalizeBlockTest(BitcoinTestFramework):
         #                          /
         # (200)->(201)-> // ->(209)->(210)
         delay_node = self.nodes[2]
+        alt_delay_node = self.nodes[3]
+
         wait_for_tip(delay_node, alt_node_new_tip)
         assert_equal(delay_node.getfinalizedblockhash(), str())
 
@@ -275,7 +278,7 @@ class FinalizeBlockTest(BitcoinTestFramework):
         #                          /
         # (200)->(201)-> // ->(209)->(210)
         self.mocktime += self.finalization_delay
-        set_node_times([delay_node], self.mocktime)
+        set_node_times([delay_node, alt_delay_node], self.mocktime)
         new_tip = alt_node.generatetoaddress(
             1, alt_node.get_deterministic_priv_key()[0])[-1]
 
@@ -290,10 +293,14 @@ class FinalizeBlockTest(BitcoinTestFramework):
             "Check that finalization delay is effective on node boot")
         # Restart the new node, so the blocks have no header received time.
         self.restart_node(2)
+        self.restart_node(3)
+        # Connect the two delayed nodes
+        connect_nodes_bi(self.nodes, 2, 3)
 
         # There should be no finalized block (getfinalizedblockhash returns an
         # empty string)
         assert_equal(delay_node.getfinalizedblockhash(), str())
+        assert_equal(alt_delay_node.getfinalizedblockhash(), str())
 
         # Generate 20 blocks with no delay. This should not trigger auto-finalization.
         #
@@ -321,13 +328,84 @@ class FinalizeBlockTest(BitcoinTestFramework):
         #                          /
         # (200)->(201)-> // ->(209)->(210)
         self.mocktime += self.finalization_delay
-        set_node_times([delay_node], self.mocktime)
+        set_node_times([delay_node, alt_delay_node], self.mocktime)
         new_tip = delay_node.generatetoaddress(
             1, delay_node.get_deterministic_priv_key()[0])[-1]
         wait_for_tip(delay_node, new_tip)
 
         assert_equal(delay_node.getfinalizedblockhash(),
                      reboot_autofinalized_block)
+
+        self.log.info("Check block delay edge cases")
+        self.print_block_stats()
+        wait_for_tip(alt_delay_node, new_tip)
+        
+        '''
+        Test plan:
+            n2 mine 1 block
+                n2: 0 1
+                n3: 0 1
+            within 2 hours, n3 invalidate 1, mine 1 public block, and followed by 11 more private blocks (more work).
+            the same time n2 mine 10 blocks
+                n2: 0 1   2  .. 11
+                n3: 0 1' (2' .. 11' 12')
+            now the 2 hour delay has passed. imagine now the honest chain hasn't mine a new block to activate the the checkpoint at 1.
+            n3 can broadcast the blockchain, create an reorg, and trigger n2 to mark 1' as the checkpoint, though 1 was mined even
+            before 1', though 1 is already eligible to be checkpointed.
+                      1 .. 11 (less work fork)
+                     /
+                n2: 0 [1'] .. 12'
+                n3: 0 [1'] .. 12'
+        '''
+
+        # finalize the current tip
+        delay_node.finalizeblock(new_tip)
+        alt_delay_node.finalizeblock(new_tip)
+        finalized_block0 = new_tip
+
+        # n2 mine 1 block
+        #     n2: 0 1
+        #     n3: 0 1
+        honest1 = delay_node.generatetoaddress(1, node.get_deterministic_priv_key()[0])[-1]
+        wait_for_tip(alt_delay_node, honest1)
+
+        # 1 min passed
+        self.mocktime += 1 * 60 * 60
+        set_node_times([delay_node, alt_delay_node], self.mocktime)
+
+        # within 2 hours, n3 invalidate 1, mine 1 public block, and followed by 11 more private blocks (more work).
+        # the same time n2 mine 10 blocks
+        #     n2: 0 1   2  .. 10
+        #     n3: 0 1' (2' .. 10' 11')
+        alt_delay_node.invalidateblock(honest1)
+        attack_block1 = alt_delay_node.generatetoaddress(1, node.get_deterministic_priv_key()[0])[-1]
+        wait_for_block(delay_node, attack_block1, status="valid-headers")
+
+        # n3 mines the private chain
+        alt_delay_node.setnetworkactive(False)
+        attack_blocks = alt_delay_node.generatetoaddress(11, node.get_deterministic_priv_key()[0])
+        # n2 mines the public chain
+        honest_blocks = delay_node.generatetoaddress(10, node.get_deterministic_priv_key()[0])
+
+        wait_for_tip(delay_node, honest_blocks[-1])
+        wait_for_tip(alt_delay_node, attack_blocks[-1])
+
+        # now both nodes still don't have any new block finalized
+        assert_equal(finalized_block0, delay_node.getfinalizedblockhash())
+        assert_equal(finalized_block0, alt_delay_node.getfinalizedblockhash())
+
+        # now the 2 hour delay passed. imagine now the honest chain hasn't mine a new block to activate the the checkpoint at 1.
+        # n3 broadcast the blockchain leading to a reorg, and trigger n2 to mark 1' as the checkpoint, though 1 was mined even
+        # before 1', though 1 is already eligible to be checkpointed.
+        self.mocktime += self.finalization_delay
+        set_node_times([delay_node, alt_delay_node], self.mocktime)
+        alt_delay_node.setnetworkactive(True)
+        connect_nodes_bi(self.nodes, 2, 3)
+
+        # we should see the attacking blocks take over the honest chain
+        wait_for_tip(delay_node, attack_blocks[-1])
+        # the attacking chain got finalized!
+        assert_equal(attack_block1, delay_node.getfinalizedblockhash())
 
 
 if __name__ == '__main__':
