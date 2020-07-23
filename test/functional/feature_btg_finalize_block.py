@@ -20,6 +20,20 @@ RPC_FORK_PRIOR_FINALIZED_ERROR = 'bad-fork-prior-finalized'
 RPC_BLOCK_NOT_FOUND_ERROR = 'Block not found'
 
 
+def print_blocks_to_finalized(logger, node):
+    logger.info(f'print_block_to_finalized(node{node.index})')
+    h_finalized = node.getfinalizedblockhash()
+    h = node.getbestblockhash()
+    while h != h_finalized:
+        header = node.getblockheader(h)
+        logger.info(f' {header["height"]} {h} {header["receivedTime"]}')
+        h = header['previousblockhash']
+    logger.info(f' * {h_finalized}')
+    for _ in range(3):
+        header = node.getblockheader(h)
+        logger.info(f' {header["height"]} {h} {header["receivedTime"]}')
+        h = header['previousblockhash']
+
 class FinalizeBlockTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 4
@@ -337,7 +351,6 @@ class FinalizeBlockTest(BitcoinTestFramework):
                      reboot_autofinalized_block)
 
         self.log.info("Check block delay edge cases")
-        self.print_block_stats()
         wait_for_tip(alt_delay_node, new_tip)
 
         '''
@@ -370,7 +383,7 @@ class FinalizeBlockTest(BitcoinTestFramework):
         wait_for_tip(alt_delay_node, honest1)
 
         # 1 min passed
-        self.mocktime += 1 * 60 * 60
+        self.mocktime += 1 * 60
         set_node_times([delay_node, alt_delay_node], self.mocktime)
 
         # within 2 hours, n3 invalidate 1, mine 1 public block, and followed by 11 more private blocks (more work).
@@ -383,6 +396,7 @@ class FinalizeBlockTest(BitcoinTestFramework):
 
         # n3 mines the private chain
         alt_delay_node.setnetworkactive(False)
+        wait_until(lambda: alt_delay_node.getnetworkinfo()['connections'] == 0, timeout=3)
         attack_blocks = alt_delay_node.generatetoaddress(11, node.get_deterministic_priv_key()[0])
         # n2 mines the public chain
         honest_blocks = delay_node.generatetoaddress(10, node.get_deterministic_priv_key()[0])
@@ -405,6 +419,9 @@ class FinalizeBlockTest(BitcoinTestFramework):
         # we should see the attacking blocks take over the honest chain
         wait_for_tip(delay_node, attack_blocks[-1])
         # the attacking chain got finalized!
+        self.log.info(f'attacking block1: {attack_block1}')
+        print_blocks_to_finalized(self.log, delay_node)
+        print_blocks_to_finalized(self.log, alt_delay_node)
         assert_equal(attack_block1, delay_node.getfinalizedblockhash())
 
 
