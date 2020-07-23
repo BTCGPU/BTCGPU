@@ -23,6 +23,62 @@ static const unsigned char REJECT_NONSTANDARD = 0x40;
 static const unsigned char REJECT_INSUFFICIENTFEE = 0x42;
 static const unsigned char REJECT_CHECKPOINT = 0x43;
 
+/**
+ * A "reason" why something was invalid, suitable for determining whether the
+ * provider of the object should be banned/ignored/disconnected/etc. These are
+ * much more granular than the rejection codes, which may be more useful for
+ * some other use-cases.
+ */
+enum class ValidationInvalidReason {
+    // txn and blocks:
+    //! not actually invalid
+    NONE,
+    //! invalid by consensus rules (excluding any below reasons)
+    CONSENSUS,
+    /**
+     * Invalid by a recent change to consensus rules.
+     * Currently unused as there are no such consensus rule changes.
+     */
+    RECENT_CONSENSUS_CHANGE,
+    // Only blocks (or headers):
+    //! this object was cached as being invalid, but we don't know why
+    CACHED_INVALID,
+    //! invalid proof of work or time too old
+    BLOCK_INVALID_HEADER,
+    //! the block's data didn't match the data committed to by the PoW
+    BLOCK_MUTATED,
+    //! We don't have the previous block the checked one is built on
+    BLOCK_MISSING_PREV,
+    //! A block this one builds on is invalid
+    BLOCK_INVALID_PREV,
+    //! block timestamp was > 2 hours in the future (or our clock is bad)
+    BLOCK_TIME_FUTURE,
+    //! the block failed to meet one of our checkpoints
+    BLOCK_CHECKPOINT,
+    //! block finalization problems.
+    BLOCK_FINALIZATION,
+    // Only loose txn:
+    //! didn't meet our local policy rules
+    TX_NOT_STANDARD,
+    //! a transaction was missing some of its inputs
+    TX_MISSING_INPUTS,
+    //! transaction spends a coinbase too early, or violates locktime/sequence
+    //! locks
+    TX_PREMATURE_SPEND,
+    /**
+     * Tx already in mempool or conflicts with a tx in the chain
+     * TODO: Currently this is only used if the transaction already exists in
+     * the mempool or on chain,
+     * TODO: ATMP's fMissingInputs and a valid CValidationState being used to
+     * indicate missing inputs
+     */
+    TX_CONFLICT,
+    //! violated mempool's fee/size/descendant/etc limits
+    TX_MEMPOOL_POLICY,
+
+    UNKNOWN,
+};
+
 /** Capture information about block/transaction validation */
 class CValidationState {
 private:
@@ -32,6 +88,7 @@ private:
         MODE_ERROR,   //!< run-time error
     } mode;
     int nDoS;
+    ValidationInvalidReason m_reason = ValidationInvalidReason::UNKNOWN;
     std::string strRejectReason;
     unsigned int chRejectCode;
     bool corruptionPossible;
@@ -54,7 +111,9 @@ public:
     }
     bool Invalid(bool ret = false,
                  unsigned int _chRejectCode=0, const std::string &_strRejectReason="",
-                 const std::string &_strDebugMessage="") {
+                 const std::string &_strDebugMessage="",
+                 ValidationInvalidReason reasonIn=ValidationInvalidReason::UNKNOWN) {
+        m_reason = reasonIn;
         return DoS(0, ret, _chRejectCode, _strRejectReason, false, _strDebugMessage);
     }
     bool Error(const std::string& strRejectReasonIn) {
@@ -85,6 +144,7 @@ public:
     void SetCorruptionPossible() {
         corruptionPossible = true;
     }
+    ValidationInvalidReason GetReason() const { return m_reason; }
     unsigned int GetRejectCode() const { return chRejectCode; }
     std::string GetRejectReason() const { return strRejectReason; }
     std::string GetDebugMessage() const { return strDebugMessage; }

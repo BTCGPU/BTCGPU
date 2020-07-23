@@ -157,6 +157,7 @@ BASE_SCRIPTS = [
     'feature_help.py',
     'feature_btg_timelock.py',
     'feature_btg_hardfork.py',
+    'feature_btg_finalize_block.py',
     # Don't append tests at the end to avoid merge conflicts
     # Put them in a random line within the section that fits their approximate run-time
 ]
