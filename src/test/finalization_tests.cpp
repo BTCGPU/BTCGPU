@@ -13,7 +13,7 @@
 
 BOOST_FIXTURE_TEST_SUITE(finalization_tests, TestChain100Setup)
 
-BOOST_AUTO_TEST_CASE(finalizationDelay) {
+BOOST_AUTO_TEST_CASE(minfinalizationage) {
     CScript p2pk_scriptPubKey =
         CScript() << ToByteVector(coinbaseKey.GetPubKey()) << OP_CHECKSIG;
     CBlock block;
@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(finalizationDelay) {
                                 << chainActive.Tip()->nHeight << ")");
     }
 
-    // Create maxreorgdepth blocks. Auto-finalization will not occur because
+    // Create minfinalizationdepth blocks. Auto-finalization will not occur because
     // the delay is not expired
     int64_t mockedTime = GetTime();
     for (uint32_t i = 0; i < DEFAULT_MAX_REORG_DEPTH; i++) {
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(finalizationDelay) {
     mockedTime += DEFAULT_MIN_FINALIZATION_DELAY + 1;
     SetMockTime(mockedTime);
 
-    // Next maxreorgdepth blocks should cause auto-finalization
+    // Next minfinalizationdepth blocks should cause auto-finalization
     CBlockIndex *blockToFinalize = chainActive.Tip()->GetAncestor(
         chainActive.Tip()->nHeight - DEFAULT_MAX_REORG_DEPTH);
 
