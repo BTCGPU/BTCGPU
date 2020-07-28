@@ -27,10 +27,10 @@ BOOST_AUTO_TEST_CASE(finalizationDelay) {
                                 << chainActive.Tip()->nHeight << ")");
     }
 
-    // Create maxreorgdepth blocks. Auto-finalization will not occur because
+    // Create maxexpectedreorgdepth / 2 blocks. Auto-finalization will not occur because
     // the delay is not expired
     int64_t mockedTime = GetTime();
-    for (uint32_t i = 0; i < DEFAULT_MAX_REORG_DEPTH; i++) {
+    for (uint32_t i = 0; i < DEFAULT_MAX_EXPECTED_REORG_DEPTH / 2; i++) {
         block = CreateAndProcessBlock({}, p2pk_scriptPubKey);
         LOCK(cs_main);
         // These blocks are too recent.
@@ -43,11 +43,11 @@ BOOST_AUTO_TEST_CASE(finalizationDelay) {
     mockedTime += DEFAULT_MIN_FINALIZATION_DELAY + 1;
     SetMockTime(mockedTime);
 
-    // Next maxreorgdepth blocks should cause auto-finalization
+    // Next maxexpectedreorgdepth / 2 blocks should cause auto-finalization
     CBlockIndex *blockToFinalize = chainActive.Tip()->GetAncestor(
-        chainActive.Tip()->nHeight - DEFAULT_MAX_REORG_DEPTH);
+        chainActive.Tip()->nHeight - DEFAULT_MAX_EXPECTED_REORG_DEPTH / 2);
 
-    for (uint32_t i = 0; i < DEFAULT_MAX_REORG_DEPTH; i++) {
+    for (uint32_t i = 0; i < DEFAULT_MAX_EXPECTED_REORG_DEPTH / 2; i++) {
         blockToFinalize = chainActive.Next(blockToFinalize);
         block = CreateAndProcessBlock({}, p2pk_scriptPubKey);
         LOCK(cs_main);
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(finalizationDelay) {
 
     // Next blocks won't cause auto-finalization because the delay is not
     // expired
-    for (uint32_t i = 0; i < DEFAULT_MAX_REORG_DEPTH; i++) {
+    for (uint32_t i = 0; i < DEFAULT_MAX_EXPECTED_REORG_DEPTH / 2; i++) {
         block = CreateAndProcessBlock({}, p2pk_scriptPubKey);
         LOCK(cs_main);
         // These blocks are finalized.
@@ -76,11 +76,11 @@ BOOST_AUTO_TEST_CASE(finalizationDelay) {
     SetMockTime(mockedTime);
 
     blockToFinalize = chainActive.Tip()->GetAncestor(
-        chainActive.Tip()->nHeight - DEFAULT_MAX_REORG_DEPTH);
+        chainActive.Tip()->nHeight - DEFAULT_MAX_EXPECTED_REORG_DEPTH / 2);
 
     // Create some more blocks.
     // Finalization should start moving again.
-    for (uint32_t i = 0; i < DEFAULT_MAX_REORG_DEPTH; i++) {
+    for (uint32_t i = 0; i < DEFAULT_MAX_EXPECTED_REORG_DEPTH / 2; i++) {
         blockToFinalize = chainActive.Next(blockToFinalize);
         block = CreateAndProcessBlock({}, p2pk_scriptPubKey);
         LOCK(cs_main);

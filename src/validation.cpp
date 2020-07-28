@@ -2505,8 +2505,10 @@ static const CBlockIndex *FindBlockToFinalize(CBlockIndex *pindexNew)
 {
     AssertLockHeld(cs_main);
 
-    const int32_t maxreorgdepth =
-        gArgs.GetArg("-maxreorgdepth", DEFAULT_MAX_REORG_DEPTH);
+    const int32_t maxexpectedreorgdepth =
+        gArgs.GetArg("-maxexpectedreorgdepth", DEFAULT_MAX_EXPECTED_REORG_DEPTH);
+    const int32_t maxreorgdepth = maxexpectedreorgdepth < 0 ?
+        maxexpectedreorgdepth : maxexpectedreorgdepth / 2;
 
     const int64_t finalizationdelay =
         gArgs.GetArg("-finalizationdelay", DEFAULT_MIN_FINALIZATION_DELAY);
@@ -2531,7 +2533,7 @@ static const CBlockIndex *FindBlockToFinalize(CBlockIndex *pindexNew)
     while (pindex && (pindex != pindexFinalized)) {
         // Check that the block to finalize is known for a long enough time.
         // This test will ensure that an attacker could not cause a block to
-        // finalize by forking the chain with a depth > maxreorgdepth.
+        // finalize by forking the chain with a depth > maxexpectedreorgdepth.
         // If the block is loaded from disk, header receive time is 0 and the
         // block will be finalized. This is safe because the delay since the
         // node startup is already expired.
