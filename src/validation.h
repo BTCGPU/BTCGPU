@@ -135,15 +135,15 @@ static const bool DEFAULT_PEERBLOOMFILTERS = true;
 
 /** Default for -stopatheight */
 static const int DEFAULT_STOPATHEIGHT = 0;
-/** Default for -maxreorgdepth */
-static const int DEFAULT_MAX_REORG_DEPTH = 47;
+/** Default for -minfinalizationdepth */
+static const int DEFAULT_MAX_REORG_DEPTH = 9;
 /**
- * Default for -finalizationdelay
+ * Default for -minfinalizationage
  * This is the minimum time between a block header reception and the block
  * finalization.
  * This value should be >> block propagation and validation time
  */
-static const int64_t DEFAULT_MIN_FINALIZATION_DELAY = 2 * 60 * 60;
+static const int64_t DEFAULT_MIN_FINALIZATION_DELAY = 80 * 60;
 
 struct BlockHasher
 {

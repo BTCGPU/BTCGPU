@@ -2505,24 +2505,24 @@ static const CBlockIndex *FindBlockToFinalize(CBlockIndex *pindexNew)
 {
     AssertLockHeld(cs_main);
 
-    const int32_t maxreorgdepth =
-        gArgs.GetArg("-maxreorgdepth", DEFAULT_MAX_REORG_DEPTH);
+    const int32_t minfinalizationdepth =
+        gArgs.GetArg("-minfinalizationdepth", DEFAULT_MAX_REORG_DEPTH);
 
-    const int64_t finalizationdelay =
-        gArgs.GetArg("-finalizationdelay", DEFAULT_MIN_FINALIZATION_DELAY);
+    const int64_t minfinalizationage =
+        gArgs.GetArg("-minfinalizationage", DEFAULT_MIN_FINALIZATION_DELAY);
 
     // Find our candidate.
-    // If maxreorgdepth is < 0 pindex will be null and auto finalization
+    // If minfinalizationdepth is < 0 pindex will be null and auto finalization
     // disabled
     const CBlockIndex *pindex =
-        pindexNew->GetAncestor(pindexNew->nHeight - maxreorgdepth);
+        pindexNew->GetAncestor(pindexNew->nHeight - minfinalizationdepth);
 
     int64_t now = GetTime();
 
     // If the finalization delay is not expired since the startup time,
     // finalization should be avoided. Header receive time is not saved to disk
     // and so cannot be anterior to startup time.
-    if (now < (GetStartupTime() + finalizationdelay)) {
+    if (now < (GetStartupTime() + minfinalizationage)) {
         return nullptr;
     }
 
@@ -2531,14 +2531,14 @@ static const CBlockIndex *FindBlockToFinalize(CBlockIndex *pindexNew)
     while (pindex && (pindex != pindexFinalized)) {
         // Check that the block to finalize is known for a long enough time.
         // This test will ensure that an attacker could not cause a block to
-        // finalize by forking the chain with a depth > maxreorgdepth.
+        // finalize by forking the chain with a depth > minfinalizationdepth.
         // If the block is loaded from disk, header receive time is 0 and the
         // block will be finalized. This is safe because the delay since the
         // node startup is already expired.
         auto headerReceivedTime = pindex->GetHeaderReceivedTime();
 
         // If finalization delay is <= 0, finalization always occurs immediately
-        if (now >= (headerReceivedTime + finalizationdelay)) {
+        if (now >= (headerReceivedTime + minfinalizationage)) {
             return pindex;
         }
 

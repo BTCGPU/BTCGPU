@@ -37,10 +37,10 @@ def print_blocks_to_finalized(logger, node):
 class FinalizeBlockTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 4
-        self.extra_args = [["-maxreorgdepth=10", "-finalizationdelay=0", "-whitelist=127.0.0.1"],
-                           ["-maxreorgdepth=10", "-finalizationdelay=0"],
-                           ["-maxreorgdepth=10"],
-                           ["-maxreorgdepth=10"]]
+        self.extra_args = [["-minfinalizationdepth=10", "-minfinalizationage=0", "-whitelist=127.0.0.1"],
+                           ["-minfinalizationdepth=10", "-minfinalizationage=0"],
+                           ["-minfinalizationdepth=10"],
+                           ["-minfinalizationdepth=10"]]
         self.finalization_delay = 2 * 60 * 60
 
     def run_test(self):
