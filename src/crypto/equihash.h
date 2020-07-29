@@ -22,6 +22,7 @@
 #include <vector>
 
 #include <assert.h>
+#include <stdexcept>
 
 typedef blake2b_state eh_HashState;
 typedef uint32_t eh_index;

@@ -93,7 +93,8 @@ BITCOIN_TESTS =\
   test/versionbits_tests.cpp \
   test/equihash_tests.cpp \
   test/btg_cltv_multisig_data.h \
-  test/btg_tests.cpp
+  test/btg_tests.cpp \
+  test/finalization_tests.cpp
 
 if ENABLE_WALLET
 BITCOIN_TESTS += \

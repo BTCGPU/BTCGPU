@@ -117,6 +117,7 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
     result.pushKV("difficulty", GetDifficulty(blockindex));
     result.pushKV("chainwork", blockindex->nChainWork.GetHex());
     result.pushKV("nTx", (uint64_t)blockindex->nTx);
+    result.pushKV("receivedTime", (uint64_t)blockindex->GetHeaderReceivedTime());
 
     if (blockindex->pprev)
         result.pushKV("previousblockhash", blockindex->pprev->GetBlockHash().GetHex());
@@ -695,6 +696,26 @@ static UniValue getblockhash(const JSONRPCRequest& request)
 
     CBlockIndex* pblockindex = chainActive[nHeight];
     return pblockindex->GetBlockHash().GetHex();
+}
+
+UniValue getfinalizedblockhash(const JSONRPCRequest &request) {
+    if (request.fHelp || request.params.size() != 0)
+        throw std::runtime_error(
+            "getfinalizedblockhash\n"
+            "\nReturns the hash of the currently finalized block.\n"
+            "\nResult:\n"
+            "\"hex\"      (string) the block hash hex encoded\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getfinalizedblockhash", "")
+            + HelpExampleRpc("getfinalizedblockhash", "")
+        );
+
+    LOCK(cs_main);
+    const CBlockIndex *blockIndexFinalized = GetFinalizedBlock();
+    if (blockIndexFinalized) {
+        return blockIndexFinalized->GetBlockHash().GetHex();
+    }
+    return UniValue(UniValue::VSTR);
 }
 
 static UniValue getblockheader(const JSONRPCRequest& request)
@@ -1505,6 +1526,47 @@ static UniValue preciousblock(const JSONRPCRequest& request)
     return NullUniValue;
 }
 
+UniValue finalizeblock(const JSONRPCRequest& request) {
+    if (request.fHelp || request.params.size() != 1)
+        throw std::runtime_error(
+            "finalizeblock \"blockhash\"\n"
+            "\nTreats a block as final. It cannot be reorged. Any chain\n"
+            "that does not contain this block is invalid. Used on a less\n"
+            "work chain, it can effectively PUTS YOU OUT OF CONSENSUS.\n"
+            "USE WITH CAUTION!\n"
+            "\nArguments:\n"
+            "1. \"blockhash\"   (string, required) the hash of the block to mark as finalized\n"
+            "\nResult:\n"
+            "\nExamples:\n"
+            + HelpExampleCli("finalizeblock", "\"blockhash\"")
+            + HelpExampleRpc("finalizeblock", "\"blockhash\"")
+        );
+
+    std::string strHash = request.params[0].get_str();
+    uint256 hash(uint256S(strHash));
+    CValidationState state;
+
+    {
+        LOCK(cs_main);
+        CBlockIndex *pblockindex = LookupBlockIndex(hash);
+        if (!pblockindex) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+        }
+
+        FinalizeBlockAndInvalidate(state, pblockindex);
+    }
+
+    if (state.IsValid()) {
+        ActivateBestChain(state, Params());
+    }
+
+    if (!state.IsValid()) {
+        throw JSONRPCError(RPC_DATABASE_ERROR, FormatStateMessage(state));
+    }
+
+    return NullUniValue;
+}
+
 static UniValue invalidateblock(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
@@ -2239,6 +2301,8 @@ static const CRPCCommand commands[] =
     { "blockchain",         "scantxoutset",           &scantxoutset,           {"action", "scanobjects"} },
 
     /* Not shown in help */
+    { "hidden",             "getfinalizedblockhash",  &getfinalizedblockhash,  {} },
+    { "hidden",             "finalizeblock",          &finalizeblock,          {"blockhash"} },
     { "hidden",             "invalidateblock",        &invalidateblock,        {"blockhash"} },
     { "hidden",             "reconsiderblock",        &reconsiderblock,        {"blockhash"} },
     { "hidden",             "waitfornewblock",        &waitfornewblock,        {"timeout"} },
