@@ -8,15 +8,13 @@ completely decentralized, without the need for a central server or trusted
 parties.  Users hold the crypto keys to their own money and transact directly
 with each other, with the help of a P2P network to check for double-spending.
 
-
 Setup
 -----
 Unpack the files into a directory and run bitcoin-qt.exe.
 
-BTG Core (aka Bitcoin Gold Core, BTCGPU) is the original BTG client and it builds the 
-backbone of the network. It is based on Bitcoin Core. It downloads and, by default, 
-stores the entire history of BTG transactions, which includes Bitcoin transactions 
-from 2009 to 2017 (currently more than 100 GBs); depending on the speed of your 
-computer and network connection, the synchronization process can take anywhere from 
+BTG Core (aka Bitcoin Gold Core, BTCGPU) is the original BTG client and it builds the
+backbone of the network. It is based on Bitcoin Core. It downloads and, by default,
+stores the entire history of BTG transactions, which includes Bitcoin transactions
+from 2009 to 2017 (currently more than 100 GBs); depending on the speed of your
+computer and network connection, the synchronization process can take anywhere from
 a few hours to a day or more.
-
