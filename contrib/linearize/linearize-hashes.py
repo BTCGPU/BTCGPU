@@ -2,16 +2,12 @@
 #
 # linearize-hashes.py:  List blocks in a linear, no-fork version of the chain.
 #
-# Copyright (c) 2013-2018 The Bitcoin Core developers
+# Copyright (c) 2013-2019 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #
 
-from __future__ import print_function
-try: # Python 3
-    import http.client as httplib
-except ImportError: # Python 2
-    import httplib
+from http.client import HTTPConnection
 import json
 import re
 import base64
@@ -31,7 +27,7 @@ class BitcoinRPC:
         authpair = "%s:%s" % (username, password)
         authpair = authpair.encode('utf-8')
         self.authhdr = b"Basic " + base64.b64encode(authpair)
-        self.conn = httplib.HTTPConnection(host, port=port, timeout=30)
+        self.conn = HTTPConnection(host, port=port, timeout=30)
 
     def execute(self, obj):
         try:
@@ -110,12 +106,12 @@ if __name__ == '__main__':
     f = open(sys.argv[1], encoding="utf8")
     for line in f:
         # skip comment lines
-        m = re.search('^\s*#', line)
+        m = re.search(r'^\s*#', line)
         if m:
             continue
 
         # parse key=value lines
-        m = re.search('^(\w+)\s*=\s*(\S.*)$', line)
+        m = re.search(r'^(\w+)\s*=\s*(\S.*)$', line)
         if m is None:
             continue
         settings[m.group(1)] = m.group(2)

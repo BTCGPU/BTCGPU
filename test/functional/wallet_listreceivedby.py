@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2014-2018 The Bitcoin Core developers
+# Copyright (c) 2014-2019 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test the listreceivedbyaddress RPC."""
@@ -10,26 +10,25 @@ from test_framework.util import (
     assert_array_result,
     assert_equal,
     assert_raises_rpc_error,
-    sync_blocks,
 )
+from test_framework.wallet_util import test_address
 
 
 class ReceivedByTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
 
-    def import_deterministic_coinbase_privkeys(self):
-        assert_equal(0, len(self.nodes[1].listreceivedbyaddress(minconf=0, include_empty=True, include_watchonly=True)))
-        super().import_deterministic_coinbase_privkeys()
-        self.num_cb_reward_addresses = len(self.nodes[1].listreceivedbyaddress(minconf=0, include_empty=True, include_watchonly=True))
-
     def skip_test_if_missing_module(self):
         self.skip_if_no_wallet()
+        self.skip_if_no_cli()
 
     def run_test(self):
         # Generate block to get out of IBD
         self.nodes[0].generate(1)
-        sync_blocks(self.nodes)
+        self.sync_blocks()
+
+        # save the number of coinbase reward addresses so far
+        num_cb_reward_addresses = len(self.nodes[1].listreceivedbyaddress(minconf=0, include_empty=True, include_watchonly=True))
 
         self.log.info("listreceivedbyaddress Test")
 
@@ -76,7 +75,7 @@ class ReceivedByTest(BitcoinTestFramework):
         assert_raises_rpc_error(-4, "address_filter parameter was invalid", self.nodes[1].listreceivedbyaddress, minconf=0, include_empty=True, include_watchonly=True, address_filter="bamboozling")
         # Another address receive money
         res = self.nodes[1].listreceivedbyaddress(0, True, True)
-        assert_equal(len(res), 2 + self.num_cb_reward_addresses)  # Right now 2 entries
+        assert_equal(len(res), 2 + num_cb_reward_addresses)  # Right now 2 entries
         other_addr = self.nodes[1].getnewaddress()
         txid2 = self.nodes[0].sendtoaddress(other_addr, 0.1)
         self.nodes[0].generate(1)
@@ -93,7 +92,7 @@ class ReceivedByTest(BitcoinTestFramework):
         assert_equal(len(res), 1)
         # Should be two entries though without filter
         res = self.nodes[1].listreceivedbyaddress(0, True, True)
-        assert_equal(len(res), 3 + self.num_cb_reward_addresses)  # Became 3 entries
+        assert_equal(len(res), 3 + num_cb_reward_addresses)  # Became 3 entries
 
         # Not on random addr
         other_addr = self.nodes[0].getnewaddress()  # note on node[0]! just a random addr
@@ -129,7 +128,7 @@ class ReceivedByTest(BitcoinTestFramework):
         # set pre-state
         label = ''
         address = self.nodes[1].getnewaddress()
-        assert_equal(self.nodes[1].getaddressinfo(address)['label'], label)
+        test_address(self.nodes[1], address, labels=[label])
         received_by_label_json = [r for r in self.nodes[1].listreceivedbylabel() if r["label"] == label][0]
         balance_by_label = self.nodes[1].getreceivedbylabel(label)
 

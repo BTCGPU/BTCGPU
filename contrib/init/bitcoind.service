@@ -5,20 +5,50 @@
 # See "man systemd.service" for details.
 
 # Note that almost all daemon options could be specified in
-# /etc/bitcoingold/bitcoingold.conf
+# /etc/bitcoingold/bitcoingold.conf, but keep in mind those explicitly
+# specified as arguments in ExecStart= will override those in the
+# config file.
 
 [Unit]
 Description=Bitcoin Gold daemon
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/bgoldd -daemon -conf=/etc/bitcoingold/bitcoingold.conf -pid=/run/bgoldd/bgoldd.pid
-# Creates /run/bitcoind owned by bitcoin
-RuntimeDirectory=bgoldd
-User=bitcoingold
+ExecStart=/usr/bin/bitcoind -daemon \
+                            -pid=/run/bgoldd/bgoldd.pid \
+                            -conf=/etc/bitcoingold/bitcoingold.conf \
+                            -datadir=/var/lib/bgoldd
+
+# Make sure the config directory is readable by the service user
+PermissionsStartOnly=true
+ExecStartPre=/bin/chgrp bitcoin /etc/bitcoin
+
+# Process management
+####################
+
 Type=forking
 PIDFile=/run/bgoldd/bgoldd.pid
 Restart=on-failure
+TimeoutStopSec=600
+
+# Directory creation and permissions
+####################################
+
+# Run as bitcoin:bitcoin
+User=bitcoin
+Group=bitcoin
+
+# /run/bgoldd
+RuntimeDirectory=bgoldd
+RuntimeDirectoryMode=0710
+
+# /etc/bitcoingold
+ConfigurationDirectory=bitcoingold
+ConfigurationDirectoryMode=0710
+
+# /var/lib/bgoldd
+StateDirectory=bgoldd
+StateDirectoryMode=0710
 
 # Hardening measures
 ####################
@@ -28,6 +58,9 @@ PrivateTmp=true
 
 # Mount /usr, /boot/ and /etc read-only for the process.
 ProtectSystem=full
+
+# Deny access to /home, /root and /run/user
+ProtectHome=true
 
 # Disallow the process and all of its children to gain
 # new privileges through execve().

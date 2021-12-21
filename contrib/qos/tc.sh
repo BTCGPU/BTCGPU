@@ -1,4 +1,6 @@
-# Copyright (c) 2017 The Bitcoin Core developers
+#!/usr/bin/env bash
+#
+# Copyright (c) 2017-2019 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -34,7 +36,7 @@ tc class add dev ${IF} parent 1:1 classid 1:11 htb rate ${LIMIT} ceil ${LIMIT} p
 tc filter add dev ${IF} parent 1: protocol ip prio 1 handle 1 fw classid 1:10
 tc filter add dev ${IF} parent 1: protocol ip prio 2 handle 2 fw classid 1:11
 
-if [ ! -z "${LOCALNET_V6}" ] ; then
+if [ -n "${LOCALNET_V6}" ] ; then
 	# v6 cannot have the same priority value as v4
 	tc filter add dev ${IF} parent 1: protocol ipv6 prio 3 handle 1 fw classid 1:10
 	tc filter add dev ${IF} parent 1: protocol ipv6 prio 4 handle 2 fw classid 1:11

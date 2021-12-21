@@ -46,30 +46,27 @@ public:
         SetNull();
     }
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action)
+    SERIALIZE_METHODS(CBlockHeader, obj)
     {
         bool new_format = !(s.GetVersion() & SERIALIZE_BLOCK_LEGACY);
-        READWRITE(this->nVersion);
-        READWRITE(hashPrevBlock);
-        READWRITE(hashMerkleRoot);
+        READWRITE(obj.nVersion);
+        READWRITE(obj.hashPrevBlock);
+        READWRITE(obj.hashMerkleRoot);
         if (new_format) {
-            READWRITE(nHeight);
-            for(size_t i = 0; i < (sizeof(nReserved) / sizeof(nReserved[0])); i++) {
-                READWRITE(nReserved[i]);
+            READWRITE(obj.nHeight);
+            for(size_t i = 0; i < (sizeof(obj.nReserved) / sizeof(obj.nReserved[0])); i++) {
+                READWRITE(obj.nReserved[i]);
             }
         }
-        READWRITE(nTime);
-        READWRITE(nBits);
+        READWRITE(obj.nTime);
+        READWRITE(obj.nBits);
         if (new_format) {
-            READWRITE(nNonce);
-            READWRITE(nSolution);
+            READWRITE(obj.nNonce);
+            READWRITE(obj.nSolution);
         } else {
-            uint32_t legacy_nonce = (uint32_t)nNonce.GetUint64(0);
+            uint32_t legacy_nonce = (uint32_t)obj.nNonce.GetUint64(0);
             READWRITE(legacy_nonce);
-            nNonce = ArithToUint256(arith_uint256(legacy_nonce));
+            //obj.nNonce = ArithToUint256(arith_uint256(legacy_nonce));
         }
     }
 
@@ -121,12 +118,10 @@ public:
         *(static_cast<CBlockHeader*>(this)) = header;
     }
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITEAS(CBlockHeader, *this);
-        READWRITE(vtx);
+    SERIALIZE_METHODS(CBlock, obj)
+    {
+        READWRITEAS(CBlockHeader, obj);
+        READWRITE(obj.vtx);
     }
 
     void SetNull()
@@ -167,19 +162,17 @@ public:
         *((CBlockHeader*)this) = header;
     }
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(this->nVersion);
-        READWRITE(hashPrevBlock);
-        READWRITE(hashMerkleRoot);
-        READWRITE(nHeight);
+    SERIALIZE_METHODS(CEquihashInput, obj)
+    {
+        READWRITE(obj.nVersion);
+        READWRITE(obj.hashPrevBlock);
+        READWRITE(obj.hashMerkleRoot);
+        READWRITE(obj.nHeight);
         for(size_t i = 0; i < (sizeof(nReserved) / sizeof(nReserved[0])); i++) {
-            READWRITE(nReserved[i]);
+            READWRITE(obj.nReserved[i]);
         }
-        READWRITE(nTime);
-        READWRITE(nBits);
+        READWRITE(obj.nTime);
+        READWRITE(obj.nBits);
     }
 };
 
@@ -195,14 +188,12 @@ struct CBlockLocator
 
     explicit CBlockLocator(const std::vector<uint256>& vHaveIn) : vHave(vHaveIn) {}
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
+    SERIALIZE_METHODS(CBlockLocator, obj)
+    {
         int nVersion = s.GetVersion();
         if (!(s.GetType() & SER_GETHASH))
             READWRITE(nVersion);
-        READWRITE(vHave);
+        READWRITE(obj.vHave);
     }
 
     void SetNull()
