@@ -225,7 +225,6 @@ public:
     CTransactionRef createTransaction(const std::vector<CRecipient>& recipients,
         const CCoinControl& coin_control,
         bool sign,
-        bool no_forkid,
         int& change_pos,
         CAmount& fee,
         bilingual_str& fail_reason) override
@@ -234,7 +233,7 @@ public:
         CTransactionRef tx;
         FeeCalculation fee_calc_out;
         if (!m_wallet->CreateTransaction(recipients, tx, fee, change_pos,
-                fail_reason, coin_control, fee_calc_out, sign, no_forkid)) {
+                fail_reason, coin_control, fee_calc_out, sign)) {
             return {};
         }
         return tx;

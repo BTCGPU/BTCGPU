@@ -570,7 +570,7 @@ std::string PSBTRoleName(PSBTRole role);
 bool PSBTInputSigned(const PSBTInput& input);
 
 /** Signs a PSBTInput, verifying that all provided data matches what is being signed. */
-bool SignPSBTInput(const SigningProvider& provider, PartiallySignedTransaction& psbt, int index, int sighash = SIGHASH_ALL, bool no_forkid = false, SignatureData* out_sigdata = nullptr, bool use_dummy = false);
+bool SignPSBTInput(const SigningProvider& provider, PartiallySignedTransaction& psbt, int index, bool no_forkid = false, SignatureData* out_sigdata = nullptr, bool use_dummy = false);
 
 /** Counts the unsigned inputs of a PSBT. */
 size_t CountPSBTUnsignedInputs(const PartiallySignedTransaction& psbt);

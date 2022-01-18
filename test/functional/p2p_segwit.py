@@ -457,9 +457,9 @@ class SegWitTest(BitcoinTestFramework):
 
             # Test size, vsize, weight
             rpc_details = self.nodes[0].getblock(block.hash, True)
-            assert_equal(rpc_details["size"], len(block.serialize(legacy=False)))
-            assert_equal(rpc_details["strippedsize"], len(block.serialize(False, legacy=False)))
-            weight = 3 * len(block.serialize(False, legacy=False)) + len(block.serialize(legacy=False))
+            assert_equal(rpc_details["size"], len(block.serialize(legacy=True)))
+            assert_equal(rpc_details["strippedsize"], len(block.serialize(False, legacy=True)))
+            weight = 3 * len(block.serialize(False, legacy=True)) + len(block.serialize(legacy=True))
             assert_equal(rpc_details["weight"], weight)
 
             # Upgraded node should not ask for blocks from unupgraded
@@ -1029,7 +1029,7 @@ class SegWitTest(BitcoinTestFramework):
         block_2.vtx[0].vout.pop()
         block_2.vtx[0].wit = CTxWitness()
 
-        assert_equal('bad-txnmrklroot', self.nodes[0].submitblock(block_2.serialize().hex()))
+        assert_equal('bad-txnmrklroot', self.nodes[0].submitblock(block_2.serialize().hex(), True, ''))
         # Tip should not advance!
         assert self.nodes[0].getbestblockhash() != block_2.hash
 
@@ -2093,7 +2093,7 @@ class SegWitTest(BitcoinTestFramework):
 
         self.nodes[0].sendtoaddress(self.nodes[0].getnewaddress(address_type='bech32'), 5)
         self.nodes[0].generate(1)
-        unspent = next(u for u in self.nodes[0].listunspent() if u['spendable'] and u['address'].startswith('bcrt'))
+        unspent = next(u for u in self.nodes[0].listunspent() if u['spendable'] and u['address'].startswith('btgrt'))
 
         raw = self.nodes[0].createrawtransaction([{"txid": unspent['txid'], "vout": unspent['vout']}], {self.nodes[0].getnewaddress(): 1})
         tx = FromHex(CTransaction(), raw)

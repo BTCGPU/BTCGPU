@@ -114,7 +114,7 @@ class ChainstateWriteCrashTest(BitcoinTestFramework):
         Returns true if the block was submitted successfully; false otherwise."""
 
         try:
-            self.nodes[node_index].submitblock(block, '', True)
+            self.nodes[node_index].submitblock(block)
             return True
         except (http.client.CannotSendRequest, http.client.RemoteDisconnected) as e:
             self.log.debug("node %d submitblock raised exception: %s", node_index, e)

@@ -11,8 +11,6 @@ from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
     set_node_times,
-    wait_until,
-    connect_nodes_bi,
 )
 
 RPC_FINALIZE_INVALID_BLOCK_ERROR = 'finalize-invalid-block'
@@ -58,7 +56,7 @@ class FinalizeBlockTest(BitcoinTestFramework):
         def wait_for_tip(node, tip):
             def check_tip():
                 return node.getbestblockhash() == tip
-            wait_until(check_tip)
+            self.wait_until(check_tip)
 
         alt_node = self.nodes[1]
         wait_for_tip(alt_node, tip)
@@ -95,7 +93,7 @@ class FinalizeBlockTest(BitcoinTestFramework):
                         assert tip["status"] != "active"
                         return tip["status"] == status
                 return False
-            wait_until(check_block)
+            self.wait_until(check_block)
 
         # First block header is accepted as valid-header
         alt_node.generatetoaddress(
@@ -309,7 +307,7 @@ class FinalizeBlockTest(BitcoinTestFramework):
         self.restart_node(2)
         self.restart_node(3)
         # Connect the two delayed nodes
-        connect_nodes_bi(self.nodes, 2, 3)
+        self.connect_nodes(2, 3)
 
         # There should be no finalized block (getfinalizedblockhash returns an
         # empty string)
@@ -396,7 +394,7 @@ class FinalizeBlockTest(BitcoinTestFramework):
 
         # n3 mines the private chain
         alt_delay_node.setnetworkactive(False)
-        wait_until(lambda: alt_delay_node.getnetworkinfo()['connections'] == 0, timeout=3)
+        self.wait_until(lambda: alt_delay_node.getnetworkinfo()['connections'] == 0, timeout=3)
         attack_blocks = alt_delay_node.generatetoaddress(11, node.get_deterministic_priv_key()[0])
         # n2 mines the public chain
         honest_blocks = delay_node.generatetoaddress(10, node.get_deterministic_priv_key()[0])
@@ -414,7 +412,7 @@ class FinalizeBlockTest(BitcoinTestFramework):
         self.mocktime += self.finalization_delay
         set_node_times([delay_node, alt_delay_node], self.mocktime)
         alt_delay_node.setnetworkactive(True)
-        connect_nodes_bi(self.nodes, 2, 3)
+        self.connect_nodes(2, 3)
 
         # we should see the attacking blocks take over the honest chain
         wait_for_tip(delay_node, attack_blocks[-1])

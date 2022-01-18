@@ -93,6 +93,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getblock", 2, "legacy" },
     { "getblockheader", 1, "verbose" },
     { "getblockheader", 2, "legacy" },
+    { "submitblock", 1, "legacy" },
     { "getchaintxstats", 0, "nblocks" },
     { "gettransaction", 1, "include_watchonly" },
     { "gettransaction", 2, "verbose" },

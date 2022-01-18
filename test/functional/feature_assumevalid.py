@@ -66,7 +66,7 @@ class AssumeValidTest(BitcoinTestFramework):
         # Start node0. We don't start the other nodes yet since
         # we need to pre-mine a block with an invalid transaction
         # signature so we can pass in the block hash as assumevalid.
-        self.start_node(0)
+        self.start_node(0, extra_args=["--btgheight=2500"])
 
     def send_blocks_until_disconnected(self, p2p_conn):
         """Keep sending blocks to the node until we're disconnected."""
@@ -161,8 +161,8 @@ class AssumeValidTest(BitcoinTestFramework):
         self.nodes[0].disconnect_p2ps()
 
         # Start node1 and node2 with assumevalid so they accept a block with a bad signature.
-        self.start_node(1, extra_args=["-assumevalid=" + hex(block102.sha256)])
-        self.start_node(2, extra_args=["-assumevalid=" + hex(block102.sha256)])
+        self.start_node(1, extra_args=["-assumevalid=" + hex(block102.sha256), "--btgheight=2500"])
+        self.start_node(2, extra_args=["-assumevalid=" + hex(block102.sha256), "--btgheight=2500"])
 
         p2p0 = self.nodes[0].add_p2p_connection(BaseNode())
         p2p1 = self.nodes[1].add_p2p_connection(BaseNode())

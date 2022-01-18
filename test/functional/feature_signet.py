@@ -4,6 +4,11 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test basic signet functionality"""
 
+from test_framework.messages import (
+    CBlock,
+    FromHex,
+    ToHex,
+)
 from decimal import Decimal
 
 from test_framework.test_framework import BitcoinTestFramework
@@ -56,14 +61,16 @@ class SignetBasicTest(BitcoinTestFramework):
         self.log.info("pregenerated signet blocks check")
 
         height = 0
-        for block in signet_blocks:
-            assert_equal(self.nodes[2].submitblock(block), None)
+        for block_hex in signet_blocks:
+            block = FromHex(CBlock(), block_hex, legacy=True)
+            assert_equal(self.nodes[2].submitblock(block.serialize(legacy=False).hex()), None)
             height += 1
             assert_equal(self.nodes[2].getblockcount(), height)
 
         self.log.info("pregenerated signet blocks check (incompatible solution)")
 
-        assert_equal(self.nodes[4].submitblock(signet_blocks[0]), 'bad-signet-blksig')
+        block_bad = FromHex(CBlock(), signet_blocks[0], legacy=True)
+        assert_equal(self.nodes[4].submitblock(block_bad.serialize(legacy=False).hex()), 'bad-signet-blksig')
 
         self.log.info("test that signet logs the network magic on node start")
         with self.nodes[0].assert_debug_log(["Signet derived magic (message start)"]):

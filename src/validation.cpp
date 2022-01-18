@@ -943,12 +943,6 @@ bool MemPoolAccept::PreChecks(ATMPArgs& args, Workspace& ws)
         }
     }
 	
-	unsigned int scriptVerifyFlags = STANDARD_SCRIPT_VERIFY_FLAGS;
-    if (!IsBTGHardForkEnabled(::ChainActive().Tip()->nHeight + 1, Params().GetConsensus())) {
-        // The pending block is not BTG block
-        scriptVerifyFlags |= SCRIPT_FORKID_DISABLED;
-    }
-		
     return true;
 }
 
@@ -958,7 +952,11 @@ bool MemPoolAccept::PolicyScriptChecks(ATMPArgs& args, Workspace& ws, Precompute
 
     TxValidationState &state = args.m_state;
 
-    constexpr unsigned int scriptVerifyFlags = STANDARD_SCRIPT_VERIFY_FLAGS;
+    unsigned int scriptVerifyFlags = STANDARD_SCRIPT_VERIFY_FLAGS;
+    if (!IsBTGHardForkEnabled(::ChainActive().Tip()->nHeight + 1, Params().GetConsensus())) {
+        // The pending block is not BTG block
+        scriptVerifyFlags |= SCRIPT_FORKID_DISABLED;
+    }
 
     // Check input scripts and signatures.
     // This is done last to help prevent CPU exhaustion denial-of-service attacks.
@@ -1072,7 +1070,6 @@ bool MemPoolAccept::AcceptSingleTransaction(const CTransactionRef& ptx, ATMPArgs
     // checks first and avoid hashing and signature verification unless those
     // checks pass, to mitigate CPU exhaustion denial-of-service attacks.
     PrecomputedTransactionData txdata;
-
     if (!PolicyScriptChecks(args, workspace, txdata)) return false;
 
     if (!ConsensusScriptChecks(args, workspace, txdata)) return false;

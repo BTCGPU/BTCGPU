@@ -260,7 +260,6 @@ BASE_SCRIPTS = [
     'wallet_coinbase_category.py --descriptors',
     'feature_filelock.py',
     'feature_loadblock.py',
-    'p2p_dos_header_tree.py',
     'p2p_unrequested_blocks.py',
     'p2p_blockfilters.py',
     'feature_includeconf.py',
@@ -285,7 +284,7 @@ BASE_SCRIPTS = [
     'feature_help.py',
     'feature_shutdown.py',
     'p2p_ibd_txrelay.py',
-	'feature_btg_timelock.py',
+    'feature_btg_timelock.py',
     'feature_btg_hardfork.py',
     'feature_btg_finalize_block.py',
     # Don't append tests at the end to avoid merge conflicts

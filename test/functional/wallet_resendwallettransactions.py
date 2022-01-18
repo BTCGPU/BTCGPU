@@ -48,7 +48,7 @@ class ResendWalletTransactionsTest(BitcoinTestFramework):
         block = create_block(int(node.getbestblockhash(), 16), create_coinbase(node.getblockcount() + 1), block_time)
         block.rehash()
         block.solve()
-        node.submitblock(ToHex(block))
+        node.submitblock(ToHex(block, legacy=False))
 
         node.syncwithvalidationinterfacequeue()
         now = int(time.time())

@@ -66,7 +66,11 @@ public:
         } else {
             uint32_t legacy_nonce = (uint32_t)obj.nNonce.GetUint64(0);
             READWRITE(legacy_nonce);
-            //obj.nNonce = ArithToUint256(arith_uint256(legacy_nonce));
+            //if (ser_action.ForRead())
+	    {
+		CBlockHeader& obj_temp = const_cast<CBlockHeader&>(obj);
+                obj_temp.nNonce = ArithToUint256(arith_uint256(legacy_nonce));
+	    }
         }
     }
 

@@ -2510,7 +2510,8 @@ bool CWallet::SignTransaction(CMutableTransaction& tx, bool no_forkid) const
         coins[input.prevout] = Coin(wtx.tx->vout[input.prevout.n], wtx.m_confirm.block_height, wtx.IsCoinBase());
     }
     std::map<int, std::string> input_errors;
-    return SignTransaction(tx, coins, SIGHASH_ALL, input_errors, no_forkid);
+    int sighash_flag = no_forkid ? SIGHASH_ALL : SIGHASH_ALL | SIGHASH_FORKID;
+    return SignTransaction(tx, coins, sighash_flag, input_errors, no_forkid);
 }
 
 bool CWallet::SignTransaction(CMutableTransaction& tx, const std::map<COutPoint, Coin>& coins, int sighash, std::map<int, std::string>& input_errors, bool no_forkid) const
@@ -2611,14 +2612,9 @@ bool CWallet::FundTransaction(CMutableTransaction& tx, CAmount& nFeeRet, int& nC
     // CreateTransaction call and LockCoin calls (when lockUnspents is true).
     LOCK(cs_wallet);
 
-    bool no_forkid;
-    {
-        LOCK(cs_main);
-        no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
-    }
     CTransactionRef tx_new;
     FeeCalculation fee_calc_out;
-    if (!CreateTransaction(vecSend, tx_new, nFeeRet, nChangePosInOut, error, coinControl, fee_calc_out, false, no_forkid)) {
+    if (!CreateTransaction(vecSend, tx_new, nFeeRet, nChangePosInOut, error, coinControl, fee_calc_out, false)) {
         return false;
     }
 
@@ -3116,8 +3112,7 @@ bool CWallet::CreateTransaction(
         bilingual_str& error,
         const CCoinControl& coin_control,
         FeeCalculation& fee_calc_out,
-        bool sign,
-	bool no_forkid)
+        bool sign)
 {
     int nChangePosIn = nChangePosInOut;
     CTransactionRef tx2 = tx;

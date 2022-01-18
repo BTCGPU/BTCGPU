@@ -86,7 +86,7 @@ class GetblockstatsTest(BitcoinTestFramework):
         self.sync_all()
 
         for b in blocks:
-            self.nodes[0].submitblock(b, '', True)
+            self.nodes[0].submitblock(b, True, '')
 
 
     def run_test(self):

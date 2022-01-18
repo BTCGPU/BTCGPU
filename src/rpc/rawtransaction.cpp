@@ -1657,7 +1657,7 @@ static RPCHelpMan utxoupdatepsbt()
         // Update script/keypath information using descriptor data.
         // Note that SignPSBTInput does a lot more than just constructing ECDSA signatures
         // we don't actually care about those here, in fact.
-        SignPSBTInput(public_provider, psbtx, i, /* sighash_type */ 1, no_forkid);
+        SignPSBTInput(public_provider, psbtx, i, no_forkid);
     }
 
     // Update script/keypath information using descriptor data.

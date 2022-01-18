@@ -133,7 +133,7 @@ class ZMQTest (BitcoinTestFramework):
 
             # Should receive the generated raw block.
             block = rawblock.receive()
-			assert_equal(genhashes[x], blockhashstr(block))
+            assert_equal(genhashes[x], blockhashstr(block))
 
             # Should receive the generated block hash.
             hash = hashblock.receive().hex()
@@ -363,7 +363,7 @@ class ZMQTest (BitcoinTestFramework):
                 block.vtx.append(tx)
             add_witness_commitment(block)
             block.solve()
-            assert_equal(self.nodes[0].submitblock(block.serialize().hex()), None)
+            assert_equal(self.nodes[0].submitblock(block.serialize(legacy=False).hex()), None)
             tip = self.nodes[0].getbestblockhash()
             assert_equal(int(tip, 16), block.sha256)
             orig_txid_2 = self.nodes[0].sendtoaddress(address=self.nodes[0].getnewaddress(), amount=1.0, replaceable=True)

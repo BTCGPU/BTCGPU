@@ -62,7 +62,7 @@ def mine_large_blocks(node, n):
         block.solve()
 
         # Submit to the node
-        node.submitblock(ToHex(block))
+        node.submitblock(ToHex(block, legacy=False))
 
         previousblockhash = block.sha256
         height += 1

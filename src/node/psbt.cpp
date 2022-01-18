@@ -23,6 +23,11 @@ PSBTAnalysis AnalyzePSBT(PartiallySignedTransaction psbtx)
     CAmount in_amt = 0;
 
     result.inputs.resize(psbtx.tx->vin.size());
+    bool no_forkid;
+    {
+        LOCK(cs_main);
+        no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
+    }
 
     for (unsigned int i = 0; i < psbtx.tx->vin.size(); ++i) {
         PSBTInput& input = psbtx.inputs[i];
@@ -62,7 +67,7 @@ PSBTAnalysis AnalyzePSBT(PartiallySignedTransaction psbtx)
 
             // Figure out what is missing
             SignatureData outdata;
-            bool complete = SignPSBTInput(DUMMY_SIGNING_PROVIDER, psbtx, i, 1, &outdata);
+            bool complete = SignPSBTInput(DUMMY_SIGNING_PROVIDER, psbtx, i, no_forkid, &outdata);
 
             // Things are missing
             if (!complete) {
@@ -83,12 +88,6 @@ PSBTAnalysis AnalyzePSBT(PartiallySignedTransaction psbtx)
         } else if (!utxo.IsNull()){
             input_analysis.is_final = true;
         }
-    }
-
-    bool no_forkid;
-    {
-        LOCK(cs_main);
-        no_forkid = !IsBTGHardForkEnabledForCurrentBlock(Params().GetConsensus());
     }
 
     // Calculate next role for PSBT by grabbing "minimum" PSBTInput next role
@@ -128,7 +127,7 @@ PSBTAnalysis AnalyzePSBT(PartiallySignedTransaction psbtx)
             PSBTInput& input = psbtx.inputs[i];
             Coin newcoin;
 
-            if (!SignPSBTInput(DUMMY_SIGNING_PROVIDER, psbtx, i, 1, no_forkid, nullptr, true) || !psbtx.GetInputUTXO(newcoin.out, i)) {
+            if (!SignPSBTInput(DUMMY_SIGNING_PROVIDER, psbtx, i, no_forkid, nullptr, true) || !psbtx.GetInputUTXO(newcoin.out, i)) {
                 success = false;
                 break;
             } else {

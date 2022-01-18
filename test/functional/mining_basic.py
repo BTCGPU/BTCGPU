@@ -76,8 +76,8 @@ class MiningTest(BitcoinTestFramework):
         def assert_submitblock(block, result_str_1, result_str_2=None):
             block.solve()
             result_str_2 = result_str_2 or 'duplicate-invalid'
-            assert_equal(result_str_1, node.submitblock(hexdata=block.serialize().hex()))
-            assert_equal(result_str_2, node.submitblock(hexdata=block.serialize().hex()))
+            assert_equal(result_str_1, node.submitblock(hexdata=block.serialize(legacy=False).hex()))
+            assert_equal(result_str_2, node.submitblock(hexdata=block.serialize(legacy=False).hex()))
 
         self.log.info('getmininginfo')
         mining_info = node.getmininginfo()
@@ -198,7 +198,7 @@ class MiningTest(BitcoinTestFramework):
         self.log.info('submitheader tests')
         assert_raises_rpc_error(-22, 'Block header decode failed', lambda: node.submitheader(hexdata='xx' * BLOCK_HEADER_SIZE))
         assert_raises_rpc_error(-22, 'Block header decode failed', lambda: node.submitheader(hexdata='ff' * (BLOCK_HEADER_SIZE-2)))
-        assert_raises_rpc_error(-25, 'Must submit previous header', lambda: node.submitheader(hexdata=super(CBlock, bad_block).serialize().hex()))
+        assert_raises_rpc_error(-25, 'Must submit previous header', lambda: node.submitheader(hexdata=super(CBlock, bad_block).serialize(legacy=False).hex()))
 
         block.nTime += 1
         block.solve()
@@ -207,23 +207,23 @@ class MiningTest(BitcoinTestFramework):
             return {'hash': b_hash, 'height': 202, 'branchlen': branchlen, 'status': status}
 
         assert chain_tip(block.hash) not in node.getchaintips()
-        node.submitheader(hexdata=block.serialize().hex())
+        node.submitheader(hexdata=block.serialize(legacy=False).hex())
         assert chain_tip(block.hash) in node.getchaintips()
-        node.submitheader(hexdata=CBlockHeader(block).serialize().hex())  # Noop
+        node.submitheader(hexdata=CBlockHeader(block).serialize(legacy=False).hex())  # Noop
         assert chain_tip(block.hash) in node.getchaintips()
 
         bad_block_root = copy.deepcopy(block)
         bad_block_root.hashMerkleRoot += 2
         bad_block_root.solve()
         assert chain_tip(bad_block_root.hash) not in node.getchaintips()
-        node.submitheader(hexdata=CBlockHeader(bad_block_root).serialize().hex())
+        node.submitheader(hexdata=CBlockHeader(bad_block_root).serialize(legacy=False).hex())
         assert chain_tip(bad_block_root.hash) in node.getchaintips()
         # Should still reject invalid blocks, even if we have the header:
-        assert_equal(node.submitblock(hexdata=bad_block_root.serialize().hex()), 'bad-txnmrklroot')
-        assert_equal(node.submitblock(hexdata=bad_block_root.serialize().hex()), 'bad-txnmrklroot')
+        assert_equal(node.submitblock(hexdata=bad_block_root.serialize(legacy=False).hex()), 'bad-txnmrklroot')
+        assert_equal(node.submitblock(hexdata=bad_block_root.serialize(legacy=False).hex()), 'bad-txnmrklroot')
         assert chain_tip(bad_block_root.hash) in node.getchaintips()
         # We know the header for this invalid block, so should just return early without error:
-        node.submitheader(hexdata=CBlockHeader(bad_block_root).serialize().hex())
+        node.submitheader(hexdata=CBlockHeader(bad_block_root).serialize(legacy=False).hex())
         assert chain_tip(bad_block_root.hash) in node.getchaintips()
 
         bad_block_lock = copy.deepcopy(block)
@@ -231,19 +231,19 @@ class MiningTest(BitcoinTestFramework):
         bad_block_lock.vtx[0].rehash()
         bad_block_lock.hashMerkleRoot = bad_block_lock.calc_merkle_root()
         bad_block_lock.solve()
-        assert_equal(node.submitblock(hexdata=bad_block_lock.serialize().hex()), 'bad-txns-nonfinal')
-        assert_equal(node.submitblock(hexdata=bad_block_lock.serialize().hex()), 'duplicate-invalid')
+        assert_equal(node.submitblock(hexdata=bad_block_lock.serialize(legacy=False).hex()), 'bad-txns-nonfinal')
+        assert_equal(node.submitblock(hexdata=bad_block_lock.serialize(legacy=False).hex()), 'duplicate-invalid')
         # Build a "good" block on top of the submitted bad block
         bad_block2 = copy.deepcopy(block)
         bad_block2.hashPrevBlock = bad_block_lock.sha256
         bad_block2.solve()
-        assert_raises_rpc_error(-25, 'bad-prevblk', lambda: node.submitheader(hexdata=CBlockHeader(bad_block2).serialize().hex()))
+        assert_raises_rpc_error(-25, 'bad-prevblk', lambda: node.submitheader(hexdata=CBlockHeader(bad_block2).serialize(legacy=False).hex()))
 
         # Should reject invalid header right away
         bad_block_time = copy.deepcopy(block)
         bad_block_time.nTime = 1
         bad_block_time.solve()
-        assert_raises_rpc_error(-25, 'time-too-old', lambda: node.submitheader(hexdata=CBlockHeader(bad_block_time).serialize().hex()))
+        assert_raises_rpc_error(-25, 'time-too-old', lambda: node.submitheader(hexdata=CBlockHeader(bad_block_time).serialize(legacy=False).hex()))
 
         # Should ask for the block from a p2p node, if they announce the header as well:
         peer = node.add_p2p_connection(P2PDataStore())
@@ -254,11 +254,11 @@ class MiningTest(BitcoinTestFramework):
 
         # Building a few blocks should give the same results
         node.generatetoaddress(10, node.get_deterministic_priv_key().address)
-        assert_raises_rpc_error(-25, 'time-too-old', lambda: node.submitheader(hexdata=CBlockHeader(bad_block_time).serialize().hex()))
-        assert_raises_rpc_error(-25, 'bad-prevblk', lambda: node.submitheader(hexdata=CBlockHeader(bad_block2).serialize().hex()))
-        node.submitheader(hexdata=CBlockHeader(block).serialize().hex())
-        node.submitheader(hexdata=CBlockHeader(bad_block_root).serialize().hex())
-        assert_equal(node.submitblock(hexdata=block.serialize().hex()), 'duplicate')  # valid
+        assert_raises_rpc_error(-25, 'time-too-old', lambda: node.submitheader(hexdata=CBlockHeader(bad_block_time).serialize(legacy=False).hex()))
+        assert_raises_rpc_error(-25, 'bad-prevblk', lambda: node.submitheader(hexdata=CBlockHeader(bad_block2).serialize(legacy=False).hex()))
+        node.submitheader(hexdata=CBlockHeader(block).serialize(legacy=False).hex())
+        node.submitheader(hexdata=CBlockHeader(bad_block_root).serialize(legacy=False).hex())
+        assert_equal(node.submitblock(hexdata=block.serialize(legacy=False).hex()), 'duplicate')  # valid
 
 
 if __name__ == '__main__':

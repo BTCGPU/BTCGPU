@@ -296,7 +296,7 @@ class BlockchainTest(BitcoinTestFramework):
         assert isinstance(header['difficulty'], Decimal)
 
         # Test with verbose=False, which should return the header as hex.
-        header_hex = node.getblockheader(blockhash=besthash, verbose=False)
+        header_hex = node.getblockheader(blockhash=besthash, verbose=False, legacy=True)
         assert_is_hex_string(header_hex)
 
         header = FromHex(CBlockHeader(), header_hex)

@@ -96,9 +96,9 @@ if BUILD_BITCOIN_TX
   bin_PROGRAMS += bitcoin-tx
 endif
 if ENABLE_WALLET
-#if BUILD_BITCOIN_WALLET
-#  bin_PROGRAMS += bitcoin-wallet
-#endif
+if BUILD_BITCOIN_WALLET
+  bin_PROGRAMS += bitcoin-wallet
+endif
 endif
 
 .PHONY: FORCE check-symbols check-security
@@ -655,12 +655,28 @@ bitcoin_tx_LDADD = \
 bitcoin_tx_LDADD += $(BOOST_LIBS)
 #
 
+bgoldd_wallet_bin_ldadd = \
+  $(LIBBITCOIN_WALLET) \
+  $(LIBBITCOIN_SERVER) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_UTIL) \
+  $(LIBUNIVALUE) \
+  $(LIBBITCOIN_ZMQ) \
+  $(LIBBITCOIN_CONSENSUS) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(LIBLEVELDB) \
+  $(LIBLEVELDB_SSE42) \
+  $(LIBMEMENV) \
+  $(LIBSECP256K1)
+
+bgoldd_wallet_bin_ldadd += $(BOOST_LIBS) $(BDB_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(SQLITE_LIBS) $(LIBEQUIHASH_LIBS)
+
 # bitcoin-wallet binary #
 bitcoin_wallet_SOURCES = bitcoin-wallet.cpp
 bitcoin_wallet_CPPFLAGS = $(bgoldd_bin_cppflags)
 bitcoin_wallet_CXXFLAGS = $(bgoldd_bin_cxxflags)
 bitcoin_wallet_LDFLAGS = $(bgoldd_bin_ldflags)
-bitcoin_wallet_LDADD = $(LIBBITCOIN_WALLET_TOOL) $(bgoldd_bin_ldadd)
+bitcoin_wallet_LDADD = $(LIBBITCOIN_WALLET_TOOL) $(bgoldd_wallet_bin_ldadd)
 
 if TARGET_WINDOWS
 bitcoin_wallet_SOURCES += bitcoin-wallet-res.rc

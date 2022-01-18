@@ -417,6 +417,7 @@ void SetupServerArgs(NodeContext& node)
     argsman.AddArg("-mempoolexpiry=<n>", strprintf("Do not keep transactions in the mempool longer than <n> hours (default: %u)", DEFAULT_MEMPOOL_EXPIRY), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-minfinalizationdepth=<n>", strprintf("Configure at what depth blocks are considered final (default: %d). Use -1 to disable. For an accurate finalization state, better to check getfinalizedblockhash to directly see if the block is finalized.", DEFAULT_MAX_REORG_DEPTH), false, OptionsCategory::OPTIONS);
     argsman.AddArg("-minimumchainwork=<hex>", strprintf("Minimum work assumed to exist on a valid chain in hex (default: %s, testnet: %s, signet: %s)", defaultChainParams->GetConsensus().nMinimumChainWork.GetHex(), testnetChainParams->GetConsensus().nMinimumChainWork.GetHex(), signetChainParams->GetConsensus().nMinimumChainWork.GetHex()), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-btgheight=<n>", strprintf("BTG fork height (default: %d, regnet: %d, signet: %d)", defaultChainParams->GetConsensus().BTGHeight, regtestChainParams->GetConsensus().BTGHeight, signetChainParams->GetConsensus().BTGHeight), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::OPTIONS);
     argsman.AddArg("-par=<n>", strprintf("Set the number of script verification threads (%u to %d, 0 = auto, <0 = leave that many cores free, default: %d)",
         -GetNumCores(), MAX_SCRIPTCHECK_THREADS, DEFAULT_SCRIPTCHECK_THREADS), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-persistmempool", strprintf("Whether to save the mempool on shutdown and load on restart (default: %u)", DEFAULT_PERSIST_MEMPOOL), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
@@ -1098,6 +1099,11 @@ bool AppInitParameterInteraction(const ArgsManager& args)
     LogPrintf("Setting nMinimumChainWork=%s\n", nMinimumChainWork.GetHex());
     if (nMinimumChainWork < UintToArith256(chainparams.GetConsensus().nMinimumChainWork)) {
         LogPrintf("Warning: nMinimumChainWork set below default value of %s\n", chainparams.GetConsensus().nMinimumChainWork.GetHex());
+    }
+
+    if (args.IsArgSet("-btgheight")) {
+        int64_t* btgHeight = (int64_t*)&chainparams.GetConsensus().BTGHeight;
+        *btgHeight = args.GetArg("-btgheight", 2000);
     }
 
     // mempool limits

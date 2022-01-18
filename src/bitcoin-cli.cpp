@@ -35,7 +35,6 @@
 
 #include <univalue.h>
 #include <compat/stdin.h>
-#include <string>
 #include <map>
 
 const std::function<std::string(const char*)> G_TRANSLATION_FUN = nullptr;

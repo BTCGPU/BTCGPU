@@ -69,6 +69,7 @@ from test_framework.script import (
     SIGHASH_DEFAULT,
     SIGHASH_ALL,
     SIGHASH_NONE,
+    SIGHASH_FORKID,
     SIGHASH_SINGLE,
     SIGHASH_ANYONECANPAY,
     SegwitV0SignatureHash,
@@ -1102,6 +1103,8 @@ def spenders_taproot_active():
         for p2sh in [False, True]:
             for witv0 in [False, True]:
                 for hashtype in VALID_SIGHASHES_ECDSA + [random.randrange(0x04, 0x80), random.randrange(0x84, 0x100)]:
+                    if hashtype & SIGHASH_FORKID:
+                        continue
                     standard = (hashtype in VALID_SIGHASHES_ECDSA) and (compressed or not witv0)
                     add_spender(spenders, "legacy/pk-wrongkey", hashtype=hashtype, p2sh=p2sh, witv0=witv0, standard=standard, script=CScript([pubkey1, OP_CHECKSIG]), **SINGLE_SIG, key=eckey1, failure={"key": eckey2}, sigops_weight=4-3*witv0, **ERR_NO_SUCCESS)
                     add_spender(spenders, "legacy/pkh-sighashflip", hashtype=hashtype, p2sh=p2sh, witv0=witv0, standard=standard, pkh=pubkey1, key=eckey1, **SIGHASH_BITFLIP, sigops_weight=4-3*witv0, **ERR_NO_SUCCESS)
@@ -1110,6 +1113,8 @@ def spenders_taproot_active():
     for p2sh in [False, True]:
         for witv0 in [False, True]:
             for hashtype in VALID_SIGHASHES_ECDSA + [random.randrange(0x04, 0x80), random.randrange(0x84, 0x100)]:
+                if hashtype & SIGHASH_FORKID:
+                    continue
                 standard = hashtype in VALID_SIGHASHES_ECDSA and (p2sh or witv0)
                 add_spender(spenders, "compat/nocsa", hashtype=hashtype, p2sh=p2sh, witv0=witv0, standard=standard, script=CScript([OP_IF, OP_11, pubkey1, OP_CHECKSIGADD, OP_12, OP_EQUAL, OP_ELSE, pubkey1, OP_CHECKSIG, OP_ENDIF]), key=eckey1, sigops_weight=4-3*witv0, inputs=[getter("sign"), b''], failure={"inputs": [getter("sign"), b'\x01']}, **ERR_UNDECODABLE)
 
@@ -1218,7 +1223,7 @@ class TaprootTest(BitcoinTestFramework):
         witness and add_witness_commitment(block)
         block.rehash()
         block.solve()
-        block_response = node.submitblock(block.serialize().hex())
+        block_response = node.submitblock(block.serialize(legacy=False).hex())
         if err_msg is not None:
             assert block_response is not None and err_msg in block_response, "Missing error message '%s' from block response '%s': %s" % (err_msg, "(None)" if block_response is None else block_response, msg)
         if (accept):
@@ -1466,7 +1471,7 @@ class TaprootTest(BitcoinTestFramework):
         add_witness_commitment(block)
         block.rehash()
         block.solve()
-        assert_equal(None, self.nodes[1].submitblock(block.serialize().hex()))
+        assert_equal(None, self.nodes[1].submitblock(block.serialize(legacy=False).hex()))
         self.sync_blocks()
 
         # Pre-taproot activation tests.

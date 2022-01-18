@@ -137,7 +137,6 @@ public:
     virtual CTransactionRef createTransaction(const std::vector<CRecipient>& recipients,
         const CCoinControl& coin_control,
         bool sign,
-        bool no_forkid,
         int& change_pos,
         CAmount& fee,
         bilingual_str& fail_reason) = 0;
