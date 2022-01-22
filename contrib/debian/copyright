@@ -5,7 +5,7 @@ Upstream-Contact: Satoshi Nakamoto <satoshin@gmx.com>
 Source: https://github.com/BTCGPU/BTCGPU
 
 Files: *
-Copyright: 2009-2018, Bitcoin Core Developers, 2017-2018 Bitcoin Gold Developers
+Copyright: 2017-2022, Bitcoin Gold Developers
 License: Expat
 Comment: The Bitcoin Core Developers encompasses the current developers listed on bitcoin.org,
          as well as the numerous contributors to the project.
