@@ -1,5 +1,5 @@
 ---
-name: "bitcoin-gold-osx-0.17"
+name: "bitcoin-gold-osx-0.21"
 enable_cache: true
 distro: "ubuntu"
 suites:
