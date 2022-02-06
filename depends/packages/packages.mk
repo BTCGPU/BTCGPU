@@ -1,4 +1,5 @@
-packages:=boost libevent
+equihash_packages := libb2
+packages:=boost libevent $(equihash_packages)
 
 qt_packages = zlib
 
