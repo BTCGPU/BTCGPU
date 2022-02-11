@@ -1605,7 +1605,7 @@ if test x$build_bitcoin_wallet$build_bitcoin_cli$build_bitcoin_tx$build_bitcoin_
 fi
 
 if test x$TARGET_OS = xwindows; then
-  AC_DEFINE(NO_UTIL_LOG, 1, [Define this symbol to build in assembly routines])
+  AC_DEFINE(NO_UTIL_LOG, 1, [Define this symbol to build without util log for equihash])
 fi
 
 AM_CONDITIONAL([TARGET_DARWIN], [test x$TARGET_OS = xdarwin])
