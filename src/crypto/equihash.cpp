@@ -21,7 +21,7 @@
 #include <crypto/equihash.h>
 
 #ifndef NO_UTIL_LOG
-#include <util.h>
+#include <util/system.h>
 #else
 #define LogPrint(...)
 #endif

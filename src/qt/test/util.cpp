@@ -1,15 +1,17 @@
-#include <qt/callback.h>
+// Copyright (c) 2018-2019 The Bitcoin Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <QApplication>
 #include <QMessageBox>
-#include <QTimer>
-#include <QString>
 #include <QPushButton>
+#include <QString>
+#include <QTimer>
 #include <QWidget>
 
 void ConfirmMessage(QString* text, int msec)
 {
-    QTimer::singleShot(msec, makeCallback([text](Callback* callback) {
+    QTimer::singleShot(msec, [text]() {
         for (QWidget* widget : QApplication::topLevelWidgets()) {
             if (widget->inherits("QMessageBox")) {
                 QMessageBox* messageBox = qobject_cast<QMessageBox*>(widget);
@@ -17,6 +19,5 @@ void ConfirmMessage(QString* text, int msec)
                 messageBox->defaultButton()->click();
             }
         }
-        delete callback;
-    }), SLOT(call()));
+    });
 }

@@ -4,10 +4,10 @@
 
 #include <chain.h>
 #include <chainparams.h>
-#include <utiltime.h>
+#include <util/time.h>
 #include <validation.h>
 
-#include <test/test_bitcoin.h>
+#include <test/util/setup_common.h>
 
 #include <boost/test/unit_test.hpp>
 
@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(minfinalizationage) {
         // the test setup are too close to "now";
         BOOST_CHECK_MESSAGE(GetFinalizedBlock() == nullptr,
                             "No block finalized (tip at height "
-                                << chainActive.Tip()->nHeight << ")");
+                                << ::ChainActive().Tip()->nHeight << ")");
     }
 
     // Create minfinalizationdepth blocks. Auto-finalization will not occur because
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(minfinalizationage) {
         // These blocks are too recent.
         BOOST_CHECK_MESSAGE(GetFinalizedBlock() == nullptr,
                             "No block finalized (tip at height "
-                                << chainActive.Tip()->nHeight << ")");
+                                << ::ChainActive().Tip()->nHeight << ")");
     }
 
     // Make the finalization time to expire
@@ -44,18 +44,18 @@ BOOST_AUTO_TEST_CASE(minfinalizationage) {
     SetMockTime(mockedTime);
 
     // Next minfinalizationdepth blocks should cause auto-finalization
-    CBlockIndex *blockToFinalize = chainActive.Tip()->GetAncestor(
-        chainActive.Tip()->nHeight - DEFAULT_MAX_REORG_DEPTH);
+    CBlockIndex *blockToFinalize = ::ChainActive().Tip()->GetAncestor(
+        ::ChainActive().Tip()->nHeight - DEFAULT_MAX_REORG_DEPTH);
 
     for (uint32_t i = 0; i < DEFAULT_MAX_REORG_DEPTH; i++) {
-        blockToFinalize = chainActive.Next(blockToFinalize);
+        blockToFinalize = ::ChainActive().Next(blockToFinalize);
         block = CreateAndProcessBlock({}, p2pk_scriptPubKey);
         LOCK(cs_main);
         BOOST_CHECK_MESSAGE(GetFinalizedBlock() == blockToFinalize,
                             "Block finalized at height "
                                 << blockToFinalize->nHeight
                                 << " (tip at height "
-                                << chainActive.Tip()->nHeight << ")");
+                                << ::ChainActive().Tip()->nHeight << ")");
     }
 
     // Next blocks won't cause auto-finalization because the delay is not
@@ -68,27 +68,27 @@ BOOST_AUTO_TEST_CASE(minfinalizationage) {
                             "Finalized block remains unchanged at height "
                                 << blockToFinalize->nHeight
                                 << " (tip at height "
-                                << chainActive.Tip()->nHeight << ")");
+                                << ::ChainActive().Tip()->nHeight << ")");
     }
 
     // Make the finalization time to expire
     mockedTime += DEFAULT_MIN_FINALIZATION_DELAY + 1;
     SetMockTime(mockedTime);
 
-    blockToFinalize = chainActive.Tip()->GetAncestor(
-        chainActive.Tip()->nHeight - DEFAULT_MAX_REORG_DEPTH);
+    blockToFinalize = ::ChainActive().Tip()->GetAncestor(
+        ::ChainActive().Tip()->nHeight - DEFAULT_MAX_REORG_DEPTH);
 
     // Create some more blocks.
     // Finalization should start moving again.
     for (uint32_t i = 0; i < DEFAULT_MAX_REORG_DEPTH; i++) {
-        blockToFinalize = chainActive.Next(blockToFinalize);
+        blockToFinalize = ::ChainActive().Next(blockToFinalize);
         block = CreateAndProcessBlock({}, p2pk_scriptPubKey);
         LOCK(cs_main);
         BOOST_CHECK_MESSAGE(GetFinalizedBlock() == blockToFinalize,
                             "Block finalized at height "
                                 << blockToFinalize->nHeight
                                 << " (tip at height "
-                                << chainActive.Tip()->nHeight << ")");
+                                << ::ChainActive().Tip()->nHeight << ")");
     }
 }
 

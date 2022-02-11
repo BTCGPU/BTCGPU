@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2014-2018 The Bitcoin Core developers
+# Copyright (c) 2014-2020 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test behavior of headers messages to announce blocks.
@@ -87,11 +87,12 @@ e. Announce one more that doesn't connect.
 """
 from test_framework.blocktools import create_block, create_coinbase
 from test_framework.messages import CInv
-from test_framework.mininode import (
+from test_framework.p2p import (
     CBlockHeader,
     NODE_WITNESS,
     P2PInterface,
-    mininode_lock,
+    p2p_lock,
+    MSG_BLOCK,
     msg_block,
     msg_getblocks,
     msg_getdata,
@@ -103,8 +104,6 @@ from test_framework.mininode import (
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
-    sync_blocks,
-    wait_until,
 )
 
 DIRECT_FETCH_RESPONSE_TIME = 0.05
@@ -121,7 +120,7 @@ class BaseNode(P2PInterface):
         """Request data for a list of block hashes."""
         msg = msg_getdata()
         for x in block_hashes:
-            msg.inv.append(CInv(2, x))
+            msg.inv.append(CInv(MSG_BLOCK, x))
         self.send_message(msg)
 
     def send_get_headers(self, locator, hashstop):
@@ -132,7 +131,7 @@ class BaseNode(P2PInterface):
 
     def send_block_inv(self, blockhash):
         msg = msg_inv()
-        msg.inv = [CInv(2, blockhash)]
+        msg.inv = [CInv(MSG_BLOCK, blockhash)]
         self.send_message(msg)
 
     def send_header_for_blocks(self, new_blocks):
@@ -145,16 +144,9 @@ class BaseNode(P2PInterface):
         getblocks_message.locator.vHave = locator
         self.send_message(getblocks_message)
 
-    def wait_for_getdata(self, hash_list, timeout=60):
-        if hash_list == []:
-            return
-
-        test_function = lambda: "getdata" in self.last_message and [x.hash for x in self.last_message["getdata"].inv] == hash_list
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
-
     def wait_for_block_announcement(self, block_hash, timeout=60):
         test_function = lambda: self.last_blockhash_announced == block_hash
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        self.wait_until(test_function, timeout=timeout)
 
     def on_inv(self, message):
         self.block_announced = True
@@ -170,7 +162,7 @@ class BaseNode(P2PInterface):
             self.last_blockhash_announced = message.headers[-1].sha256
 
     def clear_block_announcements(self):
-        with mininode_lock:
+        with p2p_lock:
             self.block_announced = False
             self.last_message.pop("inv", None)
             self.last_message.pop("headers", None)
@@ -181,8 +173,8 @@ class BaseNode(P2PInterface):
         """Test whether the last headers announcements received are right.
            Headers may be announced across more than one message."""
         test_function = lambda: (len(self.recent_headers_announced) >= len(headers))
-        wait_until(test_function, timeout=60, lock=mininode_lock)
-        with mininode_lock:
+        self.wait_until(test_function)
+        with p2p_lock:
             assert_equal(self.recent_headers_announced, headers)
             self.block_announced = False
             self.last_message.pop("headers", None)
@@ -193,9 +185,9 @@ class BaseNode(P2PInterface):
         inv should be a list of block hashes."""
 
         test_function = lambda: self.block_announced
-        wait_until(test_function, timeout=60, lock=mininode_lock)
+        self.wait_until(test_function)
 
-        with mininode_lock:
+        with p2p_lock:
             compare_inv = []
             if "inv" in self.last_message:
                 compare_inv = [x.hash for x in self.last_message["inv"].inv]
@@ -208,15 +200,12 @@ class SendHeadersTest(BitcoinTestFramework):
         self.setup_clean_chain = True
         self.num_nodes = 2
 
-    def skip_test_if_missing_module(self):
-        self.skip_if_no_wallet()
-
     def mine_blocks(self, count):
         """Mine count blocks and return the new tip."""
 
         # Clear out block announcements from each p2p listener
         [x.clear_block_announcements() for x in self.nodes[0].p2ps]
-        self.nodes[0].generate(count)
+        self.nodes[0].generatetoaddress(count, self.nodes[0].get_deterministic_priv_key().address)
         return int(self.nodes[0].getbestblockhash(), 16)
 
     def mine_reorg(self, length):
@@ -226,8 +215,9 @@ class SendHeadersTest(BitcoinTestFramework):
         to-be-reorged-out blocks are mined, so that we don't break later tests.
         return the list of block hashes newly mined."""
 
-        self.nodes[0].generate(length)  # make sure all invalidated blocks are node0's
-        sync_blocks(self.nodes, wait=0.1)
+        # make sure all invalidated blocks are node0's
+        self.nodes[0].generatetoaddress(length, self.nodes[0].get_deterministic_priv_key().address)
+        self.sync_blocks(self.nodes, wait=0.1)
         for x in self.nodes[0].p2ps:
             x.wait_for_block_announcement(int(self.nodes[0].getbestblockhash(), 16))
             x.clear_block_announcements()
@@ -235,8 +225,8 @@ class SendHeadersTest(BitcoinTestFramework):
         tip_height = self.nodes[1].getblockcount()
         hash_to_invalidate = self.nodes[1].getblockhash(tip_height - (length - 1))
         self.nodes[1].invalidateblock(hash_to_invalidate)
-        all_hashes = self.nodes[1].generate(length + 1)  # Must be longer than the orig chain
-        sync_blocks(self.nodes, wait=0.1)
+        all_hashes = self.nodes[1].generatetoaddress(length + 1, self.nodes[1].get_deterministic_priv_key().address)  # Must be longer than the orig chain
+        self.sync_blocks(self.nodes, wait=0.1)
         return [int(x, 16) for x in all_hashes]
 
     def run_test(self):
@@ -246,15 +236,11 @@ class SendHeadersTest(BitcoinTestFramework):
         # will occur outside of direct fetching
         test_node = self.nodes[0].add_p2p_connection(BaseNode(), services=NODE_WITNESS)
 
-        # Ensure verack's have been processed by our peer
-        inv_node.sync_with_ping()
-        test_node.sync_with_ping()
-
         self.test_null_locators(test_node, inv_node)
         self.test_nonnull_locators(test_node, inv_node)
 
     def test_null_locators(self, test_node, inv_node):
-        tip = self.nodes[0].getblockheader(self.nodes[0].generate(1)[0])
+        tip = self.nodes[0].getblockheader(self.nodes[0].generatetoaddress(1, self.nodes[0].get_deterministic_priv_key().address)[0])
         tip_hash = int(tip["hash"], 16)
 
         inv_node.check_last_inv_announcement(inv=[tip_hash])
@@ -310,9 +296,8 @@ class SendHeadersTest(BitcoinTestFramework):
                 new_block.solve()
                 test_node.send_header_for_blocks([new_block])
                 test_node.wait_for_getdata([new_block.sha256])
-                test_node.send_message(msg_block(new_block))
-                test_node.sync_with_ping()  # make sure this block is processed
-                wait_until(lambda: inv_node.block_announced, timeout=60, lock=mininode_lock)
+                test_node.send_and_ping(msg_block(new_block))  # make sure this block is processed
+                inv_node.wait_until(lambda: inv_node.block_announced)
                 inv_node.clear_block_announcements()
                 test_node.clear_block_announcements()
 
@@ -342,7 +327,7 @@ class SendHeadersTest(BitcoinTestFramework):
             for j in range(2):
                 self.log.debug("Part 2.{}.{}: starting...".format(i, j))
                 blocks = []
-                for b in range(i + 1):
+                for _ in range(i + 1):
                     blocks.append(create_block(tip, create_coinbase(height), block_time))
                     blocks[-1].solve()
                     tip = blocks[-1].sha256
@@ -404,7 +389,7 @@ class SendHeadersTest(BitcoinTestFramework):
 
             block_time += 9
 
-            fork_point = self.nodes[0].getblock("%02x" % new_block_hashes[0])["previousblockhash"]
+            fork_point = self.nodes[0].getblock("%064x" % new_block_hashes[0])["previousblockhash"]
             fork_point = int(fork_point, 16)
 
             # Use getblocks/getdata
@@ -457,7 +442,7 @@ class SendHeadersTest(BitcoinTestFramework):
 
         # Create 2 blocks.  Send the blocks, then send the headers.
         blocks = []
-        for b in range(2):
+        for _ in range(2):
             blocks.append(create_block(tip, create_coinbase(height), block_time))
             blocks[-1].solve()
             tip = blocks[-1].sha256
@@ -470,12 +455,12 @@ class SendHeadersTest(BitcoinTestFramework):
         test_node.send_header_for_blocks(blocks)
         test_node.sync_with_ping()
         # should not have received any getdata messages
-        with mininode_lock:
+        with p2p_lock:
             assert "getdata" not in test_node.last_message
 
         # This time, direct fetch should work
         blocks = []
-        for b in range(3):
+        for _ in range(3):
             blocks.append(create_block(tip, create_coinbase(height), block_time))
             blocks[-1].solve()
             tip = blocks[-1].sha256
@@ -492,11 +477,11 @@ class SendHeadersTest(BitcoinTestFramework):
 
         # Now announce a header that forks the last two blocks
         tip = blocks[0].sha256
-        height -= 1
+        height -= 2
         blocks = []
 
         # Create extra blocks for later
-        for b in range(20):
+        for _ in range(20):
             blocks.append(create_block(tip, create_coinbase(height), block_time))
             blocks[-1].solve()
             tip = blocks[-1].sha256
@@ -508,7 +493,7 @@ class SendHeadersTest(BitcoinTestFramework):
         test_node.last_message.pop("getdata", None)
         test_node.send_header_for_blocks(blocks[0:1])
         test_node.sync_with_ping()
-        with mininode_lock:
+        with p2p_lock:
             assert "getdata" not in test_node.last_message
 
         # Announcing one more block on fork should trigger direct fetch for
@@ -527,7 +512,7 @@ class SendHeadersTest(BitcoinTestFramework):
         test_node.last_message.pop("getdata", None)
         test_node.send_header_for_blocks(blocks[18:19])
         test_node.sync_with_ping()
-        with mininode_lock:
+        with p2p_lock:
             assert "getdata" not in test_node.last_message
 
         self.log.info("Part 4: success!")
@@ -543,14 +528,14 @@ class SendHeadersTest(BitcoinTestFramework):
             test_node.last_message.pop("getdata", None)
             blocks = []
             # Create two more blocks.
-            for j in range(2):
+            for _ in range(2):
                 blocks.append(create_block(tip, create_coinbase(height), block_time))
                 blocks[-1].solve()
                 tip = blocks[-1].sha256
                 block_time += 1
                 height += 1
             # Send the header of the second block -> this won't connect.
-            with mininode_lock:
+            with p2p_lock:
                 test_node.last_message.pop("getheaders", None)
             test_node.send_header_for_blocks([blocks[1]])
             test_node.wait_for_getheaders()
@@ -564,7 +549,7 @@ class SendHeadersTest(BitcoinTestFramework):
         # Now we test that if we repeatedly don't send connecting headers, we
         # don't go into an infinite loop trying to get them to connect.
         MAX_UNCONNECTING_HEADERS = 10
-        for j in range(MAX_UNCONNECTING_HEADERS + 1):
+        for _ in range(MAX_UNCONNECTING_HEADERS + 1):
             blocks.append(create_block(tip, create_coinbase(height), block_time))
             blocks[-1].solve()
             tip = blocks[-1].sha256
@@ -573,7 +558,7 @@ class SendHeadersTest(BitcoinTestFramework):
 
         for i in range(1, MAX_UNCONNECTING_HEADERS):
             # Send a header that doesn't connect, check that we get a getheaders.
-            with mininode_lock:
+            with p2p_lock:
                 test_node.last_message.pop("getheaders", None)
             test_node.send_header_for_blocks([blocks[i]])
             test_node.wait_for_getheaders()
@@ -588,7 +573,7 @@ class SendHeadersTest(BitcoinTestFramework):
         # before we get disconnected.  Should be 5*MAX_UNCONNECTING_HEADERS
         for i in range(5 * MAX_UNCONNECTING_HEADERS - 1):
             # Send a header that doesn't connect, check that we get a getheaders.
-            with mininode_lock:
+            with p2p_lock:
                 test_node.last_message.pop("getheaders", None)
             test_node.send_header_for_blocks([blocks[i % len(blocks)]])
             test_node.wait_for_getheaders()

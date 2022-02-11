@@ -1,8 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2018 The Bitcoin Core developers
-// Copyright (c) 2016-2017 The Zcash developers
-// Copyright (c) 2018 The Bitcoin Private developers
-// Copyright (c) 2017-2018 The Bitcoin Gold developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -125,7 +122,7 @@ unsigned int DigishieldGetNextWorkRequired(const CBlockIndex* pindexLast, const 
                                            const Consensus::Params& params)
 {
     assert(pindexLast != nullptr);
-    unsigned int nProofOfWorkLimit = UintToArith256(params.PowLimit(true)).GetCompact();  // Always postfork.
+    unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
     const CBlockIndex* pindexFirst = pindexLast;
     arith_uint256 bnTot {0};
@@ -221,7 +218,7 @@ unsigned int BitcoinCalculateNextWorkRequired(const CBlockIndex* pindexLast, int
 {
     if (params.fPowNoRetargeting)
         return pindexLast->nBits;
-    
+
     // Limit adjustment step
     int64_t nActualTimespan = pindexLast->GetBlockTime() - nFirstBlockTime;
     if (nActualTimespan < params.nPowTargetTimespanLegacy/4)
@@ -238,7 +235,7 @@ unsigned int BitcoinCalculateNextWorkRequired(const CBlockIndex* pindexLast, int
     
     if (bnNew > bnPowLimit)
         bnNew = bnPowLimit;
-    
+
     return bnNew.GetCompact();
 }
 

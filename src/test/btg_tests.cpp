@@ -10,7 +10,7 @@
 #include <primitives/block.h>
 #include <script/standard.h>
 #include <test/btg_cltv_multisig_data.h>
-#include <test/test_bitcoin.h>
+#include <test/util/setup_common.h>
 
 #include <stdint.h>
 
@@ -31,19 +31,17 @@ public:
     uint256 nNonce;
     std::vector<unsigned char> nSolution;
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(this->nVersion);
-        nVersion = this->nVersion;
-        READWRITE(hashPrevBlock);
-        READWRITE(hashMerkleRoot);
-        READWRITE(hashReserved);
-        READWRITE(nTime);
-        READWRITE(nBits);
-        READWRITE(nNonce);
-        READWRITE(nSolution);
+    SERIALIZE_METHODS(ZcashBlockHeader, obj)
+    {
+        READWRITE(obj.nVersion);
+        //nVersion = obj.nVersion;
+        READWRITE(obj.hashPrevBlock);
+        READWRITE(obj.hashMerkleRoot);
+        READWRITE(obj.hashReserved);
+        READWRITE(obj.nTime);
+        READWRITE(obj.nBits);
+        READWRITE(obj.nNonce);
+        READWRITE(obj.nSolution);
     }
 };
 
@@ -73,7 +71,7 @@ BOOST_AUTO_TEST_CASE(zcash_header_compatible)
 static std::string ConvertAddressFormat(const std::string& addr, const std::map<uint8_t, uint8_t>& ver_map)
 {
     std::vector<unsigned char> addr_data;
-    BOOST_CHECK(DecodeBase58Check(addr, addr_data));
+    BOOST_CHECK(DecodeBase58Check(addr, addr_data, addr.length()));
     BOOST_CHECK(ver_map.count(addr_data[0]) > 0);
     addr_data[0] = ver_map.at(addr_data[0]);
     return EncodeBase58Check(addr_data);
@@ -104,7 +102,7 @@ BOOST_AUTO_TEST_CASE(cltv_multisig_whitelist)
     for (const CltvMultiSigTestData& test_case : data) {
         std::vector<unsigned char> redeem_script_data = ParseHex(test_case.redeem_script);
         CScript redeem_script(redeem_script_data.begin(), redeem_script_data.end());
-        CScript p2sh_script = GetScriptForDestination(CScriptID(redeem_script));
+        CScript p2sh_script = GetScriptForDestination(ScriptHash(redeem_script));
         BOOST_CHECK(params.IsPremineAddressScript(p2sh_script, test_case.height));
     }
 }

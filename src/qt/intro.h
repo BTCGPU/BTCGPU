@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018 The Bitcoin Core developers
+// Copyright (c) 2011-2019 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -30,7 +30,8 @@ class Intro : public QDialog
     Q_OBJECT
 
 public:
-    explicit Intro(QWidget *parent = 0);
+    explicit Intro(QWidget *parent = nullptr,
+                   int64_t blockchain_size_gb = 0, int64_t chain_state_size_gb = 0);
     ~Intro();
 
     QString getDataDirectory();
@@ -38,6 +39,7 @@ public:
 
     /**
      * Determine data directory. Let the user choose if the current one doesn't exist.
+     * Let the user configure additional preferences such as pruning.
      *
      * @returns true if a data directory was selected, false if the user cancelled the selection
      * dialog.
@@ -45,16 +47,10 @@ public:
      * @note do NOT call global GetDataDir() before calling this function, this
      * will cause the wrong path to be cached.
      */
-    static bool pickDataDirectory(interfaces::Node& node);
-
-    /**
-     * Determine default data directory for operating system.
-     */
-    static QString getDefaultDataDirectory();
+    static bool showIfNeeded(bool& did_show_intro, bool& prune);
 
 Q_SIGNALS:
     void requestCheck();
-    void stopThread();
 
 public Q_SLOTS:
     void setStatus(int status, const QString &message, quint64 bytesAvailable);
@@ -71,10 +67,18 @@ private:
     QMutex mutex;
     bool signalled;
     QString pathToCheck;
+    const int64_t m_blockchain_size_gb;
+    const int64_t m_chain_state_size_gb;
+    //! Total required space (in GB) depending on user choice (prune or not prune).
+    int64_t m_required_space_gb{0};
+    uint64_t m_bytes_available{0};
+    const int64_t m_prune_target_gb;
 
     void startThread();
     void checkPath(const QString &dataDir);
     QString getPathToCheck();
+    void UpdatePruneLabels(bool prune_checked);
+    void UpdateFreeSpaceLabel();
 
     friend class FreespaceChecker;
 };

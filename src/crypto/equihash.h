@@ -10,7 +10,7 @@
 
 #include <compat/endian.h>
 #include <crypto/sha256.h>
-#include <utilstrencodings.h>
+#include <util/strencodings.h>
 
 #include <blake2.h>
 
@@ -62,7 +62,8 @@ public:
     StepRow(const StepRow<W>& a);
 
     bool IsZero(size_t len);
-    std::string GetHex(size_t len) { return HexStr(hash, hash+len); }
+
+    std::string GetHex(size_t len) { std::vector<unsigned char> hexvec(hash, hash+len); return HexStr(hexvec); }
 
     template<size_t W>
     friend bool HasCollision(StepRow<W>& a, StepRow<W>& b, size_t l);
@@ -152,7 +153,7 @@ enum EhSolverCancelCheck
 
 class EhSolverCancelledException : public std::exception
 {
-    virtual const char* what() const throw() {
+    virtual const char* what() const throw() override {
         return "Equihash solver was cancelled";
     }
 };

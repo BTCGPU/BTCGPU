@@ -8,7 +8,7 @@ import io
 from decimal import Decimal
 
 from test_framework.address import script_to_p2sh
-from test_framework.key import CECKey, CPubKey
+from test_framework.key import ECKey, ECPubKey
 from test_framework.messages import CTransaction
 from test_framework.script import (
     CScript,
@@ -20,10 +20,10 @@ from test_framework.script import (
     OP_CHECKMULTISIG,
     OP_DROP,
     SIGHASH_ALL,
-    SignatureHash,
+    LegacySignatureHash,
 )
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import assert_equal, bytes_to_hex_str, hex_str_to_bytes
+from test_framework.util import assert_equal, hex_str_to_bytes
 
 
 EPS = 1e-6
@@ -49,8 +49,8 @@ class BTGTimeLockTest(BitcoinTestFramework):
 
     def sign_tx(self, tx, spend_tx, spend_n, redeem_script, in_n, keys):
         """Sign a P2SH transaction by privkeys."""
-        sighash, _ = SignatureHash(redeem_script, tx, in_n, SIGHASH_ALL)
-        sigs = [key.sign(sighash) + bytes(bytearray([SIGHASH_ALL])) for key in keys]
+        sighash, _ = LegacySignatureHash(redeem_script, tx, in_n, SIGHASH_ALL)
+        sigs = [key.sign_ecdsa(sighash) + bytes(bytearray([SIGHASH_ALL])) for key in keys]
         tx.vin[0].scriptSig = CScript([OP_0] + sigs + [redeem_script])
         tx.rehash()
 
@@ -61,17 +61,17 @@ class BTGTimeLockTest(BitcoinTestFramework):
         rawkeys = []
         pubkeys = []
         for i in range(6):
-            raw_key = CECKey()
-            raw_key.set_secretbytes(('privkey%d' % i).encode('ascii'))
+            raw_key = ECKey()
+            raw_key.generate()
             rawkeys.append(raw_key)
-        pubkeys = [CPubKey(key.get_pubkey()) for key in rawkeys]
+        pubkeys = [key.get_pubkey().get_bytes() for key in rawkeys]
 
         # Create a 4-of-6 multi-sig wallet with CLTV.
         height = 210
         redeem_script = CScript(
             [CScriptNum(height), OP_CHECKLOCKTIMEVERIFY, OP_DROP]  # CLTV (lock_time >= 210)
             + [OP_4] + pubkeys +  [OP_6, OP_CHECKMULTISIG])  # multi-sig
-        hex_redeem_script = bytes_to_hex_str(redeem_script)
+        hex_redeem_script = redeem_script.hex()
         p2sh_address = script_to_p2sh(redeem_script, main=False)
 
         # Send 1 coin to the mult-sig wallet.
@@ -82,10 +82,6 @@ class BTGTimeLockTest(BitcoinTestFramework):
         except Exception:
             pass
         assert_equal(sig(node.getreceivedbyaddress(p2sh_address, 0) - Decimal(1.0)), 0)
-
-        # Mine one block to confirm the transaction.
-        node.generate(1)  # block 201
-        assert_equal(sig(node.getreceivedbyaddress(p2sh_address, 1) - Decimal(1.0)), 0)
 
         # Try to spend the coin.
         addr_to = node.getnewaddress('')
@@ -122,7 +118,7 @@ class BTGTimeLockTest(BitcoinTestFramework):
 
         # Spend the CLTV multi-sig coins.
         raw_tx1 = tx1.serialize()
-        hex_raw_tx1 = bytes_to_hex_str(raw_tx1)
+        hex_raw_tx1 = raw_tx1.hex()
         node.sendrawtransaction(hex_raw_tx1)
 
         # Check the tx is accepted by mempool but not confirmed.

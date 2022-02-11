@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2018 The Bitcoin Core developers
+// Copyright (c) 2016-2020 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,11 +10,6 @@
 #endif
 
 #ifdef WIN32
-#ifdef _WIN32_WINNT
-#undef _WIN32_WINNT
-#endif
-#define _WIN32_WINNT 0x0501
-#define WIN32_LEAN_AND_MEAN 1
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -27,9 +22,12 @@
 #endif
 
 #include <algorithm>
+#ifdef ARENA_DEBUG
+#include <iomanip>
+#include <iostream>
+#endif
 
 LockedPoolManager* LockedPoolManager::_instance = nullptr;
-std::once_flag LockedPoolManager::init_flag;
 
 /*******************************************************************************/
 // Utilities
@@ -75,7 +73,7 @@ void* Arena::alloc(size_t size)
 
     // Create the used-chunk, taking its space from the end of the free-chunk
     const size_t size_remaining = size_ptr_it->first - size;
-    auto alloced = chunks_used.emplace(size_ptr_it->second + size_remaining, size).first;
+    auto allocated = chunks_used.emplace(size_ptr_it->second + size_remaining, size).first;
     chunks_free_end.erase(size_ptr_it->second + size_ptr_it->first);
     if (size_ptr_it->first == size) {
         // whole chunk is used up
@@ -88,7 +86,7 @@ void* Arena::alloc(size_t size)
     }
     size_to_free_chunk.erase(size_ptr_it);
 
-    return reinterpret_cast<void*>(alloced->first);
+    return reinterpret_cast<void*>(allocated->first);
 }
 
 void Arena::free(void *ptr)
@@ -141,7 +139,7 @@ Arena::Stats Arena::stats() const
 }
 
 #ifdef ARENA_DEBUG
-static void printchunk(char* base, size_t sz, bool used) {
+static void printchunk(void* base, size_t sz, bool used) {
     std::cout <<
         "0x" << std::hex << std::setw(16) << std::setfill('0') << base <<
         " 0x" << std::hex << std::setw(16) << std::setfill('0') << sz <<
@@ -153,7 +151,7 @@ void Arena::walk() const
         printchunk(chunk.first, chunk.second, true);
     std::cout << std::endl;
     for (const auto& chunk: chunks_free)
-        printchunk(chunk.first, chunk.second, false);
+        printchunk(chunk.first, chunk.second->first, false);
     std::cout << std::endl;
 }
 #endif
@@ -248,8 +246,16 @@ void *PosixLockedPageAllocator::AllocateLocked(size_t len, bool *lockingSuccess)
     void *addr;
     len = align_up(len, page_size);
     addr = mmap(nullptr, len, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    if (addr == MAP_FAILED) {
+        return nullptr;
+    }
     if (addr) {
         *lockingSuccess = mlock(addr, len) == 0;
+#if defined(MADV_DONTDUMP) // Linux
+        madvise(addr, len, MADV_DONTDUMP);
+#elif defined(MADV_NOCORE) // FreeBSD
+        madvise(addr, len, MADV_NOCORE);
+#endif
     }
     return addr;
 }
