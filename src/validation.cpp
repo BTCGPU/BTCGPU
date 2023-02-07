@@ -15,6 +15,7 @@
 #include <consensus/tx_verify.h>
 #include <consensus/validation.h>
 #include <cuckoocache.h>
+#include <functional>
 #include <hash.h>
 #include <index/txindex.h>
 #include <policy/fees.h>
@@ -53,6 +54,8 @@
 
 #define MICRO 0.000001
 #define MILLI 0.001
+
+using namespace std::placeholders;
 
 /**
  * Global state
