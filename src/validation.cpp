@@ -16,6 +16,7 @@
 #include <consensus/validation.h>
 #include <cuckoocache.h>
 #include <flatfile.h>
+#include <functional>
 #include <hash.h>
 #include <index/txindex.h>
 #include <logging.h>
@@ -55,6 +56,8 @@
 
 #define MICRO 0.000001
 #define MILLI 0.001
+
+using namespace std::placeholders;
 
 /**
  * An extra transaction can be added to a package, as long as it only has one

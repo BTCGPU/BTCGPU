@@ -15,6 +15,8 @@
 #include <future>
 #include <unordered_map>
 #include <utility>
+#include <functional>
+using namespace std::placeholders;
 
 //! The MainSignalsInstance manages a list of shared_ptr<CValidationInterface>
 //! callbacks.
