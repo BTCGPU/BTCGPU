@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018 The Bitcoin Core developers
+// Copyright (c) 2015-2020 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,13 +10,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <algorithm>
 #include <cstddef>
-#include <iterator>
 #include <type_traits>
+#include <utility>
 
-#include <compat.h>
-
-#pragma pack(push, 1)
 /** Implements a drop-in replacement for std::vector<T> which stores up to N
  *  elements directly (without heap allocation). The types Size and Diff are
  *  used to store element counts, and can be any unsigned + signed type.
@@ -148,19 +146,25 @@ public:
     };
 
 private:
-    size_type _size;
+#pragma pack(push, 1)
     union direct_or_indirect {
         char direct[sizeof(T) * N];
         struct {
-            size_type capacity;
             char* indirect;
-        };
-    } _union;
+            size_type capacity;
+        } indirect_contents;
+    };
+#pragma pack(pop)
+    alignas(char*) direct_or_indirect _union = {};
+    size_type _size = 0;
+
+    static_assert(alignof(char*) % alignof(size_type) == 0 && sizeof(char*) % alignof(size_type) == 0, "size_type cannot have more restrictive alignment requirement than pointer");
+    static_assert(alignof(char*) % alignof(T) == 0, "value_type T cannot have more restrictive alignment requirement than pointer");
 
     T* direct_ptr(difference_type pos) { return reinterpret_cast<T*>(_union.direct) + pos; }
     const T* direct_ptr(difference_type pos) const { return reinterpret_cast<const T*>(_union.direct) + pos; }
-    T* indirect_ptr(difference_type pos) { return reinterpret_cast<T*>(_union.indirect) + pos; }
-    const T* indirect_ptr(difference_type pos) const { return reinterpret_cast<const T*>(_union.indirect) + pos; }
+    T* indirect_ptr(difference_type pos) { return reinterpret_cast<T*>(_union.indirect_contents.indirect) + pos; }
+    const T* indirect_ptr(difference_type pos) const { return reinterpret_cast<const T*>(_union.indirect_contents.indirect) + pos; }
     bool is_direct() const { return _size <= N; }
 
     void change_capacity(size_type new_capacity) {
@@ -178,17 +182,17 @@ private:
                 /* FIXME: Because malloc/realloc here won't call new_handler if allocation fails, assert
                     success. These should instead use an allocator or new/delete so that handlers
                     are called as necessary, but performance would be slightly degraded by doing so. */
-                _union.indirect = static_cast<char*>(realloc(_union.indirect, ((size_t)sizeof(T)) * new_capacity));
-                assert(_union.indirect);
-                _union.capacity = new_capacity;
+                _union.indirect_contents.indirect = static_cast<char*>(realloc(_union.indirect_contents.indirect, ((size_t)sizeof(T)) * new_capacity));
+                assert(_union.indirect_contents.indirect);
+                _union.indirect_contents.capacity = new_capacity;
             } else {
                 char* new_indirect = static_cast<char*>(malloc(((size_t)sizeof(T)) * new_capacity));
                 assert(new_indirect);
                 T* src = direct_ptr(0);
                 T* dst = reinterpret_cast<T*>(new_indirect);
                 memcpy(dst, src, size() * sizeof(T));
-                _union.indirect = new_indirect;
-                _union.capacity = new_capacity;
+                _union.indirect_contents.indirect = new_indirect;
+                _union.indirect_contents.capacity = new_capacity;
                 _size += N + 1;
             }
         }
@@ -197,23 +201,8 @@ private:
     T* item_ptr(difference_type pos) { return is_direct() ? direct_ptr(pos) : indirect_ptr(pos); }
     const T* item_ptr(difference_type pos) const { return is_direct() ? direct_ptr(pos) : indirect_ptr(pos); }
 
-    void fill(T* dst, ptrdiff_t count) {
-        if (IS_TRIVIALLY_CONSTRUCTIBLE<T>::value) {
-            // The most common use of prevector is where T=unsigned char. For
-            // trivially constructible types, we can use memset() to avoid
-            // looping.
-            ::memset(dst, 0, count * sizeof(T));
-        } else {
-            for (auto i = 0; i < count; ++i) {
-                new(static_cast<void*>(dst + i)) T();
-            }
-        }
-    }
-
-    void fill(T* dst, ptrdiff_t count, const T& value) {
-        for (auto i = 0; i < count; ++i) {
-            new(static_cast<void*>(dst + i)) T(value);
-        }
+    void fill(T* dst, ptrdiff_t count, const T& value = T{}) {
+        std::fill_n(dst, count, value);
     }
 
     template<typename InputIterator>
@@ -246,34 +235,34 @@ public:
         fill(item_ptr(0), first, last);
     }
 
-    prevector() : _size(0), _union{{}} {}
+    prevector() {}
 
-    explicit prevector(size_type n) : _size(0) {
+    explicit prevector(size_type n) {
         resize(n);
     }
 
-    explicit prevector(size_type n, const T& val = T()) : _size(0) {
+    explicit prevector(size_type n, const T& val) {
         change_capacity(n);
         _size += n;
         fill(item_ptr(0), n, val);
     }
 
     template<typename InputIterator>
-    prevector(InputIterator first, InputIterator last) : _size(0) {
+    prevector(InputIterator first, InputIterator last) {
         size_type n = last - first;
         change_capacity(n);
         _size += n;
         fill(item_ptr(0), first, last);
     }
 
-    prevector(const prevector<N, T, Size, Diff>& other) : _size(0) {
+    prevector(const prevector<N, T, Size, Diff>& other) {
         size_type n = other.size();
         change_capacity(n);
         _size += n;
         fill(item_ptr(0), other.begin(),  other.end());
     }
 
-    prevector(prevector<N, T, Size, Diff>&& other) : _size(0) {
+    prevector(prevector<N, T, Size, Diff>&& other) {
         swap(other);
     }
 
@@ -312,7 +301,7 @@ public:
         if (is_direct()) {
             return N;
         } else {
-            return _union.capacity;
+            return _union.indirect_contents.capacity;
         }
     }
 
@@ -394,6 +383,21 @@ public:
         fill(ptr, first, last);
     }
 
+    inline void resize_uninitialized(size_type new_size) {
+        // resize_uninitialized changes the size of the prevector but does not initialize it.
+        // If size < new_size, the added elements must be initialized explicitly.
+        if (capacity() < new_size) {
+            change_capacity(new_size);
+            _size += new_size - size();
+            return;
+        }
+        if (new_size < size()) {
+            erase(item_ptr(new_size), end());
+        } else {
+            _size += new_size - size();
+        }
+    }
+
     iterator erase(iterator pos) {
         return erase(pos, pos + 1);
     }
@@ -420,13 +424,18 @@ public:
         return first;
     }
 
-    void push_back(const T& value) {
+    template<typename... Args>
+    void emplace_back(Args&&... args) {
         size_type new_size = size() + 1;
         if (capacity() < new_size) {
             change_capacity(new_size + (new_size >> 1));
         }
-        new(item_ptr(size())) T(value);
+        new(item_ptr(size())) T(std::forward<Args>(args)...);
         _size++;
+    }
+
+    void push_back(const T& value) {
+        emplace_back(value);
     }
 
     void pop_back() {
@@ -459,8 +468,8 @@ public:
             clear();
         }
         if (!is_direct()) {
-            free(_union.indirect);
-            _union.indirect = nullptr;
+            free(_union.indirect_contents.indirect);
+            _union.indirect_contents.indirect = nullptr;
         }
     }
 
@@ -512,7 +521,7 @@ public:
         if (is_direct()) {
             return 0;
         } else {
-            return ((size_t)(sizeof(T))) * _union.capacity;
+            return ((size_t)(sizeof(T))) * _union.indirect_contents.capacity;
         }
     }
 
@@ -524,6 +533,5 @@ public:
         return item_ptr(0);
     }
 };
-#pragma pack(pop)
 
 #endif // BITCOIN_PREVECTOR_H

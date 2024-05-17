@@ -1,111 +1,60 @@
 #!/usr/bin/env python3
-# Copyright (c) 2017-2018 The Bitcoin Core developers
+# Copyright (c) 2017-2019 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test deprecation of RPC calls."""
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import assert_raises_rpc_error
+from test_framework.util import assert_raises_rpc_error, find_vout_for_address
 
 class DeprecatedRpcTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
         self.setup_clean_chain = True
-        self.extra_args = [[], ["-deprecatedrpc=validateaddress", "-deprecatedrpc=accounts"]]
-
-    def skip_test_if_missing_module(self):
-        self.skip_if_no_wallet()
+        self.extra_args = [[], ['-deprecatedrpc=bumpfee']]
 
     def run_test(self):
         # This test should be used to verify correct behaviour of deprecated
         # RPC methods with and without the -deprecatedrpc flags. For example:
         #
-        # self.log.info("Make sure that -deprecatedrpc=createmultisig allows it to take addresses")
-        # assert_raises_rpc_error(-5, "Invalid public key", self.nodes[0].createmultisig, 1, [self.nodes[0].getnewaddress()])
-        # self.nodes[1].createmultisig(1, [self.nodes[1].getnewaddress()])
-
-        self.log.info("Test validateaddress deprecation")
-        SOME_ADDRESS = "mnvGjUy3NMj67yJ6gkK5o9e5RS33Z2Vqcu"  # This is just some random address to pass as a parameter to validateaddress
-        dep_validate_address = self.nodes[0].validateaddress(SOME_ADDRESS)
-        assert "ismine" not in dep_validate_address
-        not_dep_val = self.nodes[1].validateaddress(SOME_ADDRESS)
-        assert "ismine" in not_dep_val
-
-        self.log.info("Test accounts deprecation")
-        # The following account RPC methods are deprecated:
-        # - getaccount
-        # - getaccountaddress
-        # - getaddressesbyaccount
-        # - getreceivedbyaccount
-        # - listaccouts
-        # - listreceivedbyaccount
-        # - move
-        # - setaccount
+        # In set_test_params:
+        # self.extra_args = [[], ["-deprecatedrpc=generate"]]
         #
-        # The following 'label' RPC methods are usable both with and without the
-        # -deprecatedrpc=accounts switch enabled.
-        # - getaddressesbylabel
-        # - getreceivedbylabel
-        # - listlabels
-        # - listreceivedbylabel
-        # - setlabel
-        #
-        address0 = self.nodes[0].getnewaddress()
-        self.nodes[0].generatetoaddress(101, address0)
-        self.sync_all()
-        address1 = self.nodes[1].getnewaddress()
-        self.nodes[1].generatetoaddress(101, address1)
+        # In run_test:
+        # self.log.info("Test generate RPC")
+        # assert_raises_rpc_error(-32, 'The wallet generate rpc method is deprecated', self.nodes[0].rpc.generate, 1)
+        # self.nodes[1].generate(1)
 
-        self.log.info("- getaccount")
-        assert_raises_rpc_error(-32, "getaccount is deprecated", self.nodes[0].getaccount, address0)
-        self.nodes[1].getaccount(address1)
+        if self.is_wallet_compiled():
+            self.log.info("Test bumpfee RPC")
+            self.nodes[0].generate(101)
+            self.nodes[0].createwallet(wallet_name='nopriv', disable_private_keys=True)
+            noprivs0 = self.nodes[0].get_wallet_rpc('nopriv')
+            w0 = self.nodes[0].get_wallet_rpc(self.default_wallet_name)
+            self.nodes[1].createwallet(wallet_name='nopriv', disable_private_keys=True)
+            noprivs1 = self.nodes[1].get_wallet_rpc('nopriv')
 
-        self.log.info("- setaccount")
-        assert_raises_rpc_error(-32, "setaccount is deprecated", self.nodes[0].setaccount, address0, "label0")
-        self.nodes[1].setaccount(address1, "label1")
+            address = w0.getnewaddress()
+            desc = w0.getaddressinfo(address)['desc']
+            change_addr = w0.getrawchangeaddress()
+            change_desc = w0.getaddressinfo(change_addr)['desc']
+            txid = w0.sendtoaddress(address=address, amount=10)
+            vout = find_vout_for_address(w0, txid, address)
+            self.nodes[0].generate(1)
+            rawtx = w0.createrawtransaction([{'txid': txid, 'vout': vout}], {w0.getnewaddress(): 5}, 0, True)
+            rawtx = w0.fundrawtransaction(rawtx, {'changeAddress': change_addr})
+            signed_tx = w0.signrawtransactionwithwallet(rawtx['hex'])['hex']
 
-        self.log.info("- setlabel")
-        self.nodes[0].setlabel(address0, "label0")
-        self.nodes[1].setlabel(address1, "label1")
+            noprivs0.importmulti([{'desc': desc, 'timestamp': 0}, {'desc': change_desc, 'timestamp': 0, 'internal': True}])
+            noprivs1.importmulti([{'desc': desc, 'timestamp': 0}, {'desc': change_desc, 'timestamp': 0, 'internal': True}])
 
-        self.log.info("- getaccountaddress")
-        assert_raises_rpc_error(-32, "getaccountaddress is deprecated", self.nodes[0].getaccountaddress, "label0")
-        self.nodes[1].getaccountaddress("label1")
+            txid = w0.sendrawtransaction(signed_tx)
+            self.sync_all()
 
-        self.log.info("- getaddressesbyaccount")
-        assert_raises_rpc_error(-32, "getaddressesbyaccount is deprecated", self.nodes[0].getaddressesbyaccount, "label0")
-        self.nodes[1].getaddressesbyaccount("label1")
-
-        self.log.info("- getaddressesbylabel")
-        self.nodes[0].getaddressesbylabel("label0")
-        self.nodes[1].getaddressesbylabel("label1")
-
-        self.log.info("- getreceivedbyaccount")
-        assert_raises_rpc_error(-32, "getreceivedbyaccount is deprecated", self.nodes[0].getreceivedbyaccount, "label0")
-        self.nodes[1].getreceivedbyaccount("label1")
-
-        self.log.info("- getreceivedbylabel")
-        self.nodes[0].getreceivedbylabel("label0")
-        self.nodes[1].getreceivedbylabel("label1")
-
-        self.log.info("- listaccounts")
-        assert_raises_rpc_error(-32, "listaccounts is deprecated", self.nodes[0].listaccounts)
-        self.nodes[1].listaccounts()
-
-        self.log.info("- listlabels")
-        self.nodes[0].listlabels()
-        self.nodes[1].listlabels()
-
-        self.log.info("- listreceivedbyaccount")
-        assert_raises_rpc_error(-32, "listreceivedbyaccount is deprecated", self.nodes[0].listreceivedbyaccount)
-        self.nodes[1].listreceivedbyaccount()
-
-        self.log.info("- listreceivedbylabel")
-        self.nodes[0].listreceivedbylabel()
-        self.nodes[1].listreceivedbylabel()
-
-        self.log.info("- move")
-        assert_raises_rpc_error(-32, "move is deprecated", self.nodes[0].move, "label0", "label0b", 10)
-        self.nodes[1].move("label1", "label1b", 10)
+            assert_raises_rpc_error(-32, 'Using bumpfee with wallets that have private keys disabled is deprecated. Use psbtbumpfee instead or restart bgoldd with -deprecatedrpc=bumpfee. This functionality will be removed in 0.22', noprivs0.bumpfee, txid)
+            bumped_psbt = noprivs1.bumpfee(txid)
+            assert 'psbt' in bumped_psbt
+        else:
+            self.log.info("No tested deprecated RPC methods")
 
 if __name__ == '__main__':
     DeprecatedRpcTest().main()

@@ -30,7 +30,7 @@ public:
         EditSendingAddress
     };
 
-    explicit EditAddressDialog(Mode mode, QWidget *parent = 0);
+    explicit EditAddressDialog(Mode mode, QWidget *parent = nullptr);
     ~EditAddressDialog();
 
     void setModel(AddressTableModel *model);
@@ -40,7 +40,7 @@ public:
     void setAddress(const QString &address);
 
 public Q_SLOTS:
-    void accept();
+    void accept() override;
 
 private:
     bool saveCurrentRow();

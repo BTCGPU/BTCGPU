@@ -10,9 +10,9 @@
 #include <arith_uint256.h>
 #include <crypto/sha256.h>
 #include <crypto/equihash.h>
-#include <test/test_bitcoin.h>
+#include <test/util/setup_common.h>
 #include <uint256.h>
-#include <utilstrencodings.h>
+#include <util/strencodings.h>
 
 #include <blake2.h>
 
