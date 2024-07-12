@@ -17,7 +17,7 @@ Although BTG was bootstrapped on 12 Nov to create an entirely new network, it co
 
 ## Releases
 
-This is the staging tree of Bitcoin Gold. For release version, please switch to [0.17 branch](https://github.com/BTCGPU/BTCGPU/tree/0.17) or [release page](https://github.com/BTCGPU/BTCGPU/releases).
+This is the staging tree of BTG. For release version, please switch to [0.17 branch](https://github.com/BTCGPU/BTCGPU/tree/0.17) or [release page](https://github.com/BTCGPU/BTCGPU/releases).
 
 To compile from source, please check the build documentations under [doc](https://github.com/BTCGPU/BTCGPU/tree/master/doc).
 
@@ -30,7 +30,7 @@ To compile from source, please check the build documentations under [doc](https:
 
 ## Responsible Disclosure
 
-At the Bitcoin Gold, we consider the security of our systems a top priority. But no matter how much effort we put into system security, there can still be vulnerabilities present.
+At BTG, we consider the security of our systems a top priority. But no matter how much effort we put into system security, there can still be vulnerabilities present.
 
 If you discover a vulnerability, we would like to know about it so we can take steps to address it as quickly as possible. We would like to ask you to help us better protect our users and our systems.
 
@@ -38,10 +38,9 @@ Please check our [Responsible Disclosure](https://github.com/BTCGPU/Developer-Po
 
 ## Links
 
-* Website: https://bitcoingold.org
+* Website: https://btgofficial.org
 * Tech Spec: https://github.com/BTCGPU/BTCGPU/wiki/Technical-Spec
 * Twitter: https://twitter.com/bitcoingold
-* Facebook: https://www.facebook.com/bitcoingoldofficial/
-* Forum: https://forum.bitcoingold.org
+* Forum: https://forum.btgofficial.org
 * Discord: [invitation](https://discord.gg/HmVUU6S)
 * Telegram (Global): https://t.me/BitcoinGoldHQ
